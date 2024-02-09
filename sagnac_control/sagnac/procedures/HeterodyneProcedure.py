@@ -21,7 +21,7 @@ class sagnacHeterodyneProcedure(Procedure):
     with the Sagnac setup
     """
 
-    calib_file = 'C:\\Users\\Ralph Group\\Desktop\\git\\sagnac_control\\calibrations\\sagnac'
+    calib_file = 'C:\\Users\\Ralph Group\\Documents\\Github\\SagnacOperatingSys\\sagnac_control\\calibrations\\sagnac'
     sample_name = Parameter("Sample Name",default='test')
 
     applied_voltage = FloatParameter("Applied Sample Voltage", units="V", default=1)
@@ -375,7 +375,7 @@ class sagnacOpticsXportProcedureNoAvg(Procedure):
     with the Sagnac setup
     """
 
-    calib_file = 'C:\\Users\\Ralph Group\\Desktop\\git\\sagnac_control\\calibrations\\sagnac'
+    calib_file = 'C:\\Users\\Ralph Group\\Documents\\Github\\SagnacOperatingSys\\sagnac_control\\calibrations\\sagnac'
     sample_name = Parameter("Sample Name",default='test')
 
     applied_voltage = FloatParameter("Applied Sample Voltage", units="V", default=1)
@@ -622,7 +622,7 @@ class sagnacOpticsXportProcedure(Procedure):
     with the Sagnac setup
     """
 
-    calib_file = 'C:\\Users\\Ralph Group\\Desktop\\git\\sagnac_control\\calibrations\\sagnac'
+    calib_file = 'C:\\Users\\Ralph Group\\Documents\\Github\\SagnacOperatingSys\\sagnac_control\\calibrations\\sagnac'
     sample_name = Parameter("Sample Name",default='test')
 
     applied_voltage = FloatParameter("Applied Sample Voltage", units="V", default=1)
@@ -670,7 +670,7 @@ class sagnacOpticsXportProcedure(Procedure):
     first = True
     last = True
 
-    DATA_COLUMNS = ["ThetaK","X1","Y1","X2","Y2","DeltaThetaK","DeltaX1","DeltaY1","TX1","TY1","TX2","TY2","sweep_field","elapsed_time"]
+    DATA_COLUMNS = ["ThetaK","X1","Y1","X2","Y2", "DeltaThetaK", "DeltaThetaK_DualSideband", "DeltaX1_C-M", "DeltaY1_C-M", "DeltaX1_C+M", "DeltaY1_C+M", "TX1","TY1","TX2","TY2","sweep_field","elapsed_time"]
 
     def startup(self):
         log.info("Connecting and configuring the instruments")
@@ -688,7 +688,7 @@ class sagnacOpticsXportProcedure(Procedure):
         #subscribe to outputs
         self.lockin.sub(0)
         self.lockin.sub(1)
-        # self.lockin.sub(2)
+        self.lockin.sub(2)
         self.lockin.sub(3)
         self.lockin.sub(4)
         self.lockin.sub(5)
@@ -834,19 +834,22 @@ class sagnacOpticsXportProcedure(Procedure):
                 sleep(self.settling)
                 self.lockin.sync() # clears buffer since field has changed
                 log.info("recording average #%d"%i)
-                dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,3,4,5], ['x','y'], ratio=False))
+                dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
             dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
 
             log.info("Recording results")
             self.emit('results', {
-                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[5]['y'])/2, 
+                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, 
                 "X1": dat[3]['x'],
                 "Y1": dat[3]['y'],
-                "X2": dat[5]['x'],
-                "Y2": dat[5]['y'],
-                "DeltaThetaK": J2J1*dat[4]['x']/dat[5]['y'],
-                "DeltaX1": dat[4]['x'],
-                "DeltaY1": dat[4]['y'],
+                "X2": dat[2]['x'],
+                "Y2": dat[2]['y'],
+                "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y'],
+                "DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
+                "DeltaX1_C-M": dat[4]['x'],
+                "DeltaY1_C-M": dat[4]['y'],
+                "DeltaX1_C+M": dat[5]['x'],
+                "DeltaY1_C+M": dat[5]['y'],
                 "TX1": dat[0]['x'],
                 "TY1": dat[0]['y'],
                 "TX2": dat[1]['x'],
@@ -875,7 +878,7 @@ class sagnacOpticsXportRawReadingsProcedure(Procedure):
     with the Sagnac setup
     """
 
-    calib_file = 'C:\\Users\\Ralph Group\\Desktop\\git\\sagnac_control\\calibrations\\sagnac'
+    calib_file = 'C:\\Users\\Ralph Group\\Documents\\Github\\SagnacOperatingSys\\sagnac_control\\calibrations\\sagnac'
     sample_name = Parameter("Sample Name",default='test')
 
     applied_voltage = FloatParameter("Applied Sample Voltage", units="V", default=1)
@@ -1128,7 +1131,7 @@ class sagnacOpticsXportVoltageSweepProcedure(Procedure):
     with the Sagnac setup
     """
 
-    calib_file = 'C:\\Users\\Ralph Group\\Desktop\\git\\sagnac_control\\calibrations\\sagnac'
+    calib_file = 'C:\\Users\\Ralph Group\\Documents\\Github\\SagnacOperatingSys\\sagnac_control\\calibrations\\sagnac'
     sample_name = Parameter("Sample Name",default='test')
 
     applied_voltage_offset = FloatParameter("Applied Sample Voltage Offset", units="V", default=0)
