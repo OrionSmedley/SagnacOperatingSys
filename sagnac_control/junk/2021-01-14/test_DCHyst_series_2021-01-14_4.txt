@@ -1,0 +1,12 @@
+# swept procedure column: applied_current
+# swept series parameter: bias_field_azimuth
+# Parameters:
+#
+# Bias Field Azimuth Start: 0 deg
+# Bias Field Azimuth Stop: 90 deg
+# Bias Field Azimuth Step: 90 deg
+#
+# Files in Series:
+#
+test_DCHyst_B0.0250_A0.0_2021-01-14_4.csv
+test_DCHyst_B0.0250_A90.0_2021-01-14_2.csv

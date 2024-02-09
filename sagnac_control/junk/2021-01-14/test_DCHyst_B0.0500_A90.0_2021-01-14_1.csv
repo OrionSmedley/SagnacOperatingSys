@@ -1,0 +1,24 @@
+#Procedure: <sagnac.procedures.HysteresisProcedure.sagnacDCHysteresisProcedure>
+#Parameters:
+#	Bias Magnetic Field: 0.05 T
+#	Bias Magnetic Field Azimuth: 90 deg
+#	Bias Magnetic Field Polar: 0 deg
+#	End DC current: 0.001 mA
+#	DC Current Step: 0.0001 mA
+#	EOM Frequency: 5.06e+06 MHz
+#	Filter Order First Harmonic: 8
+#	Lockin Time Constant First Harmonic: 0.01 s
+#	50 Ohm Input Impedance: True
+#	input range: 1 V
+#	Output Voltage: 1 V
+#	Time Queued: 06:56pm 2021-01-14
+#	Reverses Direction of Current Sweep: False
+#	Sample Name: test
+#	Saturating Magnetic Field: 0.2 T
+#	Saturating Magnetic Field Azimuth: 0 deg
+#	Saturating Magnetic Field Polar: 90 deg
+#	Filter Order Second Harmonic: 8
+#	Lockin Time Constant Second Harmonic: 0.01 s
+#	Settling: 0.05 s
+#Data:
+RatioR,RatioY1X2,RatioX1Y2,X1,Y1,X2,Y2,applied_current,elapsed_time

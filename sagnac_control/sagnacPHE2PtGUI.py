@@ -1,0 +1,115 @@
+import logging
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
+import sys
+import os
+from datetime import datetime
+from itertools import product
+import textwrap
+import socket
+import numpy as np
+
+from pymeasure.log import console_log
+from pymeasure.display.Qt import QtCore, QtGui, fromUi
+from pymeasure.display.windows import ManagedWindow
+from pymeasure.experiment import Results, unique_filename
+from sagnac.procedures import sagnacPHE2PtProcedure
+
+class sagnacPHE2PtGUI(ManagedWindow):
+
+    SWEEP_PARAM_NAMES = ['field_azimuth']
+    NUM_SWEEP_PARAMS = len(SWEEP_PARAM_NAMES)
+
+    def __init__(self):
+        super(sagnacPHE2PtGUI, self).__init__(
+            procedure_class=sagnacPHE2PtProcedure,
+            displays=[
+                'sample_name',
+                'applied_field',
+                'field_azimuth_1',
+                'field_azimuth_2',
+                'saturating_field',
+                'saturating_field_polar'],
+            x_axis='field_azimuth',
+            y_axis='TX1'
+        )
+        self.setWindowTitle('PyMeasure Sagnac PHE 2 Points Scan')
+        self.last_series_fname = None
+
+    def _setup_ui(self):
+        """
+        Loads custom QT UI for Sagnac DC Hysteresis measurements
+        """
+        super(sagnacPHE2PtGUI, self)._setup_ui()
+        self.inputs.hide()
+        self.run_directory = os.path.dirname(os.path.realpath(__file__))
+        self.inputs = fromUi(os.path.join(self.run_directory,'custom_inputs/sagnac_gui_PHE_2Pt.ui'))
+        self.inputs.save_dir.setText("junk")
+
+    def make_procedure(self):
+        """
+        Constructs a single procedure
+        """
+        procedure = sagnacPHE2PtProcedure()
+        procedure.sample_name = self.inputs.sample_name.text()
+
+        procedure.applied_voltage = self.inputs.applied_voltage.value()
+        procedure.current_frequency = self.inputs.current_frequency.value()*1e3
+        procedure.settling = self.inputs.settling.value()
+        procedure.avgs = self.inputs.avgs.value()
+        procedure.saturate = self.inputs.saturate.isChecked()
+        procedure.saturating_field = self.inputs.saturating_field.value()
+        procedure.saturating_field_azimuth = self.inputs.saturating_field_azimuth.value()
+        procedure.saturating_field_polar = self.inputs.saturating_field_polar.value()
+
+        procedure.applied_field = self.inputs.applied_field.value()
+        procedure.field_azimuth_1 = self.inputs.field_azimuth_1.value()
+        procedure.field_azimuth_2 = self.inputs.field_azimuth_2.value()
+        procedure.field_azimuth_repeats = self.inputs.repeats.value()
+        procedure.field_polar = self.inputs.field_polar.value()
+
+        procedure.input_range = self.inputs.input_range.value()
+        procedure.imp50 = self.inputs.imp50.isChecked()
+
+        procedure.f_eom = self.inputs.f_eom.value()*1e6
+
+        procedure.first_harm_order = self.inputs.first_harm_order.value()
+        procedure.second_harm_order = self.inputs.second_harm_order.value()
+        procedure.first_harm_tc = self.inputs.first_harm_tc.value()
+        procedure.second_harm_tc = self.inputs.second_harm_tc.value()
+
+        procedure.eom_voltage = self.inputs.eom_voltage.value()
+        procedure.queued_time = datetime.now().strftime("%I:%M%p %Y-%m-%d").lower()
+
+        return procedure
+    
+    def queue(self):
+        direc = 'C:\\Users\\Ralph Group\\Documents\\Data\\' + self.inputs.save_dir.text()
+        procedure = self.make_procedure()
+        if procedure.sample_name == '':
+            procedure.sample_name = 'test'
+
+        # create files
+        pre = procedure.sample_name + \
+            '_SagnacPHE_F{field:0.4f}T_V{voltage:0.1f}V_P{polar:0.1f}deg_'.format(
+            field=procedure.applied_field,
+            voltage=procedure.applied_voltage,
+            polar=procedure.field_polar,
+        )
+        suf = ''
+        filename = unique_filename(direc,dated_folder=True,suffix=suf,
+                                    prefix=pre)
+        # Queue experiment
+        results = Results(procedure,filename)
+        experiment = self.new_experiment(results)
+        self.manager.queue(experiment)
+
+    def finished(self, experiment):
+        super().finished(experiment)
+
+if __name__ == '__main__':
+    app = QtGui.QApplication(sys.argv)
+    window = sagnacPHE2PtGUI()
+    window.show()
+    sys.exit(app.exec_())
