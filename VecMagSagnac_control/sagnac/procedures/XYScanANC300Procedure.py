@@ -29,8 +29,6 @@ class XYScanANC300Procedure(Procedure):
 	#DATA_COLUMNS = ["ThetaK", "x_pos"]
 
 	queued_time = Parameter('Time Queued')
-	calib_file = 'C:\\Users\\Ralph Group\\Desktop\\git\\sagnac_control\\calibrations\\sagnac'
-
 	sample_name = Parameter("Sample Name", default='')
 
 	field_strength = FloatParameter("Bias Magnetic Field Strength", units="T", default=0.1)
@@ -78,7 +76,7 @@ class XYScanANC300Procedure(Procedure):
 	first = True
 	last = True
 
-	DATA_COLUMNS = ["x_pos", "y_pos", "ThetaK","X1","Y1","X2","Y2","DeltaThetaK","DeltaX1","DeltaY1","TX1","TY1","TX2","TY2", "elapsed_time"]
+	DATA_COLUMNS = ["x_pos", "y_pos", "ThetaK","X1","Y1","X2","Y2","DeltaThetaK", "DeltaThetaK_DualSideband", "DeltaX1_C-M", "DeltaY1_C-M", "DeltaX1_C+M", "DeltaY1_C+M","TX1","TY1","TX2","TY2", "elapsed_time"]
 	
 	def startup(self):
 		log.info("Connecting and configuring the instruments")
@@ -95,10 +93,10 @@ class XYScanANC300Procedure(Procedure):
 
 		sleep(self.wait) 
 
-		print("Setting up X,Y,Z magnets")
-		log.info("Setting up X,Y,Z magnets")
-		self.magnet = vectorMagnetFull("GPIB::26", "GPIB::25", "GPIB::24") #X,Y,Z in that order
-		self.z_magnet = vectorMagnetZ("GPIB::24")
+		# print("Setting up X,Y,Z magnets")
+		# log.info("Setting up X,Y,Z magnets")
+		# self.magnet = vectorMagnetFull("GPIB::26", "GPIB::25", "GPIB::24") #X,Y,Z in that order
+		# self.z_magnet = vectorMagnetZ("GPIB::24")
 
 		log.info("Connecting to the Zurich Lock-in")
 		self.lockin = HF2LI(8005,1,1004)
@@ -107,57 +105,57 @@ class XYScanANC300Procedure(Procedure):
 		#subscribe to outputs
 		self.lockin.sub(0)
 		self.lockin.sub(1)
-		# self.lockin.sub(2)
+		self.lockin.sub(2)
 		self.lockin.sub(3)
 		self.lockin.sub(4)
 		self.lockin.sub(5)
 
 	def execute(self):
-		zfield = self.field_strength*np.cos(self.field_polar*np.pi/180.)
-		self.z_magnet.field = zfield
-		log.info(f'Bz: {zfield}')
-		while self.z_magnet.is_ramping():
-			sleep(2)
-			log.info("Magnet is ramping")
-			if self.should_stop():
-				log.info("Caught stop flag in procedure.")
-				break
+		# zfield = self.field_strength*np.cos(self.field_polar*np.pi/180.)
+		# self.z_magnet.field = zfield
+		# log.info(f'Bz: {zfield}')
+		# while self.z_magnet.is_ramping():
+		# 	sleep(2)
+		# 	log.info("Magnet is ramping")
+		# 	if self.should_stop():
+		# 		log.info("Caught stop flag in procedure.")
+		# 		break
 
-		while not np.isclose(zfield, self.z_magnet.field, atol = 5e-5):
-			# log.info(f'{self.magnet.field - field}')
-			sleep(0.5)
-			if self.should_stop():
-				log.info("Caught stop flag in procedure.")
-				break
+		# while not np.isclose(zfield, self.z_magnet.field, atol = 5e-5):
+		# 	# log.info(f'{self.magnet.field - field}')
+		# 	sleep(0.5)
+		# 	if self.should_stop():
+		# 		log.info("Caught stop flag in procedure.")
+		# 		break
 
-		ipfield = self.field_strength*np.sin(self.field_polar*np.pi/180.)
-		self.magnet.set_field_polar(ipfield, self.field_azimuth, 90)
+		# ipfield = self.field_strength*np.sin(self.field_polar*np.pi/180.)
+		# self.magnet.set_field_polar(ipfield, self.field_azimuth, 90)
 
-		log.info(f'B: {self.field_strength}, phi: {self.field_azimuth}, theta: {self.field_polar}')
-		while self.magnet.is_ramping():
-			sleep(2)
-			if self.should_stop():
-				log.info("Caught stop flag in procedure.")
-				break
+		# log.info(f'B: {self.field_strength}, phi: {self.field_azimuth}, theta: {self.field_polar}')
+		# while self.magnet.is_ramping():
+		# 	sleep(2)
+		# 	if self.should_stop():
+		# 		log.info("Caught stop flag in procedure.")
+		# 		break
 
-		while not self.magnet.check_field_polar(ipfield, self.field_azimuth, 90, 2e-3):
-			sleep(0.5)
-			if self.should_stop():
-				log.info("Caught stop flag in procedure.")
-				break
+		# while not self.magnet.check_field_polar(ipfield, self.field_azimuth, 90, 2e-3):
+		# 	sleep(0.5)
+		# 	if self.should_stop():
+		# 		log.info("Caught stop flag in procedure.")
+		# 		break
 
-		if self.magnet.is_holding():
-			log.info(" magnet status is HOLDING" )
-		elif self.magnet.is_zeroing() or self.magnet.is_quenched():
-			log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
-			raise ValueError('Quench detected. Aborting procedures!')
-		elif self.should_stop():
-			log.info("Caught stop flag in procedure.")
-		else:
-			log.warning("Could not reach setpoint. Exiting procedures and aborting")
-			log.info(f"Setting Magnetic Field to {field:.5f} T")
+		# if self.magnet.is_holding():
+		# 	log.info(" magnet status is HOLDING" )
+		# elif self.magnet.is_zeroing() or self.magnet.is_quenched():
+		# 	log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
+		# 	raise ValueError('Quench detected. Aborting procedures!')
+		# elif self.should_stop():
+		# 	log.info("Caught stop flag in procedure.")
+		# else:
+		# 	log.warning("Could not reach setpoint. Exiting procedures and aborting")
+		# 	log.info(f"Setting Magnetic Field to {field:.5f} T")
 
-		print(self.delay)
+		# print(self.delay)
 
 		J2J1 = 0.543
 		J1J0 = 1.837
@@ -212,7 +210,7 @@ class XYScanANC300Procedure(Procedure):
 					sleep(self.settling)
 					self.lockin.sync() # clears buffer since field has changed
 					log.info("recording average #%d"%i)
-					dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,3,4,5], ['x','y'], ratio=False))
+					dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
 				dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
 
 				if self.fast_slow == "x / y":
@@ -220,14 +218,17 @@ class XYScanANC300Procedure(Procedure):
 					self.emit('results', {
 						"x_pos": fast_pos,
 						"y_pos": slow_pos,
-						"ThetaK": np.arctan(J2J1*dat[3]['x']/dat[5]['y'])/2, 
+						"ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, 
 						"X1": dat[3]['x'],
 						"Y1": dat[3]['y'],
-						"X2": dat[5]['x'],
-						"Y2": dat[5]['y'],
-						"DeltaThetaK": J2J1*dat[4]['x']/dat[5]['y'],
-						"DeltaX1": dat[4]['x'],
-						"DeltaY1": dat[4]['y'],
+						"X2": dat[2]['x'],
+						"Y2": dat[2]['y'],
+						"DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y'],
+						"DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
+		                "DeltaX1_C-M": dat[4]['x'],
+		                "DeltaY1_C-M": dat[4]['y'],
+		                "DeltaX1_C+M": dat[5]['x'],
+		                "DeltaY1_C+M": dat[5]['y'],
 						"TX1": dat[0]['x'],
 						"TY1": dat[0]['y'],
 						"TX2": dat[1]['x'],
@@ -240,14 +241,17 @@ class XYScanANC300Procedure(Procedure):
 					self.emit('results', {
 						"x_pos": slow_pos,
 						"y_pos": fast_pos,
-						"ThetaK": np.arctan(J2J1*dat[3]['x']/dat[5]['y'])/2, 
+						"ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, 
 						"X1": dat[3]['x'],
 						"Y1": dat[3]['y'],
-						"X2": dat[5]['x'],
-						"Y2": dat[5]['y'],
-						"DeltaThetaK": J2J1*dat[4]['x']/dat[5]['y'],
-						"DeltaX1": dat[4]['x'],
-						"DeltaY1": dat[4]['y'],
+						"X2": dat[2]['x'],
+						"Y2": dat[2]['y'],
+						"DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y'],
+						"DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
+		                "DeltaX1_C-M": dat[4]['x'],
+		                "DeltaY1_C-M": dat[4]['y'],
+		                "DeltaX1_C+M": dat[5]['x'],
+		                "DeltaY1_C+M": dat[5]['y'],
 						"TX1": dat[0]['x'],
 						"TY1": dat[0]['y'],
 						"TX2": dat[1]['x'],
@@ -291,15 +295,15 @@ class XYScanANC300Procedure(Procedure):
 
 	def shutdown(self):
 		log.info("Shutting down instruments")
-		self.magnet.shutdown()
-		while self.magnet.is_ramping():
-			sleep(1) #For ramp rate of 0.043T/sec this is equivalent to
+		# self.magnet.shutdown()
+		# while self.magnet.is_ramping():
+			# sleep(1) #For ramp rate of 0.043T/sec this is equivalent to
 				#checking the status for every 22 Gauss change
 
-		Bx, By, Bz = self.magnet.get_field_cartesian()
-		if self.magnet.is_holding() and np.isclose(Bx,0,atol=5e-3) and np.isclose(By,0, atol=5e-3) and np.isclose(Bz,0,atol=5e-3):
-			log.info("%s" %self.status)
-			log.info("Field set to 0T. Finished shutting down")
-		else:
-			log.warning("Could not ramp field to zero at ramp rate. Using zeroing mode")
-		sleep(10)
+		# Bx, By, Bz = self.magnet.get_field_cartesian()
+		# if self.magnet.is_holding() and np.isclose(Bx,0,atol=5e-3) and np.isclose(By,0, atol=5e-3) and np.isclose(Bz,0,atol=5e-3):
+			# log.info("%s" %self.status)
+			# log.info("Field set to 0T. Finished shutting down")
+		# else:
+			# log.warning("Could not ramp field to zero at ramp rate. Using zeroing mode")
+		# sleep(10)
