@@ -24,7 +24,7 @@ class sagnacHeterodyneProcedure(Procedure):
     calib_file = 'C:\\Users\\Ralph Group\\Documents\\Github\\SagnacOperatingSys\\sagnac_control\\calibrations\\sagnac'
     sample_name = Parameter("Sample Name",default='test')
 
-    applied_voltage = FloatParameter("Applied Sample Voltage", units="V", default=1)
+    applied_voltage = FloatParameter("Applied Sample Voltage", units="V", default=0)
     # apply_current = BooleanParameter("Current Applied?", default=True)
     # current_amplitude = FloatParameter("Applied Sample Current Amplitude", units="A", default=1)
     current_frequency = FloatParameter("Applied Sample Current frequency", units="kHz", default=1)
