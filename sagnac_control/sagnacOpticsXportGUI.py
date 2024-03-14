@@ -38,7 +38,7 @@ class sagnacOpticsXportGUI(ManagedWindow):
                 'bias_field_y',
                 'bias_field_z',
                 'applied_voltage',
-                'applied_voltage_offset'],
+                'applied_voltage_offset','keithley_voltage'],
             x_axis='sweep_field',
             y_axis='ThetaK'
         )
@@ -65,6 +65,9 @@ class sagnacOpticsXportGUI(ManagedWindow):
         # procedure.current_amplitude = self.inputs.current_amplitude.value()/1e3
         procedure.applied_voltage = self.inputs.applied_voltage.value()
         procedure.applied_voltage_offset = self.inputs.applied_voltage_offset.value()
+
+        procedure.keithley_voltage = self.inputs.keithley_voltage.value()
+
         procedure.current_frequency = self.inputs.current_frequency.value()
         # procedure.current_offset = self.inputs.current_offset.value()/1e3
         procedure.amp_gain = self.inputs.amp_gain.value()
@@ -137,10 +140,11 @@ class sagnacOpticsXportGUI(ManagedWindow):
 
             # create files
             pre = procedure.sample_name + \
-                '_SagnacHeterodyne_V{current:0.1f}V_A{azimuth:0.1f}_Voff{offset:0.1f}V_'.format(
+                '_SagnacHeterodyne_V{current:0.1f}V_A{azimuth:0.1f}_Voff{offset:0.1f}V_Keith{keithleyV:0.1f}V_'.format(
                 current=procedure.applied_voltage,
                 azimuth=procedure.sweep_field_azimuth,
-                offset=procedure.applied_voltage_offset
+                offset=procedure.applied_voltage_offset,
+                keithleyV=procedure.keithley_voltage
             )
             suf = ''
             filename = unique_filename(direc,dated_folder=True,suffix=suf,

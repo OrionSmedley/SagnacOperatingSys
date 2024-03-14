@@ -9,6 +9,7 @@ from pymeasure.experiment import Results, unique_filename
 from pymeasure.instruments.zurich import HF2LI
 from ..custom_instruments import daedalusProjField
 from pymeasure.instruments.keithley import Keithley6221
+from pymeasure.instruments.keithley import Keithley2400
 from pymeasure.experiment import Procedure
 from pymeasure.experiment import IntegerParameter, FloatParameter, BooleanParameter, Parameter
 from pymeasure.adapters import DAQmxAdapter
@@ -627,6 +628,7 @@ class sagnacOpticsXportProcedure(Procedure):
 
     applied_voltage = FloatParameter("Applied Sample Voltage", units="V", default=1)
     applied_voltage_offset = FloatParameter("Applied Sample Voltage Offset", units="V", default=0)
+    keithley_voltage = FloatParameter("Keithley Voltage", units="V", default=0)
     # apply_current = BooleanParameter("Current Applied?", default=True)
     # current_amplitude = FloatParameter("Applied Sample Current Amplitude", units="A", default=1)
     current_frequency = FloatParameter("Applied Sample Current frequency", units="kHz", default=1)
@@ -684,6 +686,29 @@ class sagnacOpticsXportProcedure(Procedure):
         # self.lockin.set_vout(1,0,self.applied_voltage/10*np.sqrt(2))
         self.lockin.set_vout(1,6,self.applied_voltage/10*np.sqrt(2)) #using output 7
         self.lockin.set_offset(1, self.applied_voltage_offset/10)
+
+
+
+        # The thing to eddit 
+        #######################################################
+        myKeithley = Keithley2400(4)
+   
+        log.info(f"setting voltage to {self.keithley_voltage}")
+        myKeithley.ramp_to_voltage(self.keithley_voltage, steps=60, pause=0.2)
+
+        nowishVoltage = np.nan
+
+        while nowishVoltage != self.keithley_voltage:
+            try:
+                nowishVoltage = myKeithley.source_voltage
+            except:
+                log.info("it didn't like it")
+
+            log.info(f"voltage at {nowishVoltage}")
+            sleep(2)
+
+
+        #######################################################
 
         #subscribe to outputs
         self.lockin.sub(0)
