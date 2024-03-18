@@ -120,9 +120,22 @@ class sagnacOpticsXportGUI(ManagedWindow):
             procedures.append(procedure)
         return procedures
 
-    def queue(self):
+    def make_repeat_sweep(self, repeats):
+        """
+        Makes a series of the same procedure
+        """
+        procedures = []
+        for i in range( int(repeats)):
+            procedure = self.make_procedure()
+            procedure.first = False #not sure what this is for
+            procedure.last = False  #not sure what this is for
+            procedures.append(procedure)
+        return procedures
+
+    def queue(self): #name of this one matters(according to what pymeaserure wants)
         direc = 'C:\\Users\\Ralph Group\\Documents\\Data\\' + self.inputs.save_dir.text()
         do_sweep = self.inputs.do_voltage_sweep.isChecked()
+        do_repeats = self.inputs.do_repeats.isChecked()
         if do_sweep:
             voltages = np.arange(self.inputs.voltage_min.value(), 
                                  self.inputs.voltage_max.value(), 
@@ -130,6 +143,9 @@ class sagnacOpticsXportGUI(ManagedWindow):
             if self.inputs.voltage_max.value() not in voltages:
                 voltages = np.append(voltages,self.inputs.voltage_max.value())
             procedures = self.make_voltage_sweep(voltages)
+
+        elif do_repeats:
+            procedures = self.make_repeat_sweep(self.inputs.num_repeat.value())
 
         else:
             procedures = [self.make_procedure()]
@@ -154,7 +170,7 @@ class sagnacOpticsXportGUI(ManagedWindow):
             experiment = self.new_experiment(results)
             self.manager.queue(experiment)
 
-    def finished(self, experiment):
+    def finished(self, experiment): #name of this one matters(according to what pymeaserure wants)
         super().finished(experiment)
 
 if __name__ == '__main__':

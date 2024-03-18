@@ -891,6 +891,7 @@ class sagnacOpticsXportProcedure(Procedure):
             log.info("Finished with scans. Shutting down instruments.")
             # self.magnet.shutdown()
             self.magnet.volts = 0
+            self.lockin.disconnect()
             # if self.apply_current:
             #     self.source.shutdown()
         else:
