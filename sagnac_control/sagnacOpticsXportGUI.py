@@ -66,6 +66,7 @@ class sagnacOpticsXportGUI(ManagedWindow):
         procedure.applied_voltage = self.inputs.applied_voltage.value()
         procedure.applied_voltage_offset = self.inputs.applied_voltage_offset.value()
 
+        procedure.use_keithley = self.inputs.use_keithley.isChecked()
         procedure.keithley_voltage = self.inputs.keithley_voltage.value()
 
         procedure.current_frequency = self.inputs.current_frequency.value()
@@ -120,23 +121,93 @@ class sagnacOpticsXportGUI(ManagedWindow):
             procedures.append(procedure)
         return procedures
 
-    def queue(self):
+    def make_4quadrant_sweep(self):
+        """
+        Makes a series of procedures varying bias field at a given bias field angle
+        """
+
+        procedures = []
+        for satdir in [-1,1]:
+            for fielddir in [-1,1]:
+                procedure = self.make_procedure()
+
+                procedure.sweep_field_start = 0
+                procedure.sweep_field_stop = fielddir * self.inputs.sweep_field_stop.value()
+                procedure.sweep_field_step = fielddir * self.inputs.sweep_field_step.value()
+
+                procedure.saturating_field = satdir * self.inputs.saturating_field.value()
+
+                procedure.direction = (satdir,fielddir)
+
+                procedure.first = False
+                procedure.last = False
+                procedures.append(procedure)
+
+         
+        return procedures
+
+
+    # def make_repeat_sweep(self, repeats):
+    #     """
+    #     Makes a series of the same procedure
+    #     """
+    #     procedures = []
+    #     for i in range( int(repeats)):
+    #         procedure = self.make_procedure()
+    #         procedure.first = False #not sure what this is for
+    #         procedure.last = False  #not sure what this is for
+    #         procedures.append(procedure)
+    #     return procedures
+
+    def queue(self): #name of this one matters(according to what pymeaserure wants)
         direc = 'C:\\Users\\Ralph Group\\Documents\\Data\\' + self.inputs.save_dir.text()
         do_sweep = self.inputs.do_voltage_sweep.isChecked()
-        if do_sweep:
-            voltages = np.arange(self.inputs.voltage_min.value(), 
-                                 self.inputs.voltage_max.value(), 
-                                 self.inputs.voltage_step.value())
-            if self.inputs.voltage_max.value() not in voltages:
-                voltages = np.append(voltages,self.inputs.voltage_max.value())
-            procedures = self.make_voltage_sweep(voltages)
+        # do_repeats = self.inputs.do_repeats.isChecked()
+        do_fourQuadrant = self.inputs.do_fourQuadrant.isChecked()
+        procedures = []
+        for i in range( int(self.inputs.num_repeat.value())): 
+            if do_sweep:
+                voltages = np.arange(self.inputs.voltage_min.value(), 
+                                    self.inputs.voltage_max.value(), 
+                                    self.inputs.voltage_step.value())
+                if self.inputs.voltage_max.value() not in voltages:
+                    voltages = np.append(voltages,self.inputs.voltage_max.value())
+                procedures += self.make_voltage_sweep(voltages)
 
-        else:
-            procedures = [self.make_procedure()]
-            
+            # elif do_repeats:
+                # procedures = self.make_repeat_sweep(self.inputs.num_repeat.value())
+
+            elif do_fourQuadrant:
+                procedures += self.make_4quadrant_sweep()
+            else:
+                procedures += [self.make_procedure()]
+
+        log.info(f"len(procedures) = {len(procedures)}")
+        log.info("type(procedures) = {}".format(type(procedures)) )
+        # procedure = procedures*2
+        # log.info(f"len(procedures*2) = {len(procedures)}")
+        pcount = 0 #procedure count
+
+           
         for procedure in procedures:
+            log.info("----------------------------------")
+            log.info(f"pcount is {pcount}")
+            pcount += 1
+            log.info(f" for i={i}, at loop top, procedure.last is {procedure.last}")
+            
             if procedure.sample_name == '':
                 procedure.sample_name = 'test'
+
+            if hasattr(procedure, "direction"):
+                # log.info('Has direction attribute')
+                direc = 'C:\\Users\\Ralph Group\\Documents\\Data\\' + \
+                    self.inputs.save_dir.text() + '\\' + \
+                    'sat'+ str( procedure.direction[0])+ '\\' \
+                    'field'+str(procedure.direction[1])
+            else:
+                # log.info('No direction attribute')
+                pass
+                    
 
             # create files
             pre = procedure.sample_name + \
@@ -149,12 +220,14 @@ class sagnacOpticsXportGUI(ManagedWindow):
             suf = ''
             filename = unique_filename(direc,dated_folder=True,suffix=suf,
                                         prefix=pre)
+            
+            log.info(f" for i={i}, just before queing, procedure.last is {procedure.last}")
             # Queue experiment
             results = Results(procedure,filename)
             experiment = self.new_experiment(results)
             self.manager.queue(experiment)
 
-    def finished(self, experiment):
+    def finished(self, experiment): #name of this one matters(according to what pymeaserure wants)
         super().finished(experiment)
 
 if __name__ == '__main__':
