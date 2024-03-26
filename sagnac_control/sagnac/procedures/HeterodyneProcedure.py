@@ -626,8 +626,11 @@ class sagnacOpticsXportProcedure(Procedure):
     calib_file = 'C:\\Users\\Ralph Group\\Documents\\Github\\SagnacOperatingSys\\sagnac_control\\calibrations\\sagnac'
     sample_name = Parameter("Sample Name",default='test')
 
+
+    ## import parameters from gui
     applied_voltage = FloatParameter("Applied Sample Voltage", units="V", default=1)
     applied_voltage_offset = FloatParameter("Applied Sample Voltage Offset", units="V", default=0)
+    use_keithley = BooleanParameter("Use Keithley?", default = False)
     keithley_voltage = FloatParameter("Keithley Voltage", units="V", default=0)
     # apply_current = BooleanParameter("Current Applied?", default=True)
     # current_amplitude = FloatParameter("Applied Sample Current Amplitude", units="A", default=1)
@@ -687,36 +690,34 @@ class sagnacOpticsXportProcedure(Procedure):
         self.lockin.set_vout(1,6,self.applied_voltage/10*np.sqrt(2)) #using output 7
         self.lockin.set_offset(1, self.applied_voltage_offset/10)
 
-
-
-        # The thing to eddit 
+        # The thing to edit 
         #######################################################
-        myKeithley = Keithley2400(4)
-   
-        log.info(f"setting voltage to {self.keithley_voltage}")
-        myKeithley.ramp_to_voltage(self.keithley_voltage, steps=60, pause=0.2)
+        if self.use_keithley:
+            myKeithley = Keithley2400(4)
+    
+            log.info(f"setting voltage to {self.keithley_voltage}")
+            myKeithley.ramp_to_voltage(self.keithley_voltage, steps=60, pause=0.2)
 
-        nowishVoltage = np.nan
+            nowishVoltage = np.nan
 
-        while nowishVoltage != self.keithley_voltage:
-            try:
-                nowishVoltage = myKeithley.source_voltage
-            except:
-                log.info("it didn't like it")
+            while nowishVoltage != self.keithley_voltage:
+                try:
+                    nowishVoltage = myKeithley.source_voltage
+                except:
+                    log.info("it didn't like it")
 
-            log.info(f"voltage at {nowishVoltage}")
-            sleep(2)
-
+                log.info(f"voltage at {nowishVoltage}")
+                sleep(2)
 
         #######################################################
 
         #subscribe to outputs
-        self.lockin.sub(0)
-        self.lockin.sub(1)
-        self.lockin.sub(2)
-        self.lockin.sub(3)
-        self.lockin.sub(4)
-        self.lockin.sub(5)
+        # self.lockin.sub(0)
+        # self.lockin.sub(1)
+        # self.lockin.sub(2)
+        # self.lockin.sub(3)
+        # self.lockin.sub(4)
+        # self.lockin.sub(5)
 
         self.apply_bias_field = False
         if self.bias_field_x != 0 or self.bias_field_y != 0 or self.bias_field_z != 0:
@@ -853,6 +854,13 @@ class sagnacOpticsXportProcedure(Procedure):
             for err in self.magnet.errors:
                 log.warning('%s'%err)
             
+            self.lockin.sub(0)
+            self.lockin.sub(1)
+            self.lockin.sub(2)
+            self.lockin.sub(3)
+            self.lockin.sub(4)
+            self.lockin.sub(5)
+
             dat_list = []
             for i in range(self.avgs):
                 self.lockin.sync() # clears buffer since field has changed
@@ -861,6 +869,8 @@ class sagnacOpticsXportProcedure(Procedure):
                 log.info("recording average #%d"%i)
                 dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
             dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
+
+            self.lockin.unsubscribe("*")
 
             log.info("Recording results")
             self.emit('results', {
@@ -891,7 +901,6 @@ class sagnacOpticsXportProcedure(Procedure):
             log.info("Finished with scans. Shutting down instruments.")
             # self.magnet.shutdown()
             self.magnet.volts = 0
-            # self.lockin.disconnect()
             # if self.apply_current:
             #     self.source.shutdown()
         else:

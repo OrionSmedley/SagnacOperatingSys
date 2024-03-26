@@ -20,7 +20,7 @@
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Field Parameters&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -232,7 +232,7 @@
             <double>9999999.000000000000000</double>
            </property>
            <property name="value">
-            <double>0.050000000000000</double>
+            <double>0.100000000000000</double>
            </property>
           </widget>
          </item>
@@ -497,18 +497,39 @@
            </property>
           </widget>
          </item>
+         <item row="14" column="1">
+          <widget class="QCheckBox" name="do_fourQuadrant">
+           <property name="text">
+            <string>do_fourQuadrant scan?</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
         <layout class="QGridLayout" name="gridLayout_3">
          <item row="2" column="0">
+          <widget class="QLabel" name="label_39">
+           <property name="text">
+            <string>Voltage</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
           <widget class="QLabel" name="label_40">
            <property name="text">
             <string>Current</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="3" column="1">
+          <widget class="QDoubleSpinBox" name="keithley_current">
+           <property name="suffix">
+            <string> uA</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
           <widget class="QDoubleSpinBox" name="keithley_voltage">
            <property name="suffix">
             <string> V</string>
@@ -518,20 +539,6 @@
            </property>
            <property name="maximum">
             <double>200.000000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_39">
-           <property name="text">
-            <string>Voltage</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QDoubleSpinBox" name="keithley_current">
-           <property name="suffix">
-            <string> uA</string>
            </property>
           </widget>
          </item>
@@ -545,6 +552,13 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="use_keithley">
+           <property name="text">
+            <string>Use Keithley</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -555,83 +569,124 @@
         </widget>
        </item>
        <item>
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_23">
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="0" column="0">
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="2" column="1">
+            <widget class="QDoubleSpinBox" name="bias_field_y">
+             <property name="suffix">
+              <string> T</string>
+             </property>
+             <property name="decimals">
+              <number>4</number>
+             </property>
+             <property name="minimum">
+              <double>-0.280000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>0.280000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_24">
+             <property name="text">
+              <string>By</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QDoubleSpinBox" name="bias_field_x">
+             <property name="suffix">
+              <string> T</string>
+             </property>
+             <property name="decimals">
+              <number>4</number>
+             </property>
+             <property name="minimum">
+              <double>-0.280000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>0.280000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="2">
+            <widget class="QLabel" name="label_28">
+             <property name="text">
+              <string>Bias Fields</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_29">
+             <property name="text">
+              <string>Bz</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QDoubleSpinBox" name="bias_field_z">
+             <property name="suffix">
+              <string> T</string>
+             </property>
+             <property name="decimals">
+              <number>4</number>
+             </property>
+             <property name="minimum">
+              <double>-0.150000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>0.150000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_23">
+             <property name="text">
+              <string>Bx</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="Line" name="line_5">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout_5">
+         <property name="verticalSpacing">
+          <number>3</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_41">
            <property name="text">
-            <string>Bx</string>
+            <string>repeats</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_24">
-           <property name="text">
-            <string>By</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QDoubleSpinBox" name="bias_field_y">
+         <item row="0" column="1">
+          <widget class="QDoubleSpinBox" name="num_repeat">
            <property name="suffix">
-            <string> T</string>
+            <string/>
            </property>
            <property name="decimals">
-            <number>4</number>
-           </property>
-           <property name="minimum">
-            <double>-0.280000000000000</double>
+            <number>0</number>
            </property>
            <property name="maximum">
-            <double>0.280000000000000</double>
+            <double>10000.000000000000000</double>
            </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QDoubleSpinBox" name="bias_field_z">
-           <property name="suffix">
-            <string> T</string>
-           </property>
-           <property name="decimals">
-            <number>4</number>
-           </property>
-           <property name="minimum">
-            <double>-0.150000000000000</double>
-           </property>
-           <property name="maximum">
-            <double>0.150000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="label_29">
-           <property name="text">
-            <string>Bz</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0" colspan="2">
-          <widget class="QLabel" name="label_28">
-           <property name="text">
-            <string>Bias Fields</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QDoubleSpinBox" name="bias_field_x">
-           <property name="suffix">
-            <string> T</string>
-           </property>
-           <property name="decimals">
-            <number>4</number>
-           </property>
-           <property name="minimum">
-            <double>-0.280000000000000</double>
-           </property>
-           <property name="maximum">
-            <double>0.280000000000000</double>
+           <property name="value">
+            <double>1.000000000000000</double>
            </property>
           </widget>
          </item>
@@ -639,13 +694,6 @@
        </item>
        <item>
         <widget class="Line" name="line">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="Line" name="line_5">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -750,48 +798,6 @@
       <attribute name="title">
        <string>Repeats</string>
       </attribute>
-      <widget class="QWidget" name="gridLayoutWidget_2">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>0</y>
-         <width>171</width>
-         <height>191</height>
-        </rect>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_4">
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_42">
-          <property name="text">
-           <string>Number of Repeats</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QCheckBox" name="do_repeats">
-          <property name="text">
-           <string>Do Repeats</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QDoubleSpinBox" name="num_repeat">
-          <property name="suffix">
-           <string/>
-          </property>
-          <property name="decimals">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-          <property name="value">
-           <double>1.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
      </widget>
      <widget class="QWidget" name="widget">
       <attribute name="title">
