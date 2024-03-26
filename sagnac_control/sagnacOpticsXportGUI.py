@@ -202,8 +202,9 @@ class sagnacOpticsXportGUI(ManagedWindow):
                 # log.info('Has direction attribute')
                 direc = 'C:\\Users\\Ralph Group\\Documents\\Data\\' + \
                     self.inputs.save_dir.text() + '\\' + \
-                    'sat'+ str( procedure.direction[0])+ '\\' \
-                    'field'+str(procedure.direction[1])
+                        'keith' + str(self.inputs.keithley_voltage.value())+ '\\' + \
+                        'sat'+ str( procedure.direction[0])+ '\\' \
+                        'field'+str(procedure.direction[1])
             else:
                 # log.info('No direction attribute')
                 pass
