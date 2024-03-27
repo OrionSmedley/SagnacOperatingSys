@@ -696,7 +696,7 @@ class sagnacOpticsXportProcedure(Procedure):
             myKeithley = Keithley2400(4)
     
             log.info(f"setting voltage to {self.keithley_voltage}")
-            myKeithley.ramp_to_voltage(self.keithley_voltage, steps=60, pause=0.2)
+            myKeithley.ramp_to_voltage(self.keithley_voltage, stepsize=0.25, pause=0.5)
 
             nowishVoltage = np.nan
 
