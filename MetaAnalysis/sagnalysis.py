@@ -1,3 +1,11 @@
+
+''' Functions for importing and analyzing data from the Sagnac interferometer. 
+
+    if this file is in the same directory your python file, you can import these functions like this:
+    import sagnalysis as sagn
+    sagn.filter_files(file_paths, desired_start)
+'''
+
 import pandas as pd
 import os
 from pathlib import Path
@@ -6,6 +14,7 @@ import matplotlib.pyplot as plt
 import os
 from datetime import datetime
 import matplotlib.dates as mdates
+from typing import List, Tuple
 
 plt.rcParams["figure.dpi"] = 100
 
@@ -23,10 +32,49 @@ def parse_metadata(file_path):
 
     return metadata
 
-def import_all_at_path(path):
+def filter_files(file_paths:List[str] , 
+                 desired_start:str = "#Procedure: <sagnac.procedures.HeterodyneProcedure.sagnacOpticsXportProcedure>"
+                 ) -> Tuple[List[str], List[str]]:
+    '''Filter files based on the first line of the file
+    good_files are files that start with desired_start.
+
+        Parameters:
+            file_paths: list of file paths
+            desired_start: desired start of the file
+        
+        Returns: good_files, bad_files
+
+        Example usage: 
+            the following code will return all bad_files that don't start with the desired_start
+            desired_start = "#Procedure: <sagnac.procedures.HeterodyneProcedure.sagnacOpticsXportProcedure>"
+            file_paths = Path(path).rglob('*.csv')
+            filter_files(file_paths, desired_start )[1]
+    '''
+    good_files = []
+    bad_files = []
+    for file_path in file_paths:
+        with open(file_path) as f:
+            if f.readline().startswith(desired_start):
+                good_files.append(file_path)
+            else:
+                bad_files.append(file_path)
+    return good_files, bad_files
+
+
+def import_all_at_path(path: List[str] ,
+                       desired_start:str = "#Procedure: <sagnac.procedures.HeterodyneProcedure.sagnacOpticsXportProcedure>"
+                       )-> List[str]:
+    '''
+    Import all csv files in a directory and its subdirectories into a single dataframe.
+    By default The csv files must start with the line "#Procedure: <sagnac.procedures.HeterodyneProcedure.sagnacOpticsXportProcedure>"
+    '''
 
     #get all files from all subdirectories
     files = Path(path).rglob('*.csv')
+    
+    # restrict to files that begin with "#Procedure: <sagnac.procedures.HeterodyneProcedure.sagnacOpticsXportProcedure>"
+    files = filter_files(files, desired_start=desired_start)[0]
+
 
     # collect dataframes for all files in a list
     data = []
