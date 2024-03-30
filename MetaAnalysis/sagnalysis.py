@@ -89,7 +89,7 @@ def import_all_at_path(path: List[str] ,
         
         # Add the time the file was last modified
         timestamp = os.path.getmtime(file)
-        date =  datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+        date =  datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S') # convert timestamp to date string
         filedata["timeModified"] = timestamp
         filedata["dateModified"] = date
 
