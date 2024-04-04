@@ -6,8 +6,6 @@ import sys
 import os
 from datetime import datetime
 import textwrap
-from itertools import product
-import socket
 
 import numpy as np
 
@@ -17,55 +15,53 @@ from pymeasure.display.windows import ManagedWindow, ManagedImageWindow
 from pymeasure.experiment import Results, unique_filename
 # from pymeasure.instruments.attocube import ANC150
 from scanning import ANC150
-from sagnac.procedures import xy_scan_sagnac_procedure
+from scanning.procedures import XYScanProcedureTest_fastslow
 
-#import send_gmail
+import send_gmail
 
-
-
-class xy_scan_sagnac_GUI(ManagedWindow):
+class XYScanProcedureGUITest_fastslow(ManagedImageWindow):
 
 	def __init__(self):
-		super(xy_scan_sagnac_GUI, self).__init__(
-			procedure_class = xy_scan_sagnac_procedure,
+		super(XYScanProcedureGUITest_fastslow, self).__init__(
+			procedure_class=XYScanProcedureTest_fastslow,
 
 			displays=[
-				'sample_name'
-				
-				#'fast_slow',
-				#'fast_start',
-				#'slow_start',
-				#'forw_total',
-				#'back_total',
-				#'slow_total',
-				#'slow_return_total',
-				#'forw_step',
-				#'back_step',
-				#'slow_step',
-				#'slow_return_step'
-
+				'sample_name',
+				'fast_slow',
+				'fast_start',
+				'slow_start',
+				'forw_total',
+				'back_total',
+				'slow_total',
+				'slow_return_total',
+				'forw_step',
+				'back_step',
+				'slow_step',
+				'slow_return_step'
 				],
 			#inputs = ['x_pos_start', 'x_pos_end', 'x_pos_step', 'y_pos_start', 'y_pos_end', 'y_pos_step', 'delay'],
 			x_axis ='x_pos',
-			y_axis ='y_pos'
+			y_axis ='y_pos',
+			z_axis = 'X'
 		)
-		self.setWindowTitle('XY Scan Sagnac')
+		self.setWindowTitle('XY Scan')
 		self.last_series_fname = None
 
 	def _setup_ui(self):
 		"""
 		Loads custom QT UI for montana AMR measurements
 		"""
-		super(xy_scan_sagnac_GUI, self)._setup_ui()
+		super(XYScanProcedureGUITest_fastslow, self)._setup_ui()
 		self.inputs.hide()
 		self.run_directory = os.path.dirname(os.path.realpath(__file__))
-		self.inputs = fromUi(os.path.join(self.run_directory,'xy_scan_sagnac_gui.ui'))
+		self.inputs = fromUi(os.path.join(self.run_directory,
+										  'gui_XYScanTest_fastslow.ui'))
 
 	def make_procedure(self):
 		"""
 		Constructs a single procedure
 		"""
-		procedure = xy_scan_sagnac_procedure()
+		procedure = XYScanProcedureTest_fastslow()
 		procedure.sample_name = self.inputs.sample_name.text()
 
 		procedure.fast_start = self.inputs.fast_start.value()
@@ -90,9 +86,14 @@ class xy_scan_sagnac_GUI(ManagedWindow):
 		procedure.x_pos_start = 0
 		procedure.y_pos_start = 0
 
-		procedure.settling = self.inputs.settling.value()
-		procedure.wait = self.inputs.wait.value()
+
+
+
+
+
 		procedure.fast_slow = self.inputs.fast_slow.currentText()
+
+		
 		procedure.delay = self.inputs.delay.value()*1e-3 # ms
 
 		if procedure.fast_slow == "x / y":
@@ -197,6 +198,6 @@ class xy_scan_sagnac_GUI(ManagedWindow):
 
 if __name__ == '__main__':
 	app = QtGui.QApplication(sys.argv)
-	window = xy_scan_sagnac_GUI()
+	window = XYScanProcedureGUITest_fastslow()
 	window.show()
 	sys.exit(app.exec_())

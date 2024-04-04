@@ -15,12 +15,12 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QTabWidget" name="tabWidget">
+    <widget class="QTabWidget" name="Junk">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Field Parameters&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -29,6 +29,23 @@
       <layout class="QVBoxLayout" name="verticalLayout_10">
        <item>
         <layout class="QGridLayout" name="save_params">
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_22">
+           <property name="text">
+            <string>[dir]</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="2">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Save Directory (C:\Users\Ralph Group\Documents\Data\[dir]</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
          <item row="4" column="0">
           <widget class="QLabel" name="label_12">
            <property name="enabled">
@@ -46,23 +63,6 @@
            </property>
            <property name="placeholderText">
             <string>test</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0" colspan="2">
-          <widget class="QLabel" name="label_8">
-           <property name="text">
-            <string>Save Directory (C:\Users\Ralph Group\Documents\Data\[dir]</string>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="label_22">
-           <property name="text">
-            <string>[dir]</string>
            </property>
           </widget>
          </item>
@@ -84,62 +84,27 @@
        </item>
        <item>
         <layout class="QGridLayout" name="lockin_params">
-         <item row="4" column="1" colspan="2">
-          <widget class="QDoubleSpinBox" name="settling">
-           <property name="suffix">
-            <string> s</string>
-           </property>
-           <property name="decimals">
-            <number>4</number>
-           </property>
-           <property name="value">
-            <double>0.100000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1" colspan="2">
-          <widget class="QDoubleSpinBox" name="wait">
-           <property name="suffix">
-            <string> s</string>
-           </property>
-           <property name="decimals">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <double>10000.000000000000000</double>
-           </property>
-           <property name="value">
-            <double>0.000000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item row="14" column="1">
-          <widget class="QDoubleSpinBox" name="saturating_field_polar">
-           <property name="suffix">
-            <string> deg</string>
-           </property>
+         <item row="7" column="1" colspan="2">
+          <widget class="QSpinBox" name="avgs">
            <property name="minimum">
-            <double>-180.000000000000000</double>
-           </property>
-           <property name="maximum">
-            <double>180.000000000000000</double>
-           </property>
-           <property name="value">
-            <double>90.000000000000000</double>
+            <number>1</number>
            </property>
           </widget>
          </item>
-         <item row="8" column="0">
-          <widget class="QLabel" name="label_18">
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_35">
            <property name="text">
-            <string>Max</string>
+            <string>Averages</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_3">
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_20">
            <property name="text">
-            <string>Applied Voltage</string>
+            <string>Settling Time</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -156,14 +121,7 @@
            </property>
           </widget>
          </item>
-         <item row="14" column="0">
-          <widget class="QLabel" name="label_19">
-           <property name="text">
-            <string>Polar Angle (0 is OOP duh!!!)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="label_9">
            <property name="text">
             <string>Current Frequency</string>
@@ -173,51 +131,54 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="0">
-          <widget class="QLabel" name="label_20">
+         <item row="10" column="0" colspan="3">
+          <widget class="QLabel" name="label_10">
            <property name="text">
-            <string>Wait Time</string>
+            <string>Field Parameters</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="label_20">
+         <item row="16" column="0">
+          <widget class="QLabel" name="label_16">
            <property name="text">
-            <string>Settling Time</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
+            <string>Azimuthal Angle</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
-          <widget class="QCheckBox" name="saturate">
-           <property name="text">
-            <string>Begin with Saturating Field?</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1" colspan="2">
-          <widget class="QDoubleSpinBox" name="current_frequency">
+         <item row="15" column="1">
+          <widget class="QDoubleSpinBox" name="saturating_field">
            <property name="suffix">
-            <string> kHz</string>
+            <string> T</string>
            </property>
            <property name="decimals">
-            <number>3</number>
+            <number>5</number>
+           </property>
+           <property name="minimum">
+            <double>-2.000000000000000</double>
            </property>
            <property name="maximum">
-            <double>10000.000000000000000</double>
+            <double>2.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.001000000000000</double>
            </property>
            <property name="value">
-            <double>3.273000000000000</double>
+            <double>0.100000000000000</double>
            </property>
           </widget>
          </item>
-         <item row="8" column="1">
-          <widget class="QDoubleSpinBox" name="saturating_field">
+         <item row="15" column="0">
+          <widget class="QLabel" name="label_18">
+           <property name="text">
+            <string>Start</string>
+           </property>
+          </widget>
+         </item>
+         <item row="15" column="2">
+          <widget class="QDoubleSpinBox" name="sweep_field">
            <property name="suffix">
             <string> T</string>
            </property>
@@ -234,11 +195,63 @@
             <double>0.001000000000000</double>
            </property>
            <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="17" column="0">
+          <widget class="QLabel" name="label_19">
+           <property name="text">
+            <string>Polar Angle (0 is out-of-plane duh!)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1" colspan="2">
+          <widget class="QDoubleSpinBox" name="settling">
+           <property name="suffix">
+            <string> s</string>
+           </property>
+           <property name="decimals">
+            <number>4</number>
+           </property>
+           <property name="maximum">
+            <double>9999999.000000000000000</double>
+           </property>
+           <property name="value">
             <double>0.100000000000000</double>
            </property>
           </widget>
          </item>
-         <item row="11" column="1">
+         <item row="17" column="1">
+          <widget class="QDoubleSpinBox" name="saturating_field_polar">
+           <property name="suffix">
+            <string> deg</string>
+           </property>
+           <property name="minimum">
+            <double>-180.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>180.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="17" column="2">
+          <widget class="QDoubleSpinBox" name="sweep_field_polar">
+           <property name="suffix">
+            <string> deg</string>
+           </property>
+           <property name="minimum">
+            <double>-180.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>180.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="16" column="1">
           <widget class="QDoubleSpinBox" name="saturating_field_azimuth">
            <property name="suffix">
             <string> deg</string>
@@ -251,36 +264,213 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="0" colspan="2">
+         <item row="11" column="2">
+          <widget class="QLabel" name="label_11">
+           <property name="text">
+            <string>Swept Field</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1" colspan="2">
+          <widget class="QDoubleSpinBox" name="current_frequency">
+           <property name="suffix">
+            <string> kHz</string>
+           </property>
+           <property name="decimals">
+            <number>3</number>
+           </property>
+           <property name="maximum">
+            <double>1000.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>3.273000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="1">
+          <widget class="QCheckBox" name="saturate">
+           <property name="text">
+            <string>Begin with Saturating Field?</string>
+           </property>
+          </widget>
+         </item>
+         <item row="16" column="2">
+          <widget class="QDoubleSpinBox" name="sweep_field_azimuth">
+           <property name="suffix">
+            <string> deg</string>
+           </property>
+           <property name="minimum">
+            <double>-170.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>170.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="2">
+          <widget class="QCheckBox" name="hysteresis">
+           <property name="text">
+            <string>Do Hysteresis?</string>
+           </property>
+          </widget>
+         </item>
+         <item row="12" column="2">
+          <widget class="QCheckBox" name="reverse">
+           <property name="text">
+            <string>Reverse?</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="label_31">
+           <property name="text">
+            <string>Pre Measurement Wait Time</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_30">
+           <property name="text">
+            <string>Amp Gain</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="0">
+          <widget class="QLabel" name="label_21">
+           <property name="text">
+            <string>Type</string>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="1">
           <widget class="QLabel" name="label_6">
            <property name="text">
             <string>Saturating Field</string>
            </property>
           </widget>
          </item>
-         <item row="11" column="0">
-          <widget class="QLabel" name="label_2">
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>Azimuthal Angle</string>
+            <string>Voltage Start</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>
-         <item row="2" column="1" colspan="2">
-          <widget class="QDoubleSpinBox" name="applied_voltage">
+         <item row="5" column="1" colspan="2">
+          <widget class="QDoubleSpinBox" name="amp_gain">
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="minimum">
+            <double>0.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>50000.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="1" colspan="2">
+          <widget class="QDoubleSpinBox" name="wait">
+           <property name="suffix">
+            <string> s</string>
+           </property>
+           <property name="decimals">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <double>9999999.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Voltage Stop</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_38">
+           <property name="text">
+            <string>Voltage Step</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="voltage_start">
            <property name="suffix">
             <string> V</string>
            </property>
            <property name="decimals">
             <number>4</number>
            </property>
+           <property name="minimum">
+            <double>-8.000000000000000</double>
+           </property>
            <property name="maximum">
             <double>8.000000000000000</double>
            </property>
            <property name="singleStep">
-            <double>0.010000000000000</double>
+            <double>0.100000000000000</double>
            </property>
            <property name="value">
             <double>0.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QDoubleSpinBox" name="voltage_stop">
+           <property name="suffix">
+            <string> V</string>
+           </property>
+           <property name="decimals">
+            <number>4</number>
+           </property>
+           <property name="minimum">
+            <double>-8.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>8.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QDoubleSpinBox" name="voltage_step">
+           <property name="suffix">
+            <string> V</string>
+           </property>
+           <property name="decimals">
+            <number>4</number>
+           </property>
+           <property name="minimum">
+            <double>-8.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>8.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
            </property>
           </widget>
          </item>
@@ -294,152 +484,206 @@
         </widget>
        </item>
        <item>
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="4" column="0">
-          <widget class="QLabel" name="label_31">
-           <property name="text">
-            <string>Applied Field Strength</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0" colspan="2">
-          <widget class="QLabel" name="label_11">
-           <property name="text">
-            <string>Swept Field </string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_10">
-           <property name="text">
-            <string>End Field Azimuth</string>
-           </property>
-          </widget>
-         </item>
+        <layout class="QGridLayout" name="gridLayout">
          <item row="1" column="1">
-          <widget class="QDoubleSpinBox" name="field_azimuth_start">
-           <property name="suffix">
-            <string> deg</string>
-           </property>
-           <property name="minimum">
-            <double>-170.000000000000000</double>
-           </property>
-           <property name="maximum">
-            <double>170.000000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QDoubleSpinBox" name="field_azimuth_end">
-           <property name="suffix">
-            <string> deg</string>
-           </property>
-           <property name="decimals">
-            <number>2</number>
-           </property>
-           <property name="minimum">
-            <double>0.000000000000000</double>
-           </property>
-           <property name="maximum">
-            <double>360.000000000000000</double>
-           </property>
-           <property name="singleStep">
-            <double>0.001000000000000</double>
-           </property>
-           <property name="value">
-            <double>180.000000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1">
-          <widget class="QDoubleSpinBox" name="field_polar">
-           <property name="suffix">
-            <string> deg</string>
-           </property>
-           <property name="minimum">
-            <double>-180.000000000000000</double>
-           </property>
-           <property name="maximum">
-            <double>180.000000000000000</double>
-           </property>
-           <property name="value">
-            <double>90.000000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QDoubleSpinBox" name="applied_field">
+          <widget class="QDoubleSpinBox" name="bias_field_x">
            <property name="suffix">
             <string> T</string>
            </property>
            <property name="decimals">
-            <number>5</number>
+            <number>4</number>
            </property>
            <property name="minimum">
-            <double>-0.900000000000000</double>
+            <double>-0.280000000000000</double>
            </property>
            <property name="maximum">
-            <double>0.900000000000000</double>
-           </property>
-           <property name="value">
-            <double>0.100000000000000</double>
+            <double>0.280000000000000</double>
            </property>
           </widget>
          </item>
-         <item row="5" column="0">
-          <widget class="QLabel" name="label_32">
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_24">
            <property name="text">
-            <string>Field Polar (0 is OOP duh!!!)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_21">
-           <property name="text">
-            <string>Start Field Azimuth</string>
+            <string>By</string>
            </property>
           </widget>
          </item>
          <item row="3" column="0">
-          <widget class="QLabel" name="label_33">
+          <widget class="QLabel" name="label_29">
            <property name="text">
-            <string>Field Azimuth Step</string>
+            <string>Bz</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_23">
+           <property name="text">
+            <string>Bx</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QDoubleSpinBox" name="bias_field_y">
+           <property name="suffix">
+            <string> T</string>
+           </property>
+           <property name="decimals">
+            <number>4</number>
+           </property>
+           <property name="minimum">
+            <double>-0.280000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>0.280000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="2">
+          <widget class="QLabel" name="label_28">
+           <property name="text">
+            <string>Bias Fields</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="QDoubleSpinBox" name="field_azimuth_step">
+          <widget class="QDoubleSpinBox" name="bias_field_z">
            <property name="suffix">
-            <string> deg</string>
+            <string> T</string>
+           </property>
+           <property name="decimals">
+            <number>4</number>
            </property>
            <property name="minimum">
-            <double>-170.000000000000000</double>
+            <double>-0.150000000000000</double>
            </property>
            <property name="maximum">
-            <double>170.000000000000000</double>
-           </property>
-           <property name="value">
-            <double>10.000000000000000</double>
+            <double>0.150000000000000</double>
            </property>
           </widget>
          </item>
         </layout>
        </item>
        <item>
-        <widget class="Line" name="line">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="Line" name="line_5">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label_39">
+           <property name="text">
+            <string>Repeats</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="num_repeat">
+           <property name="decimals">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <double>1000.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>1.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Field Sweep</string>
+      </attribute>
+      <widget class="QWidget" name="gridLayoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>331</width>
+         <height>191</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_32">
+          <property name="text">
+           <string>Field Stop</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_33">
+          <property name="text">
+           <string>Field Start</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_34">
+          <property name="text">
+           <string>Field Step</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QDoubleSpinBox" name="field_min">
+          <property name="suffix">
+           <string> V (rms)</string>
+          </property>
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="maximum">
+           <double>8.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QDoubleSpinBox" name="field_max">
+          <property name="suffix">
+           <string> V (rms)</string>
+          </property>
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="maximum">
+           <double>8.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>7.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QDoubleSpinBox" name="field_step">
+          <property name="suffix">
+           <string> V (rms)</string>
+          </property>
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="maximum">
+           <double>8.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.500000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="do_voltage_sweep">
+          <property name="text">
+           <string>Do Field Sweep?</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
@@ -561,17 +805,17 @@
        </layout>
       </widget>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="tab_4">
       <attribute name="title">
        <string>Junk</string>
       </attribute>
       <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>811</width>
-         <height>371</height>
+         <x>9</x>
+         <y>1</y>
+         <width>411</width>
+         <height>361</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="field_params">
@@ -700,7 +944,7 @@
            <number>4</number>
           </property>
           <property name="value">
-           <double>0.100000000000000</double>
+           <double>1.000000000000000</double>
           </property>
          </widget>
         </item>
@@ -737,7 +981,7 @@
            <number>4</number>
           </property>
           <property name="value">
-           <double>0.624000000000000</double>
+           <double>0.650000000000000</double>
           </property>
          </widget>
         </item>
@@ -763,7 +1007,7 @@
            <number>5</number>
           </property>
           <property name="value">
-           <double>3.125000000000000</double>
+           <double>3.347700000000000</double>
           </property>
          </widget>
         </item>

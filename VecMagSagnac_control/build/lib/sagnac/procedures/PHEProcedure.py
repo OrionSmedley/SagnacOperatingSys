@@ -11,7 +11,7 @@ from pymeasure.experiment import Procedure
 from pymeasure.experiment import IntegerParameter, FloatParameter, BooleanParameter, Parameter
 from pymeasure.adapters import DAQmxAdapter
 from ..custom_instruments import vectorMagnetBase, vectorMagnetX, vectorMagnetY, vectorMagnetZ, vectorMagnetFull
-from scanning import ANC150
+from scanning import ANC300
 from time import sleep, time
 import numpy as np
 
@@ -64,41 +64,42 @@ class sagnacPHEProcedure(Procedure):
     first = True
     last = True
 
-    DATA_COLUMNS = ["ThetaK","Ratio","X1","Y1","X2","Y2","DeltaThetaK","DeltaX1","DeltaY1","TX1","TY1","TX2","TY2","field_azimuth","elapsed_time"]
+    DATA_COLUMNS = ["ThetaK","Ratio","X1","Y1","X2","Y2","DeltaThetaK","DeltaThetaK_DualSideband","DeltaX1_C-M", "DeltaY1_C-M", "DeltaX1_C+M", "DeltaY1_C+M","TX1","TY1","TX2","TY2","field_azimuth","elapsed_time"]
 
     def startup(self):
         log.info("Connecting and configuring the instruments")
         
         print("Setting up X,Y,Z magnets")
         log.info("Setting up X,Y,Z magnets")
-        self.magnet = vectorMagnetFull("GPIB::23", "GPIB::22", "GPIB::21") #X,Y,Z in that order
+        self.magnet = vectorMagnetFull("GPIB::26", "GPIB::25", "GPIB::24") #X,Y,Z in that order
 
         log.info("waiting for the wait time")
         sleep(self.wait) 
 
         log.info("Connecting to the Zurich Lock-in")
         self.lockin = HF2LI(8005,1,1004)
-        self.lockin.set_vout(1,0,self.applied_voltage/10*np.sqrt(2))
+        self.lockin.set_vout(1,6,self.applied_voltage/10*np.sqrt(2))
 
         #subscribe to outputs
-        self.lockin.sub(0)
-        self.lockin.sub(1)
-        self.lockin.sub(2)
-        self.lockin.sub(3)
-        self.lockin.sub(4)
-        self.lockin.sub(5)
+        # self.lockin.sub(0)
+        # self.lockin.sub(1)
+        # self.lockin.sub(2)
+        # self.lockin.sub(3)
+        # self.lockin.sub(4)
+        # self.lockin.sub(5)
 
-        self.stepper = ANC150("COM3")
+        self.stepper = ANC300()
+        self.stepper.connect()
         # self.stepper.set_f(self.x_axis, 1000)
         # self.stepper.set_v(self.x_axis, 35)
-        if self.x_enable:
-            log.info("X enabled")
-            self.stepper.set_mode(self.x_axis, 'stp')
+        # if self.x_enable:
+        #     log.info("X enabled")
+        #     self.stepper.set_mode(self.x_axis, 'stp')
         # self.stepper.set_f(self.y_axis, 1000)
         # self.stepper.set_v(self.y_axis, 32)
-        if self.y_enable:
-            log.info("y enabled")
-            self.stepper.set_mode(self.y_axis, 'stp')
+        # if self.y_enable:
+        #     log.info("y enabled")
+        #     self.stepper.set_mode(self.y_axis, 'stp')
         
     def execute(self):
         if self.x_enable:
@@ -180,21 +181,34 @@ class sagnacPHEProcedure(Procedure):
             else:
                 log.warning("Could not reach setpoint. Exiting procedures and aborting")
 
+            self.lockin.sub(0)
+            self.lockin.sub(1)
+            self.lockin.sub(2)
+            self.lockin.sub(3)
+            self.lockin.sub(4)
+            self.lockin.sub(5)
+
             self.lockin.sync() # clears buffer since field has changed
             sleep(self.settling)
             self.lockin.sync()
-            dat = self.lockin.poll_and_unpack(0.02, 100, [0,1,3,4,5], ['x','y'], ratio=False)
+            dat = self.lockin.poll_and_unpack(0.02, 100, [0,1,2, 3,4,5], ['x','y'], ratio=False)
             log.info("Recording results")
+            
+            self.lockin.unsubscribe("*")
+            
             self.emit('results', {
-                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[5]['y'])/2, #np.arctan(J2J1*np.sign(larger_1)*R1/R2)/2,
+                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, #np.arctan(J2J1*np.sign(larger_1)*R1/R2)/2,
                 "Ratio": dat[3]['x']/dat[5]['y'], #np.sign(larger_1)*R1/R2,
                 "X1": dat[3]['x'],
                 "Y1": dat[3]['y'],
-                "X2": dat[5]['x'],
-                "Y2": dat[5]['y'],
-                "DeltaThetaK": J2J1*dat[4]['x']/dat[5]['y']/2,
-                "DeltaX1": dat[4]['x'],
-                "DeltaY1": dat[4]['y'],
+                "X2": dat[2]['x'],
+                "Y2": dat[2]['y'],
+                "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y']/2,
+                "DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
+                "DeltaX1_C-M": dat[4]['x'],
+                "DeltaY1_C-M": dat[4]['y'],
+                "DeltaX1_C+M": dat[5]['x'],
+                "DeltaY1_C+M": dat[5]['y'],
                 "TX1": dat[0]['x'],#/(self.amp_gain/2),
                 "TY1": dat[0]['y'],#/(self.amp_gain/2),
                 "TX2": dat[1]['x'],#/(self.amp_gain/2),
@@ -219,4 +233,4 @@ class sagnacPHEProcedure(Procedure):
             log.info("Field set to 0T. Finished shutting down")
         else:
             log.warning("Could not ramp field to zero at ramp rate. Using zeroing mode")
-        self.stepper.shut_down()
+        # self.stepper.shut_down()

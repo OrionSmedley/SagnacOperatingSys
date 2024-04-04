@@ -29,7 +29,7 @@
      <item row="2" column="1">
       <widget class="QLineEdit" name="sample_name">
        <property name="text">
-        <string>test</string>
+        <string>drift_test</string>
        </property>
        <property name="placeholderText">
         <string>test</string>
@@ -46,7 +46,7 @@
      <item row="1" column="0" colspan="2">
       <widget class="QLineEdit" name="save_dir">
        <property name="text">
-        <string>C:\Users\Ralph Group\Documents\Data\test</string>
+        <string>C:\Users\TopMob\Documents\vishakha\Ta_CoFeB_scanning</string>
        </property>
        <property name="placeholderText">
         <string>C:\Users\</string>
@@ -64,69 +64,8 @@
    </item>
    <item>
     <layout class="QGridLayout" name="initial_params">
-     <item row="17" column="0">
-      <widget class="QDoubleSpinBox" name="field_strength">
-       <property name="suffix">
-        <string> T</string>
-       </property>
-       <property name="minimum">
-        <double>-2.000000000000000</double>
-       </property>
-       <property name="maximum">
-        <double>2.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.001000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="17" column="2">
-      <widget class="QDoubleSpinBox" name="field_polar">
-       <property name="suffix">
-        <string> deg</string>
-       </property>
-       <property name="maximum">
-        <double>180.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.010000000000000</double>
-       </property>
-       <property name="value">
-        <double>0.000000000000000</double>
-       </property>
-      </widget>
-     </item>
      <item row="9" column="1">
       <widget class="QDoubleSpinBox" name="fast_start">
-       <property name="suffix">
-        <string/>
-       </property>
-       <property name="decimals">
-        <number>0</number>
-       </property>
-       <property name="minimum">
-        <double>-10000.000000000000000</double>
-       </property>
-       <property name="maximum">
-        <double>10000.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>1.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="13" column="1">
-      <widget class="QDoubleSpinBox" name="settling">
-       <property name="decimals">
-        <number>3</number>
-       </property>
-       <property name="value">
-        <double>0.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="3">
-      <widget class="QDoubleSpinBox" name="slow_start">
        <property name="suffix">
         <string/>
        </property>
@@ -160,17 +99,7 @@
         <double>100001.000000000000000</double>
        </property>
        <property name="value">
-        <double>450.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Start offset</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
+        <double>80.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -180,7 +109,7 @@
         <number>0</number>
        </property>
        <property name="value">
-        <double>33.000000000000000</double>
+        <double>35.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -198,16 +127,32 @@
        </item>
       </widget>
      </item>
-     <item row="11" column="1">
-      <widget class="QDoubleSpinBox" name="fast_frequency">
+     <item row="9" column="3">
+      <widget class="QDoubleSpinBox" name="slow_start">
+       <property name="suffix">
+        <string/>
+       </property>
        <property name="decimals">
         <number>0</number>
+       </property>
+       <property name="minimum">
+        <double>-10000.000000000000000</double>
        </property>
        <property name="maximum">
         <double>10000.000000000000000</double>
        </property>
-       <property name="value">
-        <double>1040.000000000000000</double>
+       <property name="singleStep">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Start offset</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -224,6 +169,16 @@
        </property>
       </widget>
      </item>
+     <item row="10" column="3">
+      <widget class="QDoubleSpinBox" name="slow_voltage">
+       <property name="decimals">
+        <number>0</number>
+       </property>
+       <property name="value">
+        <double>35.000000000000000</double>
+       </property>
+      </widget>
+     </item>
      <item row="12" column="0" alignment="Qt::AlignHCenter">
       <widget class="QLabel" name="label_15">
        <property name="text">
@@ -234,27 +189,43 @@
        </property>
       </widget>
      </item>
+     <item row="11" column="1">
+      <widget class="QDoubleSpinBox" name="fast_frequency">
+       <property name="decimals">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <double>10000.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>1000.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>Fast Forward</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="3">
+      <widget class="QDoubleSpinBox" name="slow_total">
+       <property name="decimals">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <double>100000.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>80.000000000000000</double>
+       </property>
+      </widget>
+     </item>
      <item row="10" column="0" alignment="Qt::AlignHCenter">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Axis Voltage [V]</string>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="0" alignment="Qt::AlignHCenter">
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>Axis Freqeuncy [Hz]</string>
-       </property>
-      </widget>
-     </item>
-     <item row="10" column="3">
-      <widget class="QDoubleSpinBox" name="slow_voltage">
-       <property name="decimals">
-        <number>0</number>
-       </property>
-       <property name="value">
-        <double>33.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -270,12 +241,26 @@
         <double>100000.000000000000000</double>
        </property>
        <property name="value">
-        <double>100.000000000000000</double>
+        <double>150.000000000000000</double>
        </property>
       </widget>
      </item>
-     <item row="7" column="3">
-      <widget class="QDoubleSpinBox" name="slow_total">
+     <item row="11" column="0" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Axis Freqeuncy [Hz]</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Total Steps</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="2">
+      <widget class="QDoubleSpinBox" name="back_total">
        <property name="decimals">
         <number>0</number>
        </property>
@@ -283,14 +268,20 @@
         <double>100000.000000000000000</double>
        </property>
        <property name="value">
-        <double>1.000000000000000</double>
+        <double>90.000000000000000</double>
        </property>
       </widget>
      </item>
-     <item row="6" column="1" alignment="Qt::AlignHCenter">
-      <widget class="QLabel" name="label_9">
-       <property name="text">
-        <string>Fast Forward</string>
+     <item row="8" column="2">
+      <widget class="QDoubleSpinBox" name="back_step">
+       <property name="decimals">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <double>10000.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>2.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -309,40 +300,7 @@
         <double>1.000000000000000</double>
        </property>
        <property name="value">
-        <double>10.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="2" alignment="Qt::AlignHCenter">
-      <widget class="QLabel" name="label_16">
-       <property name="text">
-        <string>Fast Backward</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="2">
-      <widget class="QDoubleSpinBox" name="back_step">
-       <property name="decimals">
-        <number>0</number>
-       </property>
-       <property name="maximum">
-        <double>10000.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>10.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="2">
-      <widget class="QDoubleSpinBox" name="back_total">
-       <property name="decimals">
-        <number>0</number>
-       </property>
-       <property name="maximum">
-        <double>100000.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>450.000000000000000</double>
+        <double>1.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -353,27 +311,10 @@
        </property>
       </widget>
      </item>
-     <item row="7" column="0" alignment="Qt::AlignHCenter">
-      <widget class="QLabel" name="label">
+     <item row="6" column="2" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="label_16">
        <property name="text">
-        <string>Total Steps</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Step Size</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="4" alignment="Qt::AlignHCenter">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Slow Return</string>
+        <string>Fast Backward</string>
        </property>
       </widget>
      </item>
@@ -396,6 +337,16 @@
        </property>
       </widget>
      </item>
+     <item row="8" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Step Size</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
      <item row="7" column="4">
       <widget class="QDoubleSpinBox" name="slow_return_total">
        <property name="decimals">
@@ -405,27 +356,7 @@
         <double>100000.000000000000000</double>
        </property>
        <property name="value">
-        <double>1.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="14" column="1">
-      <widget class="QDoubleSpinBox" name="wait">
-       <property name="decimals">
-        <number>3</number>
-       </property>
-       <property name="value">
-        <double>0.500000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="13" column="0">
-      <widget class="QLabel" name="label_10">
-       <property name="text">
-        <string>Settling</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
+        <double>90.000000000000000</double>
        </property>
       </widget>
      </item>
@@ -435,58 +366,14 @@
         <number>0</number>
        </property>
        <property name="value">
-        <double>1.000000000000000</double>
+        <double>2.000000000000000</double>
        </property>
       </widget>
      </item>
-     <item row="14" column="0">
-      <widget class="QLabel" name="label_11">
+     <item row="6" column="4" alignment="Qt::AlignHCenter">
+      <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Wait</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="16" column="2">
-      <widget class="QLabel" name="label_13">
-       <property name="text">
-        <string>Field Polar</string>
-       </property>
-      </widget>
-     </item>
-     <item row="16" column="0">
-      <widget class="QLabel" name="label_19">
-       <property name="text">
-        <string>Field Strength</string>
-       </property>
-      </widget>
-     </item>
-     <item row="17" column="1">
-      <widget class="QDoubleSpinBox" name="field_azimuth">
-       <property name="suffix">
-        <string> deg</string>
-       </property>
-       <property name="maximum">
-        <double>360.000000000000000</double>
-       </property>
-       <property name="singleStep">
-        <double>0.010000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item row="16" column="1">
-      <widget class="QLabel" name="label_14">
-       <property name="text">
-        <string>Field Azimuth</string>
-       </property>
-      </widget>
-     </item>
-     <item row="15" column="0">
-      <widget class="QCheckBox" name="field_enable">
-       <property name="text">
-        <string>Enable Field</string>
+        <string>Slow Return</string>
        </property>
       </widget>
      </item>
@@ -494,6 +381,34 @@
    </item>
    <item>
     <widget class="Line" name="line_4">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line_6">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line_7">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line_5">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

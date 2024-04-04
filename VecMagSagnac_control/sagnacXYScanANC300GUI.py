@@ -95,6 +95,7 @@ class sagnacXYScanANC300GUI(ManagedWindow):
 		procedure.fast_slow = self.inputs.fast_slow.currentText()
 		procedure.delay = self.inputs.delay.value()*1e-3 # ms
 
+		procedure.field_enable = self.inputs.field_enable.isChecked()
 		procedure.field_strength = self.inputs.field_strength.value()
 		procedure.field_azimuth = self.inputs.field_azimuth.value()
 		procedure.field_polar = self.inputs.field_polar.value()

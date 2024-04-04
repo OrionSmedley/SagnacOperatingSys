@@ -31,6 +31,7 @@ class XYScanANC300Procedure(Procedure):
 	queued_time = Parameter('Time Queued')
 	sample_name = Parameter("Sample Name", default='')
 
+	field_enable = BooleanParameter("Enable Field", default=False)
 	field_strength = FloatParameter("Bias Magnetic Field Strength", units="T", default=0.1)
 	field_azimuth = FloatParameter("Bias Magnetic Field Azimuth", units="deg", default=0.0)
 	field_polar = FloatParameter("Bias Magnetic Field Polar", units="deg", default=0.0)
@@ -93,10 +94,11 @@ class XYScanANC300Procedure(Procedure):
 
 		sleep(self.wait) 
 
-		# print("Setting up X,Y,Z magnets")
-		# log.info("Setting up X,Y,Z magnets")
-		# self.magnet = vectorMagnetFull("GPIB::26", "GPIB::25", "GPIB::24") #X,Y,Z in that order
-		# self.z_magnet = vectorMagnetZ("GPIB::24")
+		if self.field_enable:
+			print("Setting up X,Y,Z magnets")
+			log.info("Setting up X,Y,Z magnets")
+			self.magnet = vectorMagnetFull("GPIB::26", "GPIB::25", "GPIB::24") #X,Y,Z in that order
+			self.z_magnet = vectorMagnetZ("GPIB::24")
 
 		log.info("Connecting to the Zurich Lock-in")
 		self.lockin = HF2LI(8005,1,1004)
@@ -105,56 +107,58 @@ class XYScanANC300Procedure(Procedure):
 		#subscribe to outputs
 		self.lockin.sub(0)
 		self.lockin.sub(1)
-		# self.lockin.sub(2)
+		self.lockin.sub(2)
 		self.lockin.sub(3)
 		self.lockin.sub(4)
 		self.lockin.sub(5)
 
 	def execute(self):
-		# zfield = self.field_strength*np.cos(self.field_polar*np.pi/180.)
-		# self.z_magnet.field = zfield
-		# log.info(f'Bz: {zfield}')
-		# while self.z_magnet.is_ramping():
-		# 	sleep(2)
-		# 	log.info("Magnet is ramping")
-		# 	if self.should_stop():
-		# 		log.info("Caught stop flag in procedure.")
-		# 		break
+		if self.field_enable:
+			zfield = self.field_strength*np.cos(self.field_polar*np.pi/180.)
+			self.z_magnet.field = zfield
+			log.info(f'Bz: {zfield}')
+			while self.z_magnet.is_ramping():
+				sleep(2)
+				log.info("Magnet is ramping")
+				if self.should_stop():
+					log.info("Caught stop flag in procedure.")
+					break
 
-		# while not np.isclose(zfield, self.z_magnet.field, atol = 5e-5):
-		# 	# log.info(f'{self.magnet.field - field}')
-		# 	sleep(0.5)
-		# 	if self.should_stop():
-		# 		log.info("Caught stop flag in procedure.")
-		# 		break
+			while not np.isclose(zfield, self.z_magnet.field, atol = 5e-5):
+				# log.info(f'{self.magnet.field - field}')
+				sleep(0.5)
+				if self.should_stop():
+					log.info("Caught stop flag in procedure.")
+					break
 
-		# ipfield = self.field_strength*np.sin(self.field_polar*np.pi/180.)
-		# self.magnet.set_field_polar(ipfield, self.field_azimuth, 90)
+			ipfield = self.field_strength*np.sin(self.field_polar*np.pi/180.)
+			self.magnet.set_field_polar(ipfield, self.field_azimuth, 90)
 
-		# log.info(f'B: {self.field_strength}, phi: {self.field_azimuth}, theta: {self.field_polar}')
-		# while self.magnet.is_ramping():
-		# 	sleep(2)
-		# 	if self.should_stop():
-		# 		log.info("Caught stop flag in procedure.")
-		# 		break
+			log.info(f'B: {self.field_strength}, phi: {self.field_azimuth}, theta: {self.field_polar}')
+			while self.magnet.is_ramping():
+				sleep(2)
+				if self.should_stop():
+					log.info("Caught stop flag in procedure.")
+					break
 
-		# while not self.magnet.check_field_polar(ipfield, self.field_azimuth, 90, 2e-3):
-		# 	sleep(0.5)
-		# 	if self.should_stop():
-		# 		log.info("Caught stop flag in procedure.")
-		# 		break
+			while not self.magnet.check_field_polar(ipfield, self.field_azimuth, 90, 2e-3):
+				sleep(0.5)
+				if self.should_stop():
+					log.info("Caught stop flag in procedure.")
+					break
 
-		# if self.magnet.is_holding():
-		# 	log.info(" magnet status is HOLDING" )
-		# elif self.magnet.is_zeroing() or self.magnet.is_quenched():
-		# 	log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
-		# 	raise ValueError('Quench detected. Aborting procedures!')
-		# elif self.should_stop():
-		# 	log.info("Caught stop flag in procedure.")
-		# else:
-		# 	log.warning("Could not reach setpoint. Exiting procedures and aborting")
-		# 	log.info(f"Setting Magnetic Field to {field:.5f} T")
+			if self.magnet.is_holding():
+				log.info(" magnet status is HOLDING" )
+			elif self.magnet.is_zeroing() or self.magnet.is_quenched():
+				log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
+				raise ValueError('Quench detected. Aborting procedures!')
+			elif self.should_stop():
+				log.info("Caught stop flag in procedure.")
+			else:
+				log.warning("Could not reach setpoint. Exiting procedures and aborting")
+				log.info(f"Setting Magnetic Field to {field:.5f} T")
 
+			sleep(1)
 		# print(self.delay)
 
 		J2J1 = 0.543

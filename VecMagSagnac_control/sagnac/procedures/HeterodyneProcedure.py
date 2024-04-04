@@ -5,12 +5,11 @@ log.addHandler(logging.NullHandler())
 import sys
 from pymeasure.log import console_log
 from pymeasure.experiment import Results, unique_filename
-from pymeasure.instruments.keithley import Keithley2400, Keithley2182A
+from pymeasure.instruments.keithley import Keithley2400
 from pymeasure.instruments.zurich import HF2LI
 from pymeasure.instruments.signalrecovery import DSP7265
 from ..custom_instruments import vectorMagnetBase, vectorMagnetX, vectorMagnetY, vectorMagnetZ, vectorMagnetFull
 from ..instruments.LTC20 import LTC20
-# from ..custom_instruments import daedalusProjField
 from pymeasure.instruments.keithley import Keithley6221
 from pymeasure.experiment import Procedure
 from pymeasure.experiment import IntegerParameter, FloatParameter, BooleanParameter, Parameter
@@ -276,7 +275,6 @@ class sagnacHeterodyneProcedure_vm(Procedure):
         else:
             log.info("Finished with one scan, but more to go.")
             sleep(1)
-
 
 class sagnacHeterodyneProcedure_vm_highZ(Procedure):
 
@@ -858,7 +856,8 @@ class sagnacOpticsXportProcedure_vm(Procedure):
 
     hysteresis = BooleanParameter("Hysteresis Sweep?", default=True)
     reverse = BooleanParameter("Reverse?", default=False)
-    sweep_field = FloatParameter("Bias Magnetic Field", units="T", default=0.1)
+    sweep_field_start = FloatParameter("Bias Magnetic Field start", units="T", default=0.1)
+    sweep_field_stop = FloatParameter("Bias Magnetic Field stop", units="T", default=0.1)
     sweep_field_step = FloatParameter("Bias Magnetic Field step", units="T", default=0.1)
     sweep_field_azimuth = FloatParameter("Bias Magnetic Field Azimuth", units="deg", default=0.)
     sweep_field_polar = FloatParameter("Bias Magnetic Field Polar", units="deg", default=0.0)
@@ -884,7 +883,7 @@ class sagnacOpticsXportProcedure_vm(Procedure):
     first = True
     last = True
 
-    DATA_COLUMNS = ["ThetaK","X1","Y1","X2","Y2","DeltaThetaK","DeltaX1","DeltaY1","TX1","TY1","TX2","TY2","sweep_field","elapsed_time"]
+    DATA_COLUMNS = ["ThetaK","X1","Y1","X2","Y2","DeltaThetaK","DeltaThetaK_DualSideband", "DeltaX1_C-M", "DeltaY1_C-M", "DeltaX1_C+M", "DeltaY1_C+M","TX1","TY1","TX2","TY2","sweep_field","elapsed_time"]
 
     def startup(self):
         log.info("Connecting and configuring the instruments")
@@ -900,14 +899,16 @@ class sagnacOpticsXportProcedure_vm(Procedure):
 
         log.info("Connecting to the Zurich Lock-in")
         self.lockin = HF2LI(8005,1,1004)
-        self.lockin.set_vout(1,0,self.applied_voltage/10*np.sqrt(2))
+        # self.lockin.set_vout(1,0,self.applied_voltage/10*np.sqrt(2))
+        self.lockin.set_vout(1,6,self.applied_voltage/10*np.sqrt(2)) #using output 7
+
         #subscribe to outputs
-        self.lockin.sub(0)
-        self.lockin.sub(1)
-        # self.lockin.sub(2)
-        self.lockin.sub(3)
-        self.lockin.sub(4)
-        self.lockin.sub(5)
+        # self.lockin.sub(0)
+        # self.lockin.sub(1)
+        # # self.lockin.sub(2)
+        # self.lockin.sub(3)
+        # self.lockin.sub(4)
+        # self.lockin.sub(5)
 
         self.apply_bias_field = False
         if self.bias_field_x != 0 or self.bias_field_y != 0 or self.bias_field_z != 0:
@@ -924,6 +925,9 @@ class sagnacOpticsXportProcedure_vm(Procedure):
         # if self.y_enable:
         #     log.info("y enabled")
         #     self.stepper.set_mode(self.y_axis, 'stp')
+
+        self.stepper = ANC300()
+        self.stepper.connect()
 
     def execute(self):
         if self.x_enable:
@@ -942,21 +946,22 @@ class sagnacOpticsXportProcedure_vm(Procedure):
         J2J1 = 0.543
         J1J0 = 1.837
         deg2rad = np.pi/180.
-        field_points = np.arange(0,
-                                 self.sweep_field,
+        field_points = np.arange(self.sweep_field_start,
+                                 self.sweep_field_stop,
                                  self.sweep_field_step)
-        if self.sweep_field not in field_points:
-            field_points = np.append(field_points,self.sweep_field)
+        if self.sweep_field_stop not in field_points:
+            field_points = np.append(field_points,self.sweep_field_stop)
         
-        field_points = field_points[::-1]
+        # field_points = field_points[::-1]
 
-        field_points = np.append(field_points,
-                                 -1*field_points[::-1][1:])
+        # field_points = np.append(field_points,
+        #                          -1*field_points[::-1][1:])
+            
         if self.hysteresis:                        
             field_points = np.append(field_points, field_points[::-1][1:])
 
-        if self.reverse:
-            field_points = field_points[::-1]
+        # if self.reverse:
+        #     field_points = field_points[::-1]
         
         if self.saturate:
             # self.magnet.set_field_polar(self.saturating_field, self.saturating_field_azimuth, self.saturating_field_polar)  #saturate the field 
@@ -1044,15 +1049,15 @@ class sagnacOpticsXportProcedure_vm(Procedure):
             By = field_points[0]*np.sin(self.sweep_field_polar*deg2rad)*np.sin(self.sweep_field_azimuth*deg2rad) + self.bias_field_y
             Bz = field_points[0]*np.cos(self.sweep_field_polar*deg2rad) + self.bias_field_z
             log.info(f"Setting magnetic field (Cartesian) to {Bx:.4f},{By:.4f},{Bz:.4f}")
-            self.magnet.set_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arcsin(By/Bx)/deg2rad, np.arcsin(np.sqrt(Bx**2 + By**2)/Bz)/deg2rad)
-
+            log.info(f"")
+            self.magnet.set_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arctan2(By,Bx)/deg2rad, np.arctan2(   np.sqrt(Bx**2 + By**2)   , Bz)/deg2rad       )
             while self.magnet.is_ramping():
                 sleep(2)
                 if self.should_stop():
                     log.info("Caught stop flag in procedure.")
                     break
 
-            while not self.magnet.check_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arcsin(By/Bx)/deg2rad, np.arcsin(np.sqrt(Bx**2 + By**2)/Bz)/deg2rad, 2e-3):
+            while not self.magnet.check_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arctan2(By,Bx)/deg2rad, np.arctan2(np.sqrt(Bx**2 + By**2), Bz)/deg2rad, 2e-3):
                 sleep(0.5)
                 if self.should_stop():
                     log.info("Caught stop flag in procedure.")
@@ -1106,7 +1111,7 @@ class sagnacOpticsXportProcedure_vm(Procedure):
                 By = field*np.sin(self.sweep_field_polar*deg2rad)*np.sin(self.sweep_field_azimuth*deg2rad) + self.bias_field_y
                 Bz = field*np.cos(self.sweep_field_polar*deg2rad) + self.bias_field_z
                 log.info(f"Setting magnetic field (Cartesian) to {Bx:.4f},{By:.4f},{Bz:.4f}")
-                self.magnet.set_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arcsin(By/Bx)/deg2rad, np.arcsin(np.sqrt(Bx**2 + By**2)/Bz)/deg2rad)
+                self.magnet.set_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arctan2(By,Bx)/deg2rad, np.arctan2(np.sqrt(Bx**2 + By**2),Bz)/deg2rad)
 
                 while self.magnet.is_ramping():
                     sleep(2)
@@ -1114,7 +1119,7 @@ class sagnacOpticsXportProcedure_vm(Procedure):
                         log.info("Caught stop flag in procedure.")
                         break
 
-                while not self.magnet.check_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arcsin(By/Bx)/deg2rad, np.arcsin(np.sqrt(Bx**2 + By**2)/Bz)/deg2rad, 2e-3):
+                while not self.magnet.check_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arctan2(By,Bx)/deg2rad, np.arctan2(np.sqrt(Bx**2 + By**2),Bz)/deg2rad, 2e-3):
                     sleep(0.5)
                     if self.should_stop():
                         log.info("Caught stop flag in procedure.")
@@ -1130,25 +1135,37 @@ class sagnacOpticsXportProcedure_vm(Procedure):
                 else:
                     log.warning("Could not reach setpoint. Exiting procedures and aborting")
             
+            self.lockin.sub(0)
+            self.lockin.sub(1)
+            self.lockin.sub(2)
+            self.lockin.sub(3)
+            self.lockin.sub(4)
+            self.lockin.sub(5)
+
             dat_list = []
             for i in range(self.avgs):
                 self.lockin.sync() # clears buffer since field has changed
                 sleep(self.settling)
                 self.lockin.sync() # clears buffer since field has changed
                 log.info("recording average #%d"%i)
-                dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,3,4,5], ['x','y'], ratio=False))
+                dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
             dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
+
+            self.lockin.unsubscribe("*")
 
             log.info("Recording results")
             self.emit('results', {
-                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[5]['y'])/2, 
+                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, 
                 "X1": dat[3]['x'],
                 "Y1": dat[3]['y'],
-                "X2": dat[5]['x'],
-                "Y2": dat[5]['y'],
-                "DeltaThetaK": J2J1*dat[4]['x']/dat[5]['y'],
-                "DeltaX1": dat[4]['x'],
-                "DeltaY1": dat[4]['y'],
+                "X2": dat[2]['x'],
+                "Y2": dat[2]['y'],
+                "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y'],
+                "DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
+                "DeltaX1_C-M": dat[4]['x'],
+                "DeltaY1_C-M": dat[4]['y'],
+                "DeltaX1_C+M": dat[5]['x'],
+                "DeltaY1_C+M": dat[5]['y'],
                 "TX1": dat[0]['x'],
                 "TY1": dat[0]['y'],
                 "TX2": dat[1]['x'],
@@ -2524,3 +2541,262 @@ class sagnacOpticsXportSignalRecoveryProcedure_vm(Procedure):
         else:
             log.warning("Could not ramp field to zero at ramp rate. Using zeroing mode")
         
+class sagnacOpticsXportVoltageSweepProcedure_vm(Procedure):
+    """
+    Procedure for taking Voltage Sweep Measurements 
+    with the Sagnac setup
+    """
+
+    calib_file = 'C:\\Users\\Ralph Group\\Desktop\\git\\sagnac_control\\calibrations\\sagnac'
+    sample_name = Parameter("Sample Name",default='test')
+
+    step = IntegerParameter("current step", default = 0)
+    delta_x = IntegerParameter("stepper x step", default = 0)
+    delta_y = IntegerParameter("stepper y step", default = 0)
+    x_axis = 1
+    y_axis = 2
+    x_enable = BooleanParameter("Enable x motion", default = True)
+    y_enable = BooleanParameter("Enable y motion", default = False)
+
+    voltage_start = FloatParameter("Applied Sample Voltage Start", units="V", default=0)
+    voltage_stop = FloatParameter("Applied Sample Voltage End", units="V", default=0)
+    voltage_step = FloatParameter("Applied Sample Voltage Step", units="V", default=0)
+
+    current_frequency = FloatParameter("Applied Sample Current frequency", units="kHz", default=1)
+    settling = FloatParameter("Settling", units="s", default=0.5)
+    wait = FloatParameter("Pre Measurement Wait Time", units="s", default=0.5)
+    avgs = IntegerParameter("Number of Averages", default = 1)
+    amp_gain = FloatParameter("Amp Gain", units="x", default=1)
+
+    saturate = BooleanParameter("Saturate First?", default=True)
+    saturating_field = FloatParameter("Saturating Magnetic Field", units="T", default=0.1)
+    saturating_field_azimuth = FloatParameter("Saturating Magnetic Field Azimuth", units="deg", default=0.)
+    saturating_field_polar = FloatParameter("Saturating Magnetic Field Polar", units="deg", default=90.0)
+
+    hysteresis = BooleanParameter("Hysteresis Sweep?", default=True)
+    reverse = BooleanParameter("Reverse?", default=False)
+    sweep_field = FloatParameter("Bias Magnetic Field start", units="T", default=0.1)
+    sweep_field_azimuth = FloatParameter("Bias Magnetic Field Azimuth", units="deg", default=0.)
+    sweep_field_polar = FloatParameter("Bias Magnetic Field Polar", units="deg", default=0.0)
+
+    apply_bias_field = BooleanParameter("Apply a Bias Field?", default = False)
+    bias_field_x = FloatParameter("Bias Field x", units="T", default=0)
+    bias_field_y = FloatParameter("Bias Field y", units="T", default=0)
+    bias_field_z = FloatParameter("Bias Field z", units="T", default=0)
+
+    input_range = FloatParameter("input range", units="V", default=1)
+    imp50 = BooleanParameter("50 Ohm Input Impedance", default=True)
+    f_eom = FloatParameter("EOM Frequency", units="MHz", default=1)
+
+    first_harm_order = IntegerParameter("Filter Order First Harmonic", default=4)
+    second_harm_order = IntegerParameter("Filter Order Second Harmonic", default=4)
+    first_harm_tc = FloatParameter("Lockin Time Constant First Harmonic", units="s", default=0.1)
+    second_harm_tc = FloatParameter("Lockin Time Constant Second Harmonic", units="s", default=0.1)
+
+    eom_voltage = FloatParameter("Output Voltage", units="V", default=1)
+    queued_time = Parameter('Time Queued')
+
+    first = True
+    last = True
+
+    DATA_COLUMNS = ["ThetaK","X1","Y1","X2","Y2","DeltaThetaK","DeltaThetaK_DualSideband", "DeltaX1_C-M", "DeltaY1_C-M", "DeltaX1_C+M", "DeltaY1_C+M","TX1","TY1","TX2","TY2","voltage","elapsed_time"]
+
+    def startup(self):
+        log.info("Connecting and configuring the instruments")
+
+        print("Setting up X,Y,Z magnets")
+        log.info("Setting up X,Y,Z magnets")
+        self.magnet = vectorMagnetFull("GPIB::26", "GPIB::25", "GPIB::24") #X,Y,Z in that order
+
+        self.z_magnet = vectorMagnetZ("GPIB::24")
+
+        log.info("waiting for the wait time")
+        sleep(self.wait) 
+
+        log.info("Connecting to the Zurich Lock-in")
+        self.lockin = HF2LI(8005,1,1004)
+
+        self.apply_bias_field = False
+        if self.bias_field_x != 0 or self.bias_field_y != 0 or self.bias_field_z != 0:
+            self.apply_bias_field = True
+
+        self.stepper = ANC300()
+        self.stepper.connect()
+
+    def execute(self):
+        if self.x_enable:
+            log.info(f'Now at step number {self.step}, moving sample by x:{self.delta_x}')
+            if self.delta_x >= 0:
+                self.stepper.stepu(1, self.delta_x)
+            else:
+                self.stepper.stepd(1, -self.delta_x)
+        if self.y_enable:
+            log.info(f'Now at step number {self.step}, moving sample by y:{self.delta_y}')
+            if self.delta_y >= 0:
+                self.stepper.stepu(2, self.delta_y)
+            else:
+                self.stepper.stepd(2, -self.delta_y)
+
+        J2J1 = 0.543
+        J1J0 = 1.837
+        deg2rad = np.pi/180.
+        voltage_points = np.arange(self.voltage_start,
+                                 self.voltage_stop,
+                                 self.voltage_step)
+        if self.voltage_stop not in voltage_points:
+            voltage_points = np.append(voltage_points,self.voltage_stop)
+            
+        if self.hysteresis:                        
+            voltage_points = np.append(voltage_points, voltage_points[::-1][1:])
+        
+        if self.saturate:
+            self.z_magnet.field = self.saturating_field
+            log.info("Setting saturation field")
+            sleep(0.1)
+
+            while self.z_magnet.is_ramping():
+                sleep(2)
+                log.info("Magnet is ramping")
+                if self.should_stop():
+                    log.info("Caught stop flag in procedure.")
+                    break
+
+            while not np.isclose(self.saturating_field, self.z_magnet.field, atol = 5e-5):
+                sleep(0.5)
+                if self.should_stop():
+                    log.info("Caught stop flag in procedure.")
+                    break
+
+            #Checking magnet's status to ensure that it successfully reaches the
+            #setpoint without quenching or zeroing
+           
+            if self.z_magnet.is_holding():
+                log.info("Field set to %g T magnet status is HOLDING" % (self.saturating_field))
+            elif self.z_magnet.is_zeroing() or self.z_magnet.is_quenched():
+                log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
+                raise ValueError('Quench detected. Aborting procedures!')
+            elif self.should_stop():
+                log.info("Caught stop flag in procedure.")
+            else:
+                log.warning("Could not reach setpoint. Exiting procedures and aborting")
+
+        #Applying Magnetic Field
+        if not self.apply_bias_field:
+            self.magnet.set_field_polar(self.sweep_field, self.sweep_field_azimuth, self.sweep_field_polar)
+            log.info(f'B: {self.sweep_field}, phi: {self.sweep_field_azimuth}, theta: {self.sweep_field_polar}')
+            while self.magnet.is_ramping():
+                sleep(2)
+                if self.should_stop():
+                    log.info("Caught stop flag in procedure.")
+                    break
+
+            while not self.magnet.check_field_polar(self.sweep_field, self.sweep_field_azimuth, self.sweep_field_polar, 2e-3):
+                sleep(0.5)
+                if self.should_stop():
+                    log.info("Caught stop flag in procedure.")
+                    break
+
+            if self.magnet.is_holding():
+                log.info(" magnet status is HOLDING" )
+            elif self.magnet.is_zeroing() or self.magnet.is_quenched():
+                log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
+                raise ValueError('Quench detected. Aborting procedures!')
+            elif self.should_stop():
+                log.info("Caught stop flag in procedure.")
+            else:
+                log.warning("Could not reach setpoint. Exiting procedures and aborting")
+
+        else:
+            Bx = self.sweep_field*np.sin(self.sweep_field_polar*deg2rad)*np.cos(self.sweep_field_azimuth*deg2rad)  + self.bias_field_x
+            By = self.sweep_field*np.sin(self.sweep_field_polar*deg2rad)*np.sin(self.sweep_field_azimuth*deg2rad) + self.bias_field_y
+            Bz = self.sweep_field*np.cos(self.sweep_field_polar*deg2rad) + self.bias_field_z
+            log.info(f"Setting magnetic field (Cartesian) to {Bx:.4f},{By:.4f},{Bz:.4f}")
+            self.magnet.set_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arctan2(By,Bx)/deg2rad, np.arctan2(np.sqrt(Bx**2 + By**2),Bz)/deg2rad)
+
+            while self.magnet.is_ramping():
+                sleep(2)
+                if self.should_stop():
+                    log.info("Caught stop flag in procedure.")
+                    break
+
+            while not self.magnet.check_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arctan2(By,Bx)/deg2rad, np.arctan2(np.sqrt(Bx**2 + By**2),Bz)/deg2rad, 2e-3):
+                sleep(0.5)
+                if self.should_stop():
+                    log.info("Caught stop flag in procedure.")
+                    break
+
+            if self.magnet.is_holding():
+                log.info(" magnet status is HOLDING" )
+            elif self.magnet.is_zeroing() or self.magnet.is_quenched():
+                log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
+                raise ValueError('Quench detected. Aborting procedures!')
+            elif self.should_stop():
+                log.info("Caught stop flag in procedure.")
+            else:
+                log.warning("Could not reach setpoint. Exiting procedures and aborting")
+
+        num_progress = voltage_points.size
+        start_time = time()
+
+        for progress_iterator, voltage in enumerate(voltage_points):
+            self.emit("progress", 100*progress_iterator/num_progress)
+            self.lockin.set_vout(1,6,voltage/10*np.sqrt(2))
+            log.info("Waiting a while to equilibrate")
+            sleep(self.wait)
+
+            self.lockin.sub(0)
+            self.lockin.sub(1)
+            self.lockin.sub(2)
+            self.lockin.sub(3)
+            self.lockin.sub(4)
+            self.lockin.sub(5)
+
+            dat_list = []
+            for i in range(self.avgs):
+                self.lockin.sync() # clears buffer since field has changed
+                sleep(self.settling)
+                self.lockin.sync() # clears buffer since field has changed
+                log.info("recording average #%d"%i)
+                dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
+            dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
+
+            self.lockin.unsubscribe("*")
+
+            log.info("Recording results")
+            self.emit('results', {
+                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, 
+                "X1": dat[3]['x'],
+                "Y1": dat[3]['y'],
+                "X2": dat[2]['x'],
+                "Y2": dat[2]['y'],
+                "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y'],
+                "DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
+                "DeltaX1_C-M": dat[4]['x'],
+                "DeltaY1_C-M": dat[4]['y'],
+                "DeltaX1_C+M": dat[5]['x'],
+                "DeltaY1_C+M": dat[5]['y'],
+                "TX1": dat[0]['x'],
+                "TY1": dat[0]['y'],
+                "TX2": dat[1]['x'],
+                "TY2": dat[1]['y'],
+                "voltage": voltage,
+                "elapsed_time": time()-start_time
+                })
+            if self.should_stop():
+                log.warning("Caught stop flag in procedure.")
+                break
+
+    def shutdown(self):
+        log.info("Finished with scans. Shutting down instruments.")
+        # self.magnet.shutdown()
+        # while self.magnet.is_ramping():
+        #     sleep(1) #For ramp rate of 0.043T/sec this is equivalent to
+        #         #checking the status for every 22 Gauss change
+
+        # Bx, By, Bz = self.magnet.get_field_cartesian()
+        # if self.magnet.is_holding() and np.isclose(Bx,0,atol=5e-3) and np.isclose(By,0, atol=5e-3) and np.isclose(Bz,0,atol=5e-3):
+        #     log.info("%s" %self.status)
+        #     log.info("Field set to 0T. Finished shutting down")
+        # else:
+        #     log.warning("Could not ramp field to zero at ramp rate. Using zeroing mode")
+        self.lockin.set_vout(1,6,0)

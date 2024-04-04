@@ -468,6 +468,13 @@
            </property>
           </widget>
          </item>
+         <item row="10" column="1">
+          <widget class="QCheckBox" name="do_fourQuadrant">
+           <property name="text">
+            <string>do_fourQuadrant scan?</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -758,6 +765,36 @@
           <widget class="Line" name="line_4">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QGridLayout" name="gridLayout_5">
+         <property name="verticalSpacing">
+          <number>3</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_41">
+           <property name="text">
+            <string>repeats</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QDoubleSpinBox" name="num_repeat">
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="decimals">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <double>10000.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>1.000000000000000</double>
            </property>
           </widget>
          </item>

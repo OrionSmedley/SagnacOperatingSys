@@ -692,13 +692,6 @@
          </item>
         </layout>
        </item>
-       <item>
-        <widget class="Line" name="line">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_2">
@@ -793,11 +786,6 @@
         </item>
        </layout>
       </widget>
-     </widget>
-     <widget class="QWidget" name="tab_3">
-      <attribute name="title">
-       <string>Repeats</string>
-      </attribute>
      </widget>
      <widget class="QWidget" name="widget">
       <attribute name="title">
