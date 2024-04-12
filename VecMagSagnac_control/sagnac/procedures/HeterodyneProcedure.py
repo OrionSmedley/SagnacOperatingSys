@@ -2607,7 +2607,6 @@ class sagnacOpticsXportVoltageSweepProcedure_vm(Procedure):
         print("Setting up X,Y,Z magnets")
         log.info("Setting up X,Y,Z magnets")
         self.magnet = vectorMagnetFull("GPIB::26", "GPIB::25", "GPIB::24") #X,Y,Z in that order
-
         self.z_magnet = vectorMagnetZ("GPIB::24")
 
         log.info("waiting for the wait time")
