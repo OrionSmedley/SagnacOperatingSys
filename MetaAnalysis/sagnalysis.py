@@ -129,3 +129,22 @@ def plot_power_for_df(lumped_data,hrsPerTick=4):
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.xlabel("Time")
     plt.ylabel("Second Harmonic Power (mv)")
+
+
+
+
+# function for data where everything is anoyingly in one column
+# commented out because it is not used, for now
+
+# def reshape_column_into_data(data:pd.DataFrame)->pd.DataFrame:
+#     ''' Split the masive column into each variable measured
+#     '''
+#     data.columns = ["Time","Voltage"]
+
+#     data['Group'] = ( data['Time'] == 0).cumsum()
+#     data.loc[data["Time"]==0, "Group"] = data.loc[data["Time"]==0, "Group"] - 1
+
+#     data = data.pivot_table(index = "Time",columns="Group", values = "Voltage", aggfunc = "mean")
+#     data.columns = ["x1","y1","x2","y2"]
+
+#     return data
