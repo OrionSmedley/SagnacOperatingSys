@@ -62,7 +62,8 @@ def filter_files(file_paths:List[str] ,
 
 
 def import_all_at_path(path: List[str] ,
-                       desired_start:str = "#Procedure: <sagnac.procedures.HeterodyneProcedure.sagnacOpticsXportProcedure>"
+                       desired_start:str = "#Procedure: <sagnac.procedures.HeterodyneProcedure.sagnacOpticsXportProcedure>",
+                       filetype:str = "*.csv"
                        )-> List[str]:
     '''
     Import all csv files in a directory and its subdirectories into a single dataframe.
@@ -70,7 +71,7 @@ def import_all_at_path(path: List[str] ,
     '''
 
     #get all files from all subdirectories
-    files = Path(path).rglob('*.csv')
+    files = Path(path).rglob(filetype)
     
     # restrict to files that begin with "#Procedure: <sagnac.procedures.HeterodyneProcedure.sagnacOpticsXportProcedure>"
     files = filter_files(files, desired_start=desired_start)[0]

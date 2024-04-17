@@ -51,6 +51,8 @@ class sagnacPHEProcedure(Procedure):
     eom_voltage = FloatParameter("Output Voltage", units="V", default=1)
     queued_time = Parameter('Time Queued')
 
+    hysteresis = BooleanParameter("Hysteresis", default=False)
+
     first = True
     last = True
 
@@ -161,6 +163,9 @@ class sagnacPHEProcedure(Procedure):
         if self.field_azimuth_end not in angles:
             angles = np.append(angles,self.field_azimuth_end)
 
+        if self.hysteresis:
+            angles = np.append(angles,np.flip(angles))
+
         if self.saturate:
             # ensure we have gotten to the phi we want
             while not np.isclose(self.magnet.phi, self.saturating_field_azimuth, atol=1e-3):
@@ -245,7 +250,7 @@ class sagnacPHEProcedure(Procedure):
 
             self.emit('results', {
                 "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, #np.arctan(J2J1*np.sign(larger_1)*R1/R2)/2,
-                "Ratio": dat[3]['x']/dat[5]['y'], #np.sign(larger_1)*R1/R2,
+                "Ratio": dat[3]['x']/dat[2]['y'], #np.sign(larger_1)*R1/R2
                 "X1": dat[3]['x'],
                 "Y1": dat[3]['y'],
                 "X2": dat[2]['x'],

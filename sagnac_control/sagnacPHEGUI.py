@@ -83,6 +83,8 @@ class sagnacPHEGUI(ManagedWindow):
         procedure.eom_voltage = self.inputs.eom_voltage.value()
         procedure.queued_time = datetime.now().strftime("%I:%M%p %Y-%m-%d").lower()
 
+        procedure.hysteresis = self.inputs.hysteresis.isChecked()
+
         return procedure
     
     def queue(self):
