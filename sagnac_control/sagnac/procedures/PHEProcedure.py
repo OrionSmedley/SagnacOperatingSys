@@ -255,7 +255,7 @@ class sagnacPHEProcedure(Procedure):
                 "Y1": dat[3]['y'],
                 "X2": dat[2]['x'],
                 "Y2": dat[2]['y'],
-                "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y']/2,
+                "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y'], #04/17/2024: removed factor of 2 from older Saba version 
                 "DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
                 "DeltaX1_C-M": dat[4]['x'],
                 "DeltaY1_C-M": dat[4]['y'],
