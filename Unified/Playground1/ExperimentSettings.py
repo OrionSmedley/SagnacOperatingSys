@@ -1,0 +1,40 @@
+experiment_settings = {
+    "Amp Gain": 0,
+    "Applied Sample Voltage": 0,
+    "Applied Sample Voltage Offset": 0,
+    "Apply a Bias Field?": false,
+    "Number of Averages": 1,
+    "Bias Field x": 0,
+    "Bias Field y": 0,
+    "Bias Field z": 0,
+    "Applied Sample Current frequency": "3.273 kHz",
+    "Output Voltage": 0.65,
+    "EOM Frequency": 3347620.0,
+    "Filter Order First Harmonic": 8,
+    "Lockin Time Constant First Harmonic": 0.01,
+    "Hysteresis Sweep?": true,
+    "50 Ohm Input Impedance": false,
+    "Input Range": 0.8,
+    "Keithley Voltage": 0,
+    "Time Queued": "12:27pm 2024-04-12",
+    "Reverse?": false,
+    "Sample Name": "LAFO",
+    "Saturate First?": false,
+    "Filter Order Second Harmonic": 8,
+    "Lockin Time Constant Second Harmonic": 0.01,
+    "Settling": 0.1,
+    "FieldCoils": {
+        "Saturating Magnetic Field": 0.17,
+        "Saturating Magnetic Field Azimuth": 135,
+        "Saturating Magnetic Field Polar": 90,
+        "Bias Magnetic Field Azimuth": 135,
+        "Bias Magnetic Field Polar": 90,
+        "Bias Magnetic Field Start": -0.18,
+        "Bias Magnetic Field Step": 0.01,
+        "Bias Magnetic Field Stop": 0.18
+    },
+    "Keithly": {
+        "Use Keithley?": false,
+        "Pre Measurement Wait Time": 0
+    }
+}
