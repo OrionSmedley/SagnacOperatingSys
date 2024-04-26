@@ -1,0 +1,8 @@
+﻿Parameter,value,unit,priority
+voltage,0,V,nan
+field,"(0,0,0)",T,nan
+temperature,300,kelvin,nan
+isInit,"""init""",NA,nan
+satField,0,T,nan
+Fieldcoild\satfieldazimuth,135,deg,nan
+sample_voltage,0,V,nan

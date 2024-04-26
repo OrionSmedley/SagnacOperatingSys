@@ -1,6 +1,6 @@
 ﻿Parameter,value,unit,priority
 voltage,"[0,1,2]",V,2
-field,"(0,0,0)",T,1
+field,"[(0,0,0),(1,0,0)]",T,1
 temperature,"[300,301]",kelvin,3
 isInit,"""init""",,0
 location,"""earth""",,nan
