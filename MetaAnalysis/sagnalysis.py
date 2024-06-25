@@ -11,12 +11,44 @@ import os
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 from datetime import datetime
 import matplotlib.dates as mdates
 from typing import List, Tuple
+import time
 
 plt.rcParams["figure.dpi"] = 100
+
+
+## Meta Sagnalysis
+ogFreq = 3347620.0000000843
+def get_noise_data(device,  TcSet = 1,   numSamples = 100, demod = 3, tmeasure = np.inf, FreqSet = ogFreq):
+    device.demods[demod].timeconstant(TcSet)
+    device.oscs[1].freq(FreqSet)
+    TcReal = device.demods[demod].timeconstant()
+    FreqReal = device.oscs[1].freq()
+    
+    Tstart = time.time()
+    data = pd.DataFrame()#device.demods[3].sample() )
+    # concatenate the data with data
+    for i in range(numSamples):
+        time.sleep(10*TcSet)
+        sample_data = pd.DataFrame(device.demods[demod].sample())
+        sample_data['Time'] = time.time() - Tstart
+        sample_data['TcSet'] = TcSet
+        sample_data['TcReal'] = TcReal
+        data = pd.concat([data, sample_data], axis=0)
+
+        if float(sample_data['Time']) > tmeasure:
+            break
+
+    return data
+
+
+
+
+
+
+## normal sagnalysis
 
 def parse_metadata(file_path):
     with open(file_path, 'r') as f:
