@@ -15,6 +15,7 @@ from pymeasure.experiment import IntegerParameter, FloatParameter, BooleanParame
 from pymeasure.adapters import DAQmxAdapter
 from time import sleep, time
 import numpy as np
+import atto_device.CRYO2100 as cr
 
 class sagnacHeterodyneProcedure(Procedure):
     """
@@ -710,6 +711,9 @@ class sagnacOpticsXportProcedure(Procedure):
                 sleep(2)
 
         #######################################################
+
+        # change instrument to attocube
+
 
         #subscribe to outputs
         # self.lockin.sub(0)

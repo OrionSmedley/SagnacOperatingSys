@@ -9,7 +9,8 @@ from pymeasure.instruments.keithley import Keithley2400
 from pymeasure.instruments.zurich import HF2LI
 from pymeasure.instruments.signalrecovery import DSP7265
 from ..custom_instruments import vectorMagnetBase, vectorMagnetX, vectorMagnetY, vectorMagnetZ, vectorMagnetFull
-from ..instruments.LTC20 import LTC20
+# from ..instruments.LTC20 import LTC20, change to our temperature controller
+
 from pymeasure.instruments.keithley import Keithley6221
 from pymeasure.experiment import Procedure
 from pymeasure.experiment import IntegerParameter, FloatParameter, BooleanParameter, Parameter
@@ -390,7 +391,7 @@ class sagnacHeterodyneProcedure_vm_highZ(Procedure):
         self.apply_bias_field = False
         if self.bias_field_x != 0 or self.bias_field_y != 0 or self.bias_field_z != 0:
             self.apply_bias_field = True
-
+        # Note: this is just the port resource
         self.stepper = ANC150("COM3")
         # self.stepper.set_f(self.x_axis, 1000)
         # self.stepper.set_v(self.x_axis, 35)

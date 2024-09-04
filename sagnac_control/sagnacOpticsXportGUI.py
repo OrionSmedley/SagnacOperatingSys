@@ -1,4 +1,7 @@
 import logging
+
+import PyQt5.QtCore
+import PyQt5.QtWidgets
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
@@ -15,7 +18,7 @@ from pymeasure.display.Qt import QtCore, QtGui, fromUi
 from pymeasure.display.windows import ManagedWindow
 from pymeasure.experiment import Results, unique_filename
 from sagnac.procedures import sagnacOpticsXportProcedure
-
+import PyQt5
 class sagnacOpticsXportGUI(ManagedWindow):
 
     SWEEP_PARAM_NAMES = ['sweep_field', 'sweep_field_azimuth']
@@ -232,7 +235,7 @@ class sagnacOpticsXportGUI(ManagedWindow):
         super().finished(experiment)
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = PyQt5.QtWidgets.QApplication(sys.argv)
     window = sagnacOpticsXportGUI()
     window.show()
     sys.exit(app.exec_())
