@@ -15,6 +15,7 @@ from pymeasure.display.Qt import QtCore, QtGui, fromUi
 from pymeasure.display.windows import ManagedWindow
 from pymeasure.experiment import Results, unique_filename
 from sagnac.procedures import sagnacOpticsXportProcedure_vm
+from PyQt5 import QtWidgets
 
 class sagnacOpticsXportGUI(ManagedWindow):
 
@@ -212,7 +213,7 @@ class sagnacOpticsXportGUI(ManagedWindow):
         super().finished(experiment)
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     window = sagnacOpticsXportGUI()
     window.show()
     sys.exit(app.exec_())
