@@ -111,7 +111,7 @@ class sagnacOpticsXportGUI(ManagedWindow):
         procedures = []
         for v in voltages:
             procedure = self.make_procedure()
-            procedure.applied_voltage = v
+            procedure = v
             procedure.first = False
             procedure.last = False
             procedures.append(procedure)

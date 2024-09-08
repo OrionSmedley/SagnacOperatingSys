@@ -95,7 +95,8 @@ class sagnacHeterodyneProcedure_vm(Procedure):
         self.magnet = vectorMagnetFull("GPIB::26", "GPIB::25", "GPIB::24") #X,Y,Z in that order
 
         log.info("Connecting to the Zurich Lock-in")
-        self.lockin = HF2LI(8005,1,1004)
+        # self.lockin = HF2LI(8005,1,1004)
+        self.lockin = HF2LI(8005, 1, 18338)
 
         #subscribe to outputs
         self.lockin.sub(0)
@@ -378,7 +379,10 @@ class sagnacHeterodyneProcedure_vm_highZ(Procedure):
         log.info("LTC20: Locked front panel")
 
         log.info("Connecting to the Zurich Lock-in")
-        self.lockin = HF2LI(8005,1,1004)
+        # http://127.0.0.1:8006/1
+        self.lockin = HF2LI("127.0.0.1:8006")
+        # connect to our lockin: 
+        # self.lockin = 
 
         #subscribe to outputs
         self.lockin.sub(0)
