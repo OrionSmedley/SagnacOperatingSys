@@ -59,6 +59,7 @@ class sagnacOpticsXportGUI(ManagedWindow):
         Constructs a single procedure
         """
         procedure = sagnacOpticsXportProcedure_vm()
+        procedure.startup()
         procedure.sample_name = self.inputs.sample_name.text()
 
         procedure.x_enable = self.inputs.x_enable.isChecked()
@@ -162,7 +163,7 @@ class sagnacOpticsXportGUI(ManagedWindow):
         return procedures
 
     def queue(self):
-        direc = 'C:\\Users\\Ralph Group\\Documents\\Data\\' + self.inputs.save_dir.text()
+        direc = 'C:\\Users\\luogroup\\Documents\\Sagnac Data\\' + self.inputs.save_dir.text()
         # do_sweep = self.inputs.do_voltage_sweep.isChecked()
         # if do_sweep:
         #     voltages = np.arange(self.inputs.voltage_min.value(), 

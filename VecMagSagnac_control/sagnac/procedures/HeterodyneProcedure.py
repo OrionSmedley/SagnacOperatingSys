@@ -18,6 +18,7 @@ from pymeasure.adapters import DAQmxAdapter
 # from scanning import ANC150, ANC300
 from time import sleep, time
 import numpy as np
+import atto_device.CRYO2100 as cr
 
 class sagnacHeterodyneProcedure_vm(Procedure):
     """
@@ -167,7 +168,7 @@ class sagnacHeterodyneProcedure_vm(Procedure):
         for progress_iterator, field in enumerate(field_points):
             self.emit("progress", 100*progress_iterator/num_progress)
 
-            self.magnet.set_field_polar(field,self.sweep_field_azimuth,self.sweep_field_polar)
+            self.device.magnet.set_field_polar(field,self.sweep_field_azimuth,self.sweep_field_polar)
             log.info("waiting till field is set to setpoint")
             sleep(0.1)
             if self.should_stop():
@@ -835,7 +836,7 @@ class sagnacOpticsXportProcedure_vm(Procedure):
 
     calib_file = 'C:\\Users\\Ralph Group\\Desktop\\git\\sagnac_control\\calibrations\\sagnac'
     sample_name = Parameter("Sample Name",default='test')
-
+    device = cr("192.168.1.1")
     step = IntegerParameter("current step", default = 0)
     delta_x = IntegerParameter("stepper x step", default = 0)
     delta_y = IntegerParameter("stepper y step", default = 0)
@@ -896,14 +897,13 @@ class sagnacOpticsXportProcedure_vm(Procedure):
         print("Setting up X,Y,Z magnets")
         log.info("Setting up X,Y,Z magnets")
         self.magnet = vectorMagnetFull("GPIB::26", "GPIB::25", "GPIB::24") #X,Y,Z in that order
-
         self.z_magnet = vectorMagnetZ("GPIB::24")
 
         log.info("waiting for the wait time")
         sleep(self.wait) 
 
         log.info("Connecting to the Zurich Lock-in")
-        self.lockin = HF2LI(8005,1,1004)
+        self.lockin = HF2LI(8005, 1, 18338)
         # self.lockin.set_vout(1,0,self.applied_voltage/10*np.sqrt(2))
         self.lockin.set_vout(1,6,self.applied_voltage/10*np.sqrt(2)) #using output 7
 

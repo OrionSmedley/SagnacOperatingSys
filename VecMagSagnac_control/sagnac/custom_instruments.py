@@ -230,20 +230,19 @@ class vectorMagnetFull:
     Uses the usual physics parameterization of the magnetic field.
     """
 
-    def __init__(self, resourceNameX, resourceNameY, resourceNameZ, **kwargs):
-        # QUESTION: should we pass kwargs to all three? I don't think there's
-        # a good way to do this...
-        self.magnet_x = vectorMagnetX(resourceNameX, **kwargs)
-        self.magnet_y = vectorMagnetY(resourceNameY, **kwargs)
-        self.magnet_z = vectorMagnetZ(resourceNameZ, **kwargs)
+    def __init__(self, device):
+        self.device = device
+        # self.magnet_x = 2
+        # self.magnet_y = 1
+        # self.magnet_z = 0
 
-        self._x_field = self.magnet_x.field
-        self._y_field = self.magnet_y.field
-        self._z_field = self.magnet_z.field
+        # self._x_field = self.magnet_x.field
+        # self._y_field = self.magnet_y.field
+        # self._z_field = self.magnet_z.field
 
         # limit such that below this field change the magnet does not actually change field,
         # to limit commands sent to the magnet
-        self._field_difference_cutoff = 1e-5 # 0.1 G
+        self._field_difference_cutoff = 0 #1e-5 # 0.1 G
 
         # TODO: should we reset the current limit of the z magnet or just
         # trust that the checking in this class will always be OK?
@@ -274,25 +273,14 @@ class vectorMagnetFull:
         else:
             self._B_sign = 1
 
-        # if not np.isclose(Bx, self._x_field, atol=self._field_difference_cutoff, rtol=0):
-        self.magnet_x.field = Bx
-            # log.info("X change too small")
-        # if not np.isclose(By, self._y_field, atol=self._field_difference_cutoff, rtol=0):
-        self.magnet_y.field = By
-            # log.info("Y change too small")
-        # if not np.isclose(Bz, self._z_field, atol=self._field_difference_cutoff, rtol=0):
-        self.magnet_z.field = Bz
-            # log.info("Z change too small")
+        self.device.magnet.setHSetPoint3D(Bz, By, Bx)
 
     def get_field_polar(self):
         """
         Returns the field in polar coordinates in the standard Physics parameterization
         in the order (B, phi, theta)
         """
-
-        Bx = self.magnet_x.field
-        By = self.magnet_y.field
-        Bz = self.magnet_z.field
+        Bz, By, Bx = self.device.getH(0), self.device.getH(1), self.device.getH(2)
 
         B = self._B_sign * np.sqrt(Bx**2 + By**2 + Bz**2)
         ang_sign_offset = 0 if self._B_sign > 0 else 180
@@ -312,9 +300,7 @@ class vectorMagnetFull:
         Bz_set = B*np.cos(theta)
 
 
-        Bx_current = self.magnet_x.field
-        By_current = self.magnet_y.field
-        Bz_current = self.magnet_z.field
+        Bz_current, By_current, Bx_current = self.device.getH(0), self.device.getH(1), self.device.getH(2)
 
         if not np.isclose(Bx_set,Bx_current, rtol=RTOL) and not np.isclose(By_set,By_current,rtol=RTOL) and not np.isclose(Bz_set, Bz_current, rtol=RTOL):
             log.info("Field is not close to the setpoint")
@@ -331,29 +317,24 @@ class vectorMagnetFull:
         if np.sqrt(Bx*Bx + By*By + Bz*Bz) > self._field_mag_lim: #np.sqrt returns positive square root
             log.error("A large field of %g was requested"%np.sqrt(Bx*Bx + By*By + Bz*Bz))
             raise ValueError("Large field requested! Limit is %g"%self._field_mag_lim)
-
-        # if not np.isclose(Bx, self._x_field, atol=self._field_difference_cutoff, rtol=0):
-        self.magnet_x.field = Bx
-        # if not np.isclose(By, self._y_field, atol=self._field_difference_cutoff, rtol=0):
-        self.magnet_y.field = By
-        # if not np.isclose(Bz, self._z_field, atol=self._field_difference_cutoff, rtol=0):
-        self.magnet_z.field = Bz
+        self.device.magnet.setHSetPoint3D(Bz, By, Bx)
 
 
     def get_field_cartesian(self):
         """
         Returns the cartesian parameterization of the field in the order X, Y, Z.
         """
-
-        return self.magnet_x.field, self.magnet_y.field, self.magnet_z.field
+        Bz, By, Bx = self.device.getH(0), self.device.getH(1), self.device.getH(2)
+        return Bx, By, Bz
 
 
 
     def check_field_cartesian(self, Bx_set, By_set, Bz_set, RTOL):
         """Checks the current field value to make sure it is within tolerance of setpoint """
-        Bx_current = self.magnet_x.field
-        By_current = self.magnet_y.field
-        Bz_current = self.magnet_z.field
+
+        Bx_current = self.device.getH(2)
+        By_current = self.device.getH(1)
+        Bz_current = self.device.getH(0)
 
         if not np.isclose(Bx_set,Bx_current, rtol=RTOL) and not np.isclose(By_set,By_current,rtol=RTOL) and not np.isclose(Bz_set, Bz_current, rtol=RTOL):
             log.info("Field is not close to the setpoint")
@@ -363,7 +344,7 @@ class vectorMagnetFull:
             return True
 
     def is_ramping(self):
-        return self.magnet_x.is_ramping() or self.magnet_y.is_ramping() or self.magnet_z.is_ramping()
+        return self.device.magnet.getFieldControl()
 
     def is_holding(self):
         return self.magnet_x.is_holding() or self.magnet_y.is_holding() or self.magnet_z.is_holding()
