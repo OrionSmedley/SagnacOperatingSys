@@ -33,6 +33,7 @@ class sagnacOpticsXportGUI(ManagedWindow):
                 'sweep_field_stop',
                 'sweep_field_step',
                 'sweep_field_azimuth',
+                'sweep_field_polar',
                 'saturating_field',
                 'saturating_field_polar',
                 'bias_field_x',

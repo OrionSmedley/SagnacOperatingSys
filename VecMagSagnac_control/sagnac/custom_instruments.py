@@ -232,6 +232,7 @@ class vectorMagnetFull:
 
     def __init__(self, device):
         self.device = device
+        self.device.connect()
         # self.magnet_x = 2
         # self.magnet_y = 1
         # self.magnet_z = 0
@@ -247,7 +248,7 @@ class vectorMagnetFull:
         # TODO: should we reset the current limit of the z magnet or just
         # trust that the checking in this class will always be OK?
 
-        self._field_mag_lim = 0.92
+        self._field_mag_lim = 1 # set to 1? originally 0.92 unit in T not kG
 
         self._B_sign = 1
 
@@ -255,7 +256,7 @@ class vectorMagnetFull:
         """
         Sets the field, accepting polar coordinates.
         """
-
+        
         log.info('Setting to %g %g %g'%(B,phi,theta))
         phi = phi*np.pi/180
         theta = theta*np.pi/180
@@ -280,7 +281,7 @@ class vectorMagnetFull:
         Returns the field in polar coordinates in the standard Physics parameterization
         in the order (B, phi, theta)
         """
-        Bz, By, Bx = self.device.getH(0), self.device.getH(1), self.device.getH(2)
+        Bz, By, Bx = self.device.magnet.getH(0), self.device.magnet.getH(1), self.device.magnet.getH(2)
 
         B = self._B_sign * np.sqrt(Bx**2 + By**2 + Bz**2)
         ang_sign_offset = 0 if self._B_sign > 0 else 180
@@ -299,15 +300,16 @@ class vectorMagnetFull:
         By_set = B*np.sin(phi)*np.sin(theta)
         Bz_set = B*np.cos(theta)
 
-
-        Bz_current, By_current, Bx_current = self.device.getH(0), self.device.getH(1), self.device.getH(2)
-
-        if not np.isclose(Bx_set,Bx_current, rtol=RTOL) and not np.isclose(By_set,By_current,rtol=RTOL) and not np.isclose(Bz_set, Bz_current, rtol=RTOL):
-            log.info("Field is not close to the setpoint")
-            return False
-        else:
-            log.info("field is close to the setpoint")
+        Bz_current, By_current, Bx_current = self.device.magnet.getH(0), self.device.magnet.getH(1), self.device.magnet.getH(2)
+        # print(f"{Bx_set}, {By_set}, {Bz_set}")
+        # if not np.isclose(Bx_set,Bx_current, rtol=RTOL) and not np.isclose(By_set,By_current,rtol=RTOL) and not np.isclose(Bz_set, Bz_current, rtol=RTOL):
+        if np.isclose(Bx_set,Bx_current, rtol=RTOL) and np.isclose(By_set,By_current,rtol=RTOL) and np.isclose(Bz_set, Bz_current, rtol=RTOL):
+            log.info("Field is close to the setpoint")
             return True
+        else:
+            log.info("field is not close to the setpoint")
+            # print(f"{Bx_}")
+            return False
 
     def set_field_cartesian(self, Bx, By, Bz):
         """
@@ -324,10 +326,8 @@ class vectorMagnetFull:
         """
         Returns the cartesian parameterization of the field in the order X, Y, Z.
         """
-        Bz, By, Bx = self.device.getH(0), self.device.getH(1), self.device.getH(2)
+        Bz, By, Bx = self.device.magnet.getH(0), self.device.magnet.getH(1), self.device.magnet.getH(2)
         return Bx, By, Bz
-
-
 
     def check_field_cartesian(self, Bx_set, By_set, Bz_set, RTOL):
         """Checks the current field value to make sure it is within tolerance of setpoint """
@@ -344,7 +344,8 @@ class vectorMagnetFull:
             return True
 
     def is_ramping(self):
-        return self.device.magnet.getFieldControl()
+        # what is getFieldControl?--x
+        return self.device.magnet.getFieldControl(0)
 
     def is_holding(self):
         return self.magnet_x.is_holding() or self.magnet_y.is_holding() or self.magnet_z.is_holding()
@@ -363,9 +364,16 @@ class vectorMagnetFull:
         Shuts down each of the magnets individually
         """
         log.info("Shutting down all of the magnets")
-        self.magnet_x.shutdown()
-        self.magnet_y.shutdown()
-        self.magnet_z.shutdown()
+        # self.magnet_x.shutdown()
+        # self.magnet_y.shutdown()
+        # self.magnet_z.shutdown()
+        self.device.action.shutdown()
+
+    def set_magnet_field(self, magnet, setPoint):
+        # magnet is 0, 1, 2
+        # field strength
+        # I wrote this for self.z_magnet.field = self.saturating_field in heterodyneProcedure
+        self.device.magnet.setHSetPoint(magnet, setPoint)
 
 class Keithley220(Instrument):
     """ Represents a Keithley 220 programmable current source """
