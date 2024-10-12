@@ -10,6 +10,29 @@ import textwrap
 import socket
 import numpy as np
 
+
+from PyQt5 import QtWidgets, QtGui
+
+# # Monkey patch QtGui to point to QtWidgets
+# QtGui.QWidget = QtWidgets.QWidget
+# QtGui.QApplication = QtWidgets.QApplication
+# QtGui.QMainWindow = QtWidgets.QMainWindow
+# QtGui.QTreeWidgetItem = QtWidgets.QTreeWidgetItem
+# QtGui.QTreeWidget = QtWidgets.QTreeWidget
+
+# # Add more as needed...
+
+from PyQt5 import QtWidgets, QtGui
+
+# Dynamically map all attributes from QtGui to QtWidgets
+for attr in dir(QtWidgets):
+    if hasattr(QtGui, attr):
+        setattr(QtGui, attr, getattr(QtWidgets, attr))
+
+
+
+
+
 from pymeasure.log import console_log
 from pymeasure.display.Qt import QtCore, QtGui, fromUi
 from pymeasure.display.windows import ManagedWindow
