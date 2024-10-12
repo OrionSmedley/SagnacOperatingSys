@@ -13,6 +13,8 @@ sagnac/procedures/PHE2PtProcedure.py
 sagnac/procedures/PHEProcedure.py
 sagnac/procedures/TempTrackingProcedure.py
 sagnac/procedures/__init__.py
+sagnac/procedures/junkMag.py
+sagnac/procedures/testJunkMag.py
 sagnac_control.egg-info/PKG-INFO
 sagnac_control.egg-info/SOURCES.txt
 sagnac_control.egg-info/dependency_links.txt

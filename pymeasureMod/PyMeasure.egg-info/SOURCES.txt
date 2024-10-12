@@ -106,6 +106,7 @@ pymeasure/errors.py
 pymeasure/log.py
 pymeasure/process.py
 pymeasure/thread.py
+pymeasure/adapters/VisaAdapter.py
 pymeasure/adapters/__init__.py
 pymeasure/adapters/adapter.py
 pymeasure/adapters/ametekIP.py

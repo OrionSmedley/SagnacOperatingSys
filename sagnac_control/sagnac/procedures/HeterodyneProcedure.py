@@ -7,7 +7,10 @@ from pymeasure.log import console_log
 from pymeasure.experiment import Results, unique_filename
 
 from pymeasure.instruments.zurich import HF2LI
+
+# from sagnac.custom_instruments import daedalusProjField
 from ..custom_instruments import daedalusProjField
+
 from pymeasure.instruments.keithley import Keithley6221
 from pymeasure.instruments.keithley import Keithley2400
 from pymeasure.experiment import Procedure

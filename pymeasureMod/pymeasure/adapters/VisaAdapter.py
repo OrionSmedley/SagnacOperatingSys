@@ -61,7 +61,7 @@ class VISAAdapter(Adapter):
         for key in kwargsCopy:
             if key not in safeKeywords:
                 kwargs.pop(key)
-        self.connection = self.manager.open_resource(
+        self.connection = self.manager.get_instrument(
             resourceName,
             **kwargs
         )
