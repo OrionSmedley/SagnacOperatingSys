@@ -11,7 +11,7 @@ import socket
 import numpy as np
 
 
-from PyQt5 import QtWidgets, QtGui
+# from PyQt5 import QtWidgets, QtGui
 
 # # Monkey patch QtGui to point to QtWidgets
 # QtGui.QWidget = QtWidgets.QWidget
@@ -19,15 +19,57 @@ from PyQt5 import QtWidgets, QtGui
 # QtGui.QMainWindow = QtWidgets.QMainWindow
 # QtGui.QTreeWidgetItem = QtWidgets.QTreeWidgetItem
 # QtGui.QTreeWidget = QtWidgets.QTreeWidget
+# QtGui.QLineEdit = QtWidgets.QLineEdit
+# QtGui.QDoubleSpinBox = QtWidgets.QDoubleSpinBox
+# QtGui.QSpinBox = QtWidgets.QSpinBox
+# QtGui.QCheckBox = QtWidgets.QCheckBox
+# QtGui.QComboBox = QtWidgets.QComboBox
+# QtGui.QFrame = QtWidgets.QFrame
 
-# # Add more as needed...
+
+# # # Add more as needed...
+
+# # from PyQt5 import QtWidgets, QtGui
+
+# # # Dynamically map all attributes from QtGui to QtWidgets
+# # for attr in dir(QtWidgets):
+# #     if hasattr(QtGui, attr):
+# #         setattr(QtGui, attr, getattr(QtWidgets, attr))
+
+
+
+#############################################################################################################################
 
 from PyQt5 import QtWidgets, QtGui
 
-# Dynamically map all attributes from QtGui to QtWidgets
+# Map all attributes from QtWidgets to QtGui without checking if they exist in QtGui
 for attr in dir(QtWidgets):
-    if hasattr(QtGui, attr):
-        setattr(QtGui, attr, getattr(QtWidgets, attr))
+    setattr(QtGui, attr, getattr(QtWidgets, attr))
+
+
+
+
+#############################################################################################################################
+import pyvisa
+
+# Simulate the `visa` module as an alias for `pyvisa`
+import sys
+
+# Create a fake 'visa' module, which is essentially an alias for pyvisa
+sys.modules['visa'] = pyvisa
+
+# Optionally, map all attributes from pyvisa to visa (this is technically unnecessary because the alias works)
+for attr in dir(pyvisa):
+    setattr(sys.modules['visa'], attr, getattr(pyvisa, attr))
+
+#############################################################################################################################
+
+
+
+
+
+
+
 
 
 
