@@ -28,6 +28,9 @@ from .mock import Mock
 from .resources import list_resources
 from .validators import discreteTruncate
 
+from .generic_types import SCPIMixin, SCPIUnknownMixin
+
+
 from . import agilent
 from . import anritsu
 from . import danfysik
