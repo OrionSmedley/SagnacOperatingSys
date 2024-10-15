@@ -138,12 +138,14 @@ pymeasure/experiment/workers.py
 pymeasure/instruments/.DS_Store
 pymeasure/instruments/__init__.py
 pymeasure/instruments/comedi.py
+pymeasure/instruments/generic_types.py
 pymeasure/instruments/instrument.py
 pymeasure/instruments/mock.py
 pymeasure/instruments/resources.py
 pymeasure/instruments/validators.py
 pymeasure/instruments/agilent/__init__.py
 pymeasure/instruments/agilent/agilent34410A.py
+pymeasure/instruments/agilent/agilent4284A.py
 pymeasure/instruments/agilent/agilent8257D.py
 pymeasure/instruments/agilent/agilent8563E.py
 pymeasure/instruments/agilent/agilent8722ES.py
