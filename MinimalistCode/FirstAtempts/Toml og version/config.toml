@@ -1,0 +1,14 @@
+# Sweep for B
+[sweeps.B]
+type = "sweep"
+values = [0, 1, 2]
+
+# Sweep for V_init (initialization step)
+[sweeps.V_init]
+type = "sweep"
+values = [-1, 1]
+
+# Sweep for V
+[sweeps.V]
+type = "sweep"
+values = [-10, -5, 0, 5, 10]
