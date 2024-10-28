@@ -87,7 +87,7 @@ class Agilent4284A(SCPIMixin, Instrument):
         20 V in high-power mode.""",
         validator=strict_range,
         values=(0.005, 2),
-        dynamic=True
+        # dynamic=True
     )
 
     bias_enabled = Instrument.control(
