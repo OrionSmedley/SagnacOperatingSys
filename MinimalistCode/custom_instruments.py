@@ -324,6 +324,9 @@ class daedalusProjField:
             self.set_volts = truncated_range(self.set_volts,self._voltagelims)
             log.warning('Magnet voltage overload! Magnet voltage being set to %g'%self.set_volts)
         self.volts = self.set_volts
+
+
+        self._field = B
     
     @handle_timeout("setting field")
     def set_cart_vector_field(self, Bx, By, Bz):
@@ -350,6 +353,30 @@ class daedalusProjField:
         for err in self.errors:
             log.warning('%s'%err)
         self.set_vector_field(B, phi, theta)
+
+
+    def get_cart_vector_field(self):
+        B = self.field
+        phi_deg = self.phi
+        theta_deg = self.theta
+
+        if B is None or phi_deg is None or theta_deg is None:
+            logging.error("Magnetic field parameters (B, phi, theta) are not fully set.")
+            return (0.0, 0.0, 0.0)
+
+        phi_rad = np.deg2rad(phi_deg)
+        theta_rad = np.deg2rad(theta_deg)
+
+        Bx = B * np.cos(theta_rad) * np.cos(phi_rad)
+        By = B * np.cos(theta_rad) * np.sin(phi_rad)
+        Bz = B * np.sin(theta_rad)
+
+        logging.debug(f"Converted field from spherical to Cartesian coordinates:")
+        logging.debug(f"B = {B}, phi = {phi_deg}°, theta = {theta_deg}°")
+        logging.debug(f"Bx = {Bx}, By = {By}, Bz = {Bz}")
+
+        return (Bx, By, Bz)
+
 
 class Keithley220(Instrument):
     """ Represents a Keithley 220 programmable current source """
