@@ -44,6 +44,10 @@ magnet.load_calibration_params(calib_file)
 #     B=0,
 #     phi=0, 
 #     theta=0)
+
+
+
+
 #imports for Zurich Instruments
 import os
 import numpy as np
@@ -51,6 +55,11 @@ import pandas as pd
 from zhinst.toolkit import Session
 session = Session("localhost", hf2=True)
 myHF2LI = session.connect_device("DEV1004")
+
+
+
+import time
+
 
 #############################################################################################################################
 #############################################################################################################################
@@ -63,8 +72,8 @@ myHF2LI = session.connect_device("DEV1004")
 
 
 def perform_measurement(saveFile):
-    # session = Session("localhost", hf2=True)
-    # myHF2LI = session.connect_device("DEV1004")
+    print("performing measurement \n")
+
     data = {}
     dat = [myHF2LI.demods[demod].sample() for demod in range(6)]
     J2J1 = 0.543
@@ -104,15 +113,34 @@ def perform_measurement(saveFile):
 
 
 def set_parameter(**kwargs):
-    print( """setting parameters on the apparatus.""" )
+    print("setting parameters on the apparatus.")
     for name, value in kwargs.items():
-        print(f" \t Setting {name} to {value}")
+        # Strip off the part after an underscore
+        base_name = name.split('_')[0]
+        print(f"\tSetting {base_name} to {value}")
 
-    if 'B' in kwargs:
-        magnet.setField(kwargs['B'])
+        if base_name == 'B':
+            magnet.setField(value)
+            while magnet.in_motion:
+                pass
 
-    if 'phi' in kwargs:
-        magnet.setPhi(kwargs['phi'])
+        elif base_name == 'phi':
+            magnet.setPhi(value)
+            while magnet.in_motion:
+                pass
+            
+        elif base_name == 'theta':
+            magnet.setTheta(value)
+            while magnet.in_motion:
+                pass
 
-    if 'theta' in kwargs:
-        magnet.setTheta(kwargs['theta'])
+        elif base_name == "Tc":
+            for demod in range(6):
+                myHF2LI.demods[demod].timeconstant(value)
+
+
+        elif base_name == 'wait':
+            time.sleep(value)
+
+        else:
+            print(f"Unknown parameter {base_name}, from {name}")
