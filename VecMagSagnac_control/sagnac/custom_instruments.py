@@ -291,8 +291,8 @@ class vectorMagnetFull:
         return B, phi, theta
 
 
-    def check_field_polar(self, B, phi, theta, RTOL):
-        """Checks the current field value to make sure it is within tolerance of setpoint"""
+    def check_field_polar(self, B, phi, theta, ATOL):
+        """Checks the current field value to make sure it is within absolute tolerance of setpoint"""
         phi = phi*np.pi/180
         theta = theta*np.pi/180
 
@@ -301,14 +301,14 @@ class vectorMagnetFull:
         Bz_set = B*np.cos(theta)
 
         Bz_current, By_current, Bx_current = self.device.magnet.getH(0), self.device.magnet.getH(1), self.device.magnet.getH(2)
-        # print(f"{Bx_set}, {By_set}, {Bz_set}")
-        # if not np.isclose(Bx_set,Bx_current, rtol=RTOL) and not np.isclose(By_set,By_current,rtol=RTOL) and not np.isclose(Bz_set, Bz_current, rtol=RTOL):
-        if np.isclose(Bx_set,Bx_current, rtol=RTOL) and np.isclose(By_set,By_current,rtol=RTOL) and np.isclose(Bz_set, Bz_current, rtol=RTOL):
+
+        if np.isclose(Bx_set,Bx_current, atol=ATOL) and np.isclose(By_set,By_current,atol=ATOL) and np.isclose(Bz_set, Bz_current, atol=ATOL):
             log.info("Field is close to the setpoint")
             return True
         else:
-            log.info("field is not close to the setpoint")
-            # print(f"{Bx_}")
+            log.info(f"magnet at {Bx_current}, {By_current}, {Bz_current}")
+            log.info(f"setting to {Bx_set}, {By_set}, {Bz_set}")
+            # log.info("field is not close to the setpoint")
             return False
 
     def set_field_cartesian(self, Bx, By, Bz):
@@ -329,19 +329,19 @@ class vectorMagnetFull:
         Bz, By, Bx = self.device.magnet.getH(0), self.device.magnet.getH(1), self.device.magnet.getH(2)
         return Bx, By, Bz
 
-    def check_field_cartesian(self, Bx_set, By_set, Bz_set, RTOL):
-        """Checks the current field value to make sure it is within tolerance of setpoint """
+    def check_field_cartesian(self, Bx_set, By_set, Bz_set, ATOL):
+        """Checks the current field value to make sure it is within absolute tolerance of setpoint """
+        Bx_current = self.device.magnet.getH(2)
+        By_current = self.device.magnet.getH(1)
+        Bz_current = self.device.magnet.getH(0)
 
-        Bx_current = self.device.getH(2)
-        By_current = self.device.getH(1)
-        Bz_current = self.device.getH(0)
-
-        if not np.isclose(Bx_set,Bx_current, rtol=RTOL) and not np.isclose(By_set,By_current,rtol=RTOL) and not np.isclose(Bz_set, Bz_current, rtol=RTOL):
-            log.info("Field is not close to the setpoint")
-            return False
-        else:
+        if np.isclose(Bx_set,Bx_current, atol=ATOL) and np.isclose(By_set,By_current,atol=ATOL) and np.isclose(Bz_set, Bz_current, atol=ATOL):
+            # log.info("Field is not close to the setpoint")
             log.info("field is close to the setpoint")
             return True
+        else:
+            log.info(f"{Bx_current}, {By_current}, {Bz_current}")
+            return False
 
     def is_ramping(self):
         # what is getFieldControl?--x

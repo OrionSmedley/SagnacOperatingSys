@@ -183,7 +183,6 @@ class sagnacHeterodyneProcedure_vm(Procedure):
                     log.info("Caught stop flag in procedure.")
                     break
 
-
             while not self.magnet.check_field_polar(field,self.sweep_field_azimuth,self.sweep_field_polar, 5e-3):
                 sleep(0.1)
                 if self.should_stop():
@@ -218,7 +217,7 @@ class sagnacHeterodyneProcedure_vm(Procedure):
                 log.info("Caught stop flag in procedure.")
                 break
           
-            
+
             # if progress_iterator == 0: # only triggers before taking the first data point
             #     log.info("waiting for the wait time")
             #     sleep(self.wait) 
@@ -530,11 +529,12 @@ class sagnacHeterodyneProcedure_vm_highZ(Procedure):
             dat = self.lockin.poll_and_unpack(0.02, 100, [0,1,3,4,5], ['x','y'], ratio=False)
             log.info("Recording results")
             self.emit('results', {
-                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[5]['y'])/2, 
+                 
+                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, # mode 4 (1st harmonic) / mode 3(second harmonic)
                 "X1": dat[3]['x'],
                 "Y1": dat[3]['y'],
-                "X2": dat[5]['x'],
-                "Y2": dat[5]['y'],
+                "X2": dat[2]['x'],
+                "Y2": dat[2]['y'],
                 "DeltaThetaK": J2J1*dat[4]['x']/dat[5]['y']*2, #sideband signal is diminished by 1/2 relative to main carrier so *2 to get the actual signal,
                 "DeltaX1": dat[4]['x'],
                 "DeltaY1": dat[4]['y'],
@@ -772,7 +772,6 @@ class sagnacHeterodyneProcedure_vm_PhiSweep(Procedure):
             if progress_iterator == 0: # only triggers before taking the first data point
                 log.info("waiting for the wait time")
                 sleep(self.wait) 
-            
 
             self.lockin.sync() # clears buffer since field has changed
             sleep(self.settling)
@@ -846,11 +845,8 @@ class sagnacOpticsXportProcedure_vm(Procedure):
     x_enable = BooleanParameter("Enable x motion", default = True)
     y_enable = BooleanParameter("Enable y motion", default = False)
 
-    applied_voltage = FloatParameter("Applied Sample Voltage", units="V", default=1)
-    # apply_current = BooleanParameter("Current Applied?", default=True)
-    # current_amplitude = FloatParameter("Applied Sample Current Amplitude", units="A", default=1)
+    applied_voltage = FloatParameter("Applied Sample Voltage", units="V", default=0)
     current_frequency = FloatParameter("Applied Sample Current frequency", units="kHz", default=1)
-    # current_offset = FloatParameter("Applied Sample Current offset", units="A", default=1)
     settling = FloatParameter("Settling", units="s", default=0.5)
     wait = FloatParameter("Pre Measurement Wait Time", units="s", default=0.5)
     avgs = IntegerParameter("Number of Averages", default = 1)
@@ -905,175 +901,44 @@ class sagnacOpticsXportProcedure_vm(Procedure):
 
         log.info("Connecting to the Zurich Lock-in")
         self.lockin = HF2LI(8005, 1, 18338)
-        # self.lockin.set_vout(1,0,self.applied_voltage/10*np.sqrt(2))
         self.lockin.set_vout(1,6,self.applied_voltage/10*np.sqrt(2)) #using output 7
 
         self.apply_bias_field = False
         if self.bias_field_x != 0 or self.bias_field_y != 0 or self.bias_field_z != 0:
             self.apply_bias_field = True
-        
-        # self.stepper = ANC150("COM3")
-        # # self.stepper.set_f(self.x_axis, 1000)
-        # # self.stepper.set_v(self.x_axis, 35)
-        # if self.x_enable:
-        #     log.info("X enabled")
-        #     self.stepper.set_mode(self.x_axis, 'stp')
-        # # self.stepper.set_f(self.y_axis, 1000)
-        # # self.stepper.set_v(self.y_axis, 32)
-        # if self.y_enable:
-        #     log.info("y enabled")
-        #     self.stepper.set_mode(self.y_axis, 'stp')
-
-        # self.stepper = ANC300()
-        # self.stepper.connect()
 
     def execute(self):
-        if self.x_enable:
-            log.info(f'Now at step number {self.step}, moving sample by x:{self.delta_x}')
-            if self.delta_x >= 0:
-                self.stepper.stepu(1, self.delta_x)
-            else:
-                self.stepper.stepd(1, -self.delta_x)
-        if self.y_enable:
-            log.info(f'Now at step number {self.step}, moving sample by y:{self.delta_y}')
-            if self.delta_y >= 0:
-                self.stepper.stepu(2, self.delta_y)
-            else:
-                self.stepper.stepd(2, -self.delta_y)
 
         J2J1 = 0.543
         J1J0 = 1.837
         deg2rad = np.pi/180.
+        if self.sweep_field_start>self.sweep_field_stop and self.sweep_field_step>0:
+            self.sweep_field_step*=-1
         field_points = np.arange(self.sweep_field_start,
                                  self.sweep_field_stop,
                                  self.sweep_field_step)
         if self.sweep_field_stop not in field_points:
             field_points = np.append(field_points,self.sweep_field_stop)
-        
-        # field_points = field_points[::-1]
-
-        # field_points = np.append(field_points,
-        #                          -1*field_points[::-1][1:])
             
         if self.hysteresis:                        
             field_points = np.append(field_points, field_points[::-1][1:])
 
-        # if self.reverse:
-        #     field_points = field_points[::-1]
+        if self.reverse:
+            field_points = field_points[::-1]
         
         if self.saturate:
-            # self.magnet.set_field_polar(self.saturating_field, self.saturating_field_azimuth, self.saturating_field_polar)  #saturate the field 
-            # log.info("Setting saturation field")
-            # while self.magnet.is_ramping():
-            #     sleep(2)
-            #     if self.should_stop():
-            #         log.info("Caught stop flag in procedure.")
-            #         break
-
-            # while not self.magnet.check_field_polar(self.saturating_field, self.saturating_field_azimuth, self.saturating_field_polar, 5e-3):
-            #     sleep(0.5)
-            #     if self.should_stop():
-            #         log.info("Caught stop flag in procedure.")
-            #         break
-
-            # if self.magnet.is_holding():
-            #     log.info(" magnet status is HOLDING" )
-            # elif self.magnet.is_zeroing() or self.magnet.is_quenched():
-            #     log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
-            #     raise ValueError('Quench detected. Aborting procedures!')
-            # elif self.should_stop():
-            #     log.info("Caught stop flag in procedure.")
-            # else:
-            #     log.warning("Could not reach setpoint. Exiting procedures and aborting")
-
-            # self.z_magnet.field = self.saturating_field
-            # setting z magnet field strength
             self.magnet.set_field_polar(self.saturating_field, self.saturating_field_azimuth, self.saturating_field_polar)
             log.info("Setting saturation field")
-            while not self.magnet.check_field_polar(self.saturating_field, self.saturating_field_azimuth, self.saturating_field_polar, 5e-3):
+            while not self.magnet.check_field_polar(self.saturating_field, self.saturating_field_azimuth, self.saturating_field_polar, 0.002):
                 sleep(0.5)
+            log.info("Saturation field set")
 
-            # while self.z_magnet.is_ramping():
-            #     sleep(2)
-            #     log.info("Magnet is ramping")
-            #     if self.should_stop():
-            #         log.info("Caught stop flag in procedure.")
-            #         break
+        self.device.magnet.setHSetPoint3D(0.0, 0.0, 0.0)
+        while (abs(self.device.magnet.getH(0)) > 0.002):
+            sleep(0.5)
+        log.info(f"Field set to 0 T")
+        sleep(0.5)
 
-            # while not np.isclose(self.saturating_field, self.z_magnet.field, atol = 5e-5):
-            #     # log.info(f'{self.magnet.field - field}')
-            #     sleep(0.5)
-            #     if self.should_stop():
-            #         log.info("Caught stop flag in procedure.")
-            #         break
-
-            #Checking magnet's status to ensure that it successfully reaches the
-            #setpoint without quenching or zeroing
-           
-            # if self.z_magnet.is_holding():
-            #     log.info("Field set to %g T magnet status is HOLDING" % (self.saturating_field))
-            # elif self.z_magnet.is_zeroing() or self.magnet.getIsInQuenchState():
-            #     log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
-            #     raise ValueError('Quench detected. Aborting procedures!')
-            # elif self.should_stop():
-            #     log.info("Caught stop flag in procedure.")
-            # else:
-            #     log.warning("Could not reach setpoint. Exiting procedures and aborting")
-        
-        # if not self.apply_bias_field:
-        #     self.magnet.set_field_polar(field_points[0], self.sweep_field_azimuth, self.sweep_field_polar)
-        #     log.info(f'B: {field_points[0]}, phi: {self.sweep_field_azimuth}, theta: {self.sweep_field_polar}')
-        #     while self.magnet.is_ramping():
-        #         sleep(2)
-        #         if self.should_stop():
-        #             log.info("Caught stop flag in procedure.")
-        #             break
-
-        #     while not self.magnet.check_field_polar(field_points[0], self.sweep_field_azimuth, self.sweep_field_polar, 2e-3):
-        #         sleep(0.5)
-        #         if self.should_stop():
-        #             log.info("Caught stop flag in procedure.")
-        #             break
-
-        #     if self.magnet.is_holding():
-        #         log.info(" magnet status is HOLDING" )
-        #     elif self.magnet.is_zeroing() or self.magnet.is_quenched():
-        #         log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
-        #         raise ValueError('Quench detected. Aborting procedures!')
-        #     elif self.should_stop():
-        #         log.info("Caught stop flag in procedure.")
-        #     else:
-        #         log.warning("Could not reach setpoint. Exiting procedures and aborting")
-
-        # else:
-        #     Bx = field_points[0]*np.sin(self.sweep_field_polar*deg2rad)*np.cos(self.sweep_field_azimuth*deg2rad)  + self.bias_field_x
-        #     By = field_points[0]*np.sin(self.sweep_field_polar*deg2rad)*np.sin(self.sweep_field_azimuth*deg2rad) + self.bias_field_y
-        #     Bz = field_points[0]*np.cos(self.sweep_field_polar*deg2rad) + self.bias_field_z
-        #     log.info(f"Setting magnetic field (Cartesian) to {Bx:.4f},{By:.4f},{Bz:.4f}")
-        #     log.info(f"")
-        #     self.magnet.set_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arctan2(By,Bx)/deg2rad, np.arctan2(   np.sqrt(Bx**2 + By**2)   , Bz)/deg2rad       )
-        #     while self.magnet.is_ramping():
-        #         sleep(2)
-        #         if self.should_stop():
-        #             log.info("Caught stop flag in procedure.")
-        #             break
-
-        #     while not self.magnet.check_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arctan2(By,Bx)/deg2rad, np.arctan2(np.sqrt(Bx**2 + By**2), Bz)/deg2rad, 2e-3):
-        #         sleep(0.5)
-        #         if self.should_stop():
-        #             log.info("Caught stop flag in procedure.")
-        #             break
-
-        #     if self.magnet.is_holding():
-        #         log.info(" magnet status is HOLDING" )
-        #     elif self.magnet.is_zeroing() or self.magnet.is_quenched():
-        #         log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
-        #         raise ValueError('Quench detected. Aborting procedures!')
-        #     elif self.should_stop():
-        #         log.info("Caught stop flag in procedure.")
-        #     else:
-        #         log.warning("Could not reach setpoint. Exiting procedures and aborting")
-        
         log.info("Waiting a while to equilibrate")
         sleep(self.wait)
 
@@ -1083,68 +948,26 @@ class sagnacOpticsXportProcedure_vm(Procedure):
         for progress_iterator, field in enumerate(field_points):
             # specify which direction
             # set cap to 1T
+            # log.info(f"how many iterations: {len(field_points)}")
             
-            self.magnet.set_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar)
-            while not self.magnet.check_field_polar(field,self.sweep_field_azimuth,self.sweep_field_polar, 5e-3):
-                sleep(2)
-            x,y,z = self.magnet.get_field_cartesian()
-            log.info(f"Field set to {x}, {y}, {z}")
-            
+            if self.apply_bias_field:
+                Bx = field*np.cos(np.deg2rad(self.sweep_field_azimuth))*np.sin(np.deg2rad(self.sweep_field_polar)) + self.bias_field_x
+                By = field*np.sin(np.deg2rad(self.sweep_field_azimuth))*np.sin(np.deg2rad(self.sweep_field_polar)) + self.bias_field_y
+                Bz = field*np.cos(np.deg2rad(self.sweep_field_polar)) + self.bias_field_z
+                self.magnet.set_field_cartesian(Bx, By, Bz)
+                while not self.magnet.check_field_cartesian(Bx, By, Bz, 2e-3):
+                    sleep(0.5)
+                x,y,z = self.magnet.get_field_cartesian()
+                log.info(f"Field set to {x}, {y}, {z}")
+
+            elif self.apply_bias_field == False:
+                self.magnet.set_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar)
+                while not self.magnet.check_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar, 2e-3):
+                    sleep(0.5)
+                x,y,z = self.magnet.get_field_cartesian()
+                log.info(f"Field set to {x}, {y}, {z}")
+
             self.emit("progress", int(100*progress_iterator/num_progress))
-            # if not self.apply_bias_field:
-            #     self.magnet.set_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar)
-            #     log.info(f'B: {field}, phi: {self.sweep_field_azimuth}, theta: {self.sweep_field_polar}')
-            #     while self.magnet.is_ramping():
-            #         sleep(2)
-            #         if self.should_stop():
-            #             log.info("Caught stop flag in procedure.")
-            #             break
-
-            #     while not self.magnet.check_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar, 2e-3):
-            #         sleep(0.5)
-            #         if self.should_stop():
-            #             log.info("Caught stop flag in procedure.")
-            #             break
-
-            #     if self.magnet.is_holding():
-            #         log.info(" magnet status is HOLDING" )
-            #     elif self.magnet.is_zeroing() or self.magnet.is_quenched():
-            #         log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
-            #         raise ValueError('Quench detected. Aborting procedures!')
-            #     elif self.should_stop():
-            #         log.info("Caught stop flag in procedure.")
-            #     else:
-            #         log.warning("Could not reach setpoint. Exiting procedures and aborting")
-            #         log.info(f"Setting Magnetic Field to {field:.5f} T")
-            # else:
-            #     Bx = field*np.sin(self.sweep_field_polar*deg2rad)*np.cos(self.sweep_field_azimuth*deg2rad)  + self.bias_field_x
-            #     By = field*np.sin(self.sweep_field_polar*deg2rad)*np.sin(self.sweep_field_azimuth*deg2rad) + self.bias_field_y
-            #     Bz = field*np.cos(self.sweep_field_polar*deg2rad) + self.bias_field_z
-            #     log.info(f"Setting magnetic field (Cartesian) to {Bx:.4f},{By:.4f},{Bz:.4f}")
-            #     self.magnet.set_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arctan2(By,Bx)/deg2rad, np.arctan2(np.sqrt(Bx**2 + By**2),Bz)/deg2rad)
-
-            #     while self.magnet.is_ramping():
-            #         sleep(2)
-            #         if self.should_stop():
-            #             log.info("Caught stop flag in procedure.")
-            #             break
-
-            #     while not self.magnet.check_field_polar(np.sqrt(Bx**2 + By**2 + Bz**2), np.arctan2(By,Bx)/deg2rad, np.arctan2(np.sqrt(Bx**2 + By**2),Bz)/deg2rad, 2e-3):
-            #         sleep(0.5)
-            #         if self.should_stop():
-            #             log.info("Caught stop flag in procedure.")
-            #             break
-
-            #     if self.magnet.is_holding():
-            #         log.info(" magnet status is HOLDING" )
-            #     elif self.magnet.is_zeroing() or self.magnet.is_quenched():
-            #         log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
-            #         raise ValueError('Quench detected. Aborting procedures!')
-            #     elif self.should_stop():
-            #         log.info("Caught stop flag in procedure.")
-            #     else:
-            #         log.warning("Could not reach setpoint. Exiting procedures and aborting")
-
             self.lockin.sub(0)
             self.lockin.sub(1)
             self.lockin.sub(2)
@@ -1160,7 +983,7 @@ class sagnacOpticsXportProcedure_vm(Procedure):
                 log.info("recording average #%d"%i)
                 dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
             dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
-
+            
             self.lockin.unsubscribe("*")
 
             log.info("Recording results")
@@ -1189,19 +1012,6 @@ class sagnacOpticsXportProcedure_vm(Procedure):
 
     def shutdown(self):
         log.info("Finished with scans. Shutting down instruments.")
-        # self.magnet.shutdown()
-        # while self.magnet.is_ramping():
-            # sleep(1) #For ramp rate of 0.043T/sec this is equivalent to
-                #checking the status for every 22 Gauss change
-
-        # Bx, By, Bz = self.magnet.get_field_cartesian()
-        # if self.magnet.is_holding() and np.isclose(Bx,0,atol=5e-3) and np.isclose(By,0, atol=5e-3) and np.isclose(Bz,0,atol=5e-3):
-        #     log.info("%s" %self.status)
-        #     log.info("Field set to 0T. Finished shutting down")
-        # else:
-        #     log.warning("Could not ramp field to zero at ramp rate. Using zeroing mode")
-        # self.stepper.shut_down()
-        # self.lockin.shutdown()
         self.device.magnet.setHSetPoint3D(0.0, 0.0, 0.0)
         while (abs(self.device.magnet.getH(0)) > 0.001):
             sleep(2)
@@ -1215,6 +1025,7 @@ class sagnacOpticsXportProcedure_vm_highZ(Procedure):
 
     calib_file = 'C:\\Users\\Ralph Group\\Desktop\\git\\sagnac_control\\calibrations\\sagnac'
     sample_name = Parameter("Sample Name",default='test')
+    device = cr("192.168.1.1")
 
     step = IntegerParameter("current step", default = 0)
     delta_x = IntegerParameter("stepper x step", default = 0)
@@ -1241,7 +1052,8 @@ class sagnacOpticsXportProcedure_vm_highZ(Procedure):
 
     hysteresis = BooleanParameter("Hysteresis Sweep?", default=True)
     reverse = BooleanParameter("Reverse?", default=False)
-    sweep_field = FloatParameter("Bias Magnetic Field", units="T", default=0.1)
+    sweep_field_start = FloatParameter("Bias Magnetic Field start", units="T", default=0.1)
+    sweep_field_stop = FloatParameter("Bias Magnetic Field stop", units="T", default=0.1)
     sweep_field_step = FloatParameter("Bias Magnetic Field step", units="T", default=0.1)
     sweep_field_azimuth = FloatParameter("Bias Magnetic Field Azimuth", units="deg", default=0.)
     sweep_field_polar = FloatParameter("Bias Magnetic Field Polar", units="deg", default=0.0)
@@ -1274,20 +1086,22 @@ class sagnacOpticsXportProcedure_vm_highZ(Procedure):
 
         print("Setting up Z magnet")
         log.info("Setting up Z magnet")
-        self.magnet = vectorMagnetZ("GPIB::24") #Connecting to Z
+        # self.magnet = vectorMagnetZ("GPIB::24") #Connecting to Z
+        self.device.connect()
         log.info("Connection with magnet established")
 
         log.info("waiting for the wait time")
         sleep(self.wait) 
 
         log.info("Connecting to the Zurich Lock-in")
-        self.lockin = HF2LI(8005,1,1004)
+        
+        self.lockin = HF2LI(8005, 1, 18338)
         log.info(f'Outputing {self.applied_voltage} on output 2 osc 0')
         self.lockin.set_vout(1,0,self.applied_voltage/10*np.sqrt(2))
         #subscribe to outputs
         self.lockin.sub(0)
         self.lockin.sub(1)
-        # self.lockin.sub(2)
+        self.lockin.sub(2)
         self.lockin.sub(3)
         self.lockin.sub(4)
         self.lockin.sub(5)
@@ -1305,32 +1119,38 @@ class sagnacOpticsXportProcedure_vm_highZ(Procedure):
         #     self.stepper.set_mode(self.y_axis, 'stp')
 
     def execute(self):
-        if self.x_enable:
-            log.info(f'Now at step number {self.step}, moving sample by x:{self.delta_x}')
-            if self.delta_x >= 0:
-                self.stepper.stepu(1, self.delta_x)
-            else:
-                self.stepper.stepd(1, -self.delta_x)
-        if self.y_enable:
-            log.info(f'Now at step number {self.step}, moving sample by y:{self.delta_y}')
-            if self.delta_y >= 0:
-                self.stepper.stepu(2, self.delta_y)
-            else:
-                self.stepper.stepd(2, -self.delta_y)
+        # if self.x_enable:
+        #     log.info(f'Now at step number {self.step}, moving sample by x:{self.delta_x}')
+        #     if self.delta_x >= 0:
+        #         self.stepper.stepu(1, self.delta_x)
+        #     else:
+        #         self.stepper.stepd(1, -self.delta_x)
+        # if self.y_enable:
+        #     log.info(f'Now at step number {self.step}, moving sample by y:{self.delta_y}')
+        #     if self.delta_y >= 0:
+        #         self.stepper.stepu(2, self.delta_y)
+        #     else:
+        #         self.stepper.stepd(2, -self.delta_y)
 
         J2J1 = 0.543
         J1J0 = 1.837
         deg2rad = np.pi/180.
-        field_points = np.arange(0,
-                                 self.sweep_field,
+        field_points = np.arange(self.sweep_field_start,
+                                 self.sweep_field_stop,
                                  self.sweep_field_step)
-        if self.sweep_field not in field_points:
-            field_points = np.append(field_points,self.sweep_field)
+        if self.sweep_field_stop not in field_points:
+            field_points = np.append(field_points,self.sweep_field_stop)
         
         field_points = field_points[::-1]
 
         field_points = np.append(field_points,
                                  -1*field_points[::-1][1:])
+        
+        if self.saturate:
+            self.device.magnet.setHSetPoint(0, self.saturating_field)
+            while not np.isclose(self.saturating_field, self.device.magnet.getH(0), 0.002):
+                sleep(0.5)
+
         if self.hysteresis:                        
             field_points = np.append(field_points, field_points[::-1][1:])
 
@@ -1343,21 +1163,21 @@ class sagnacOpticsXportProcedure_vm_highZ(Procedure):
         for progress_iterator, field in enumerate(field_points):
             self.emit("progress", 100*progress_iterator/num_progress)
             log.info("Setting field to %g T" % field)
-            self.magnet.field = field
+            self.device.magnet.setHSetPoint(0, field)
             log.info("waiting till field is set to setpoint")
             sleep(0.1)
-            if self.should_stop():
-                log.info("Caught stop flag in procedure.")
-                break
+            # if self.should_stop():
+            #     log.info("Caught stop flag in procedure.")
+            #     break
 
-            while self.magnet.is_ramping():
-                sleep(2)
-                log.info("Magnet is ramping")
-                if self.should_stop():
-                    log.info("Caught stop flag in procedure.")
-                    break
+            # while self.magnet.is_ramping():
+            #     sleep(2)
+            #     log.info("Magnet is ramping")
+            #     if self.should_stop():
+            #         log.info("Caught stop flag in procedure.")
+            #         break
 
-            while not np.isclose(field,self.magnet.field, 2e-3):
+            while not np.isclose(field, self.device.magnet.getH(0), 5e-3):
                 sleep(0.5)
                 if self.should_stop():
                     log.info("Caught stop flag in procedure.")
@@ -1366,23 +1186,23 @@ class sagnacOpticsXportProcedure_vm_highZ(Procedure):
             #Checking magnet's status to ensure that it successfully reaches the
             #setpoint without quenching or zeroing
            
-            if self.magnet.is_holding():
-                log.info("Field set to %g T magnet status is HOLDING" % (field))
-            elif self.magnet.is_zeroing() or self.magnet.is_quenched():
-                log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
-                raise ValueError('Quench detected. Aborting procedures!')
-            else:
-                log.warning("Could not reach setpoint. Exiting procedures and aborting")
-                break
-            if self.should_stop():
-                log.info("Caught stop flag in procedure.")
-                break
+            # if self.magnet.is_holding():
+            #     log.info("Field set to %g T magnet status is HOLDING" % (field))
+            # elif self.magnet.is_zeroing() or self.magnet.is_quenched():
+            #     log.info('Field abruptly set to ZERO or Magnet quench detected. Aborting procedures.')
+            #     raise ValueError('Quench detected. Aborting procedures!')
+            # else:
+            #     log.warning("Could not reach setpoint. Exiting procedures and aborting")
+            #     break
+            # if self.should_stop():
+            #     log.info("Caught stop flag in procedure.")
+            #     break
 
-            rec_Bz = self.magnet.field
-            sleep(0.5)
-            if self.should_stop():
-                log.info("Caught stop flag in procedure.")
-                break
+            # rec_Bz = self.magnet.field
+            # sleep(0.5)
+            # if self.should_stop():
+            #     log.info("Caught stop flag in procedure.")
+            #     break
             
             dat_list = []
             for i in range(self.avgs):
@@ -1390,17 +1210,18 @@ class sagnacOpticsXportProcedure_vm_highZ(Procedure):
                 sleep(self.settling)
                 self.lockin.sync() # clears buffer since field has changed
                 log.info("recording average #%d"%i)
-                dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,3,4,5], ['x','y'], ratio=False))
+                dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
+                # log.info(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
             dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
 
             log.info("Recording results")
             self.emit('results', {
-                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[5]['y'])/2, 
+                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, # mode 4 (1st harmonic) / mode 3(second harmonic)
                 "X1": dat[3]['x'],
                 "Y1": dat[3]['y'],
-                "X2": dat[5]['x'],
-                "Y2": dat[5]['y'],
-                "DeltaThetaK": J2J1*dat[4]['x']/dat[5]['y'],
+                "X2": dat[2]['x'],
+                "Y2": dat[2]['y'],
+                "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y'],
                 "DeltaX1": dat[4]['x'],
                 "DeltaY1": dat[4]['y'],
                 "TX1": dat[0]['x'],
@@ -1416,19 +1237,23 @@ class sagnacOpticsXportProcedure_vm_highZ(Procedure):
 
     def shutdown(self):
         log.info("Finished with scans. Shutting down instruments.")
-        self.magnet.shutdown()
-        while self.magnet.is_ramping():
-            sleep(1) #For ramp rate of 0.043T/sec this is equivalent to
-                #checking the status for every 22 Gauss change
+        # self.magnet.shutdown()
+        # while self.magnet.is_ramping():
+        #     sleep(1) #For ramp rate of 0.043T/sec this is equivalent to
+        #         #checking the status for every 22 Gauss change
 
-        Bz= self.magnet.field
-        if self.magnet.is_holding() and np.isclose(Bz,0,atol=5e-3):
-            log.info("%s" %self.status)
-            log.info("Field set to 0T. Finished shutting down")
-        else:
-            log.warning("Could not ramp field to zero at ramp rate. Using zeroing mode")
+        Bz= self.device.magnet.getH(0)
+        # if self.magnet.is_holding() and np.isclose(Bz,0,atol=5e-3):
+        #     log.info("%s" %self.status)
+        #     log.info("Field set to 0T. Finished shutting down")
+        # else:
+        #     log.warning("Could not ramp field to zero at ramp rate. Using zeroing mode")
         # self.stepper.shut_down()
         # self.lockin.shutdown()
+        self.device.magnet.setHSetPoint3D(0.0, 0.0, 0.0)
+        while (abs(self.device.magnet.getH(0)) > 0.001):
+            sleep(2)
+        log.info(f"Field set to {0}T")
 
 class sagnacOpticsXportPulseCurrentProcedure_vm(Procedure):
     """
@@ -1705,7 +1530,8 @@ class sagnacOpticsXportPulseCurrentSignalRecoveryProcedure_vm(Procedure):
     Procedure for taking Heterodyne Hysteresis Measurements 
     with the Sagnac setup
     """
-
+    device = cr("192.168.1.1")
+    magnet = vectorMagnetFull(device)
     calib_file = 'C:\\Users\\Ralph Group\\Desktop\\git\\sagnac_control\\calibrations\\sagnac'
     sample_name = Parameter("Sample Name",default='test')
 
@@ -1772,20 +1598,20 @@ class sagnacOpticsXportPulseCurrentSignalRecoveryProcedure_vm(Procedure):
 
         print("Setting up X,Y,Z magnets")
         log.info("Setting up X,Y,Z magnets")
-        self.magnet = vectorMagnetFull("GPIB::26", "GPIB::25", "GPIB::24") #X,Y,Z in that order
+        
 
         log.info("waiting for the wait time")
         sleep(self.wait) 
 
-        log.info("Connecting to sourcemeter 2400")
-        self.sourcemeter = Keithley2400("GPIB::4")
+        # log.info("Connecting to sourcemeter 2400")
+        # self.sourcemeter = Keithley2400("GPIB::4")
 
         log.info("Connecting to Signal Recovery Lockin")
         self.signalrecovery = DSP7265(11)
         self.signalrecovery.voltage = self.applied_voltage
 
         log.info("Connecting to the Zurich Lock-in")
-        self.lockin = HF2LI(8005,1,1004)
+        self.lockin = HF2LI(8005, 1, 18338)
         # self.lockin.set_vout(1,0,self.applied_voltage/10*np.sqrt(2))n
         #subscribe to outputs
         self.lockin.sub(0)
@@ -1834,11 +1660,11 @@ class sagnacOpticsXportPulseCurrentSignalRecoveryProcedure_vm(Procedure):
         if self.saturate:
             self.magnet.set_field_polar(self.saturating_field, self.saturating_field_azimuth, self.saturating_field_polar)  #saturate the field 
             log.info("Setting saturation field")
-            while self.magnet.is_ramping():
-                sleep(2)
-                if self.should_stop():
-                    log.info("Caught stop flag in procedure.")
-                    break
+            # while self.magnet.is_ramping():
+            #     sleep(2)
+            #     if self.should_stop():
+            #         log.info("Caught stop flag in procedure.")
+            #         break
 
             while not self.magnet.check_field_polar(self.saturating_field, self.saturating_field_azimuth, self.saturating_field_polar, 5e-3):
                 sleep(0.5)
@@ -2098,13 +1924,13 @@ class sagnacOpticsXportSignalRecoveryProcedure_vm_highZ(Procedure):
         if self.bias_field_x != 0 or self.bias_field_y != 0 or self.bias_field_z != 0:
             self.apply_bias_field = True
         
-        self.stepper = ANC150("COM3")
-        if self.x_enable:
-            log.info("X enabled")
-            self.stepper.set_mode(self.x_axis, 'stp')
-        if self.y_enable:
-            log.info("y enabled")
-            self.stepper.set_mode(self.y_axis, 'stp')
+        # self.stepper = ANC150("COM3")
+        # if self.x_enable:
+        #     log.info("X enabled")
+        #     self.stepper.set_mode(self.x_axis, 'stp')
+        # if self.y_enable:
+        #     log.info("y enabled")
+        #     self.stepper.set_mode(self.y_axis, 'stp')
 
     def execute(self):
         if self.x_enable:
@@ -2145,19 +1971,20 @@ class sagnacOpticsXportSignalRecoveryProcedure_vm_highZ(Procedure):
         for progress_iterator, field in enumerate(field_points):
             self.emit("progress", 100*progress_iterator/num_progress)
             log.info("Setting field to %g T" % field)
-            self.magnet.field = field
+            while not self.magnet.check_field_polar(self.saturating_field, self.saturating_field_azimuth, self.saturating_field_polar, 5e-3):
+                sleep(0.5)
             log.info("waiting till field is set to setpoint")
             sleep(0.1)
             if self.should_stop():
                 log.info("Caught stop flag in procedure.")
                 break
 
-            while self.magnet.is_ramping():
-                sleep(2)
-                log.info("Magnet is ramping")
-                if self.should_stop():
-                    log.info("Caught stop flag in procedure.")
-                    break
+            # while self.magnet.is_ramping():
+            #     sleep(2)
+            #     log.info("Magnet is ramping")
+            #     if self.should_stop():
+            #         log.info("Caught stop flag in procedure.")
+            #         break
 
             while not np.isclose(field,self.magnet.field, 2e-3):
                 sleep(0.5)
