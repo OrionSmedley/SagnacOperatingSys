@@ -33,11 +33,15 @@ def run_experiment(variables, savePath):
 
 
 # User-provided variables
+
+def hysteresis(npArray):
+    return np.concatenate([npArray, npArray[::-1]])
 tc = 0.01
 variables = {
-    'Tc': [tc],
-    'B': [np.linspace(-0.1, 0.1, 20+1)],
-    'wait': [[10*tc]]
+    'Tc': tc,
+    "theta": 90,
+    'B': hysteresis( np.linspace(-0.1, 0.1, 20+1)),
+    'wait': [10*tc]
 }
 savePath = 'data.csv'
 
