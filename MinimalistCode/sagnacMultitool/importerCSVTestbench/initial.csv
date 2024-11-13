@@ -1,6 +1,8 @@
-# B=3
-# C=4
-# Description="Experiment Parameters"
+# parameters= {
+# "B": np.linspace(0,1,10),
+# "C": 4,
+#}
+
 column1,column2
 value1,value2
 value3,value4
