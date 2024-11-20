@@ -36,16 +36,28 @@ def run_experiment(variables, savePath):
 
 def hysteresis(npArray):
     return np.concatenate([npArray, npArray[::-1]])
-tc = 0.01
-variables = {
-    'Tc': tc,
-    "theta": 90,
-    'B': hysteresis( np.linspace(-0.1, 0.1, 20+1)),
-    'wait': [10*tc]
-}
-savePath = 'data.csv'
 
+import numpy as np
+import sys
 
-run_experiment(variables, savePath)
+def load_variables_from_csv(csv_file):
+    with open(csv_file, 'r') as file:
+        # Extract comment lines and remove the leading '#' and any whitespace
+        comment_lines = [line.lstrip('#').strip() for line in file if line.startswith('#')]
+    
+    comment_str = ' '.join(comment_lines)  # multiline comments -> single string
+    print("Executing csv code: \n\t", comment_str)
+
+    namespace = {'np': np} # modules for he exec namespace
+    exec(comment_str, namespace) # Execute the combined string in namespace
+    return namespace['parameters']
+
+if __name__ == "__main__":
+    # Get the CSV file path from the first command-line argument
+    csv_file = sys.argv[1]
+    
+    # Load and process the CSV file
+    parameters = load_variables_from_csv(csv_file)
+    run_experiment(parameters, csv_file)
 
 

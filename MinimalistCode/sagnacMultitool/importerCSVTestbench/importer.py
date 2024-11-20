@@ -18,4 +18,6 @@ if __name__ == "__main__":
     csv_file = sys.argv[1]
     
     # Load and process the CSV file
-    load_variables_from_csv(csv_file)
+    result = load_variables_from_csv(csv_file)
+    for key in result:
+        print(key, result[key])
