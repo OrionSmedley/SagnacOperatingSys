@@ -53,7 +53,7 @@ def load_variables_from_csv(csv_file):
     python_code = "\n".join(comment_lines)
     print("Executing CSV code: \n\t", python_code)
 
-    namespace = {'np': np}  # Modules for the `exec` namespace
+    namespace = {'np': np,'pd':pd, "hysteresis":hysteresis}  # Modules for the `exec` namespace
     exec(python_code, namespace)  # Execute the combined string in namespace
 
     # Load headers using Pandas
