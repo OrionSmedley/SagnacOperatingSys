@@ -45,26 +45,18 @@ import pandas as pd
 
 def load_variables_from_csv(csv_file):
     """Loads parameters and headers from the CSV file."""
-    with open(csv_file, 'r') as file:
-        # Extract comment lines and remove the leading '#' and any whitespace
+    # Run CSV code
+    with open(csv_file, 'r') as file: # Extract comment by removing the leading '#' and whitespace
         comment_lines = [line.lstrip('#').strip() for line in file if line.startswith('#')]
-    
-    # Combine all comment lines into a single block of Python code
-    python_code = "\n".join(comment_lines)
-    print("Executing CSV code: \n\t", python_code)
-
+    python_code = "\n".join(comment_lines) # Combine comments into a single block of Python code
     namespace = {'np': np,'pd':pd, "hysteresis":hysteresis}  # Modules for the `exec` namespace
     exec(python_code, namespace)  # Execute the combined string in namespace
 
     # Load headers using Pandas
-    try:
-        df = pd.read_csv(csv_file, comment='#')  # Skip Python comments
-        headers = list(df.columns)
-    except pd.errors.EmptyDataError:
-        headers = []  # No data yet, assume headers not defined
+    df = pd.read_csv(csv_file, comment='#')  # Skip Python comments
+    headers = list(df.columns)
 
-    parameters = namespace.get('parameters', {})
-    return parameters, headers, namespace
+    return namespace['parameters'], headers, namespace
 
 
 
