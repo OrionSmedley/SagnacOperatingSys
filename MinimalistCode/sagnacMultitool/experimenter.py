@@ -1,4 +1,4 @@
-from sagnacMachine import set_parameter, perform_measurement
+# from sagnacMachine import set_parameter, perform_measurement
 import numpy as np
 
 def setNpop_topLevel(variables):
@@ -39,18 +39,40 @@ def hysteresis(npArray):
 
 import numpy as np
 import sys
+import pandas as pd
+
+
 
 def load_variables_from_csv(csv_file):
+    """Loads parameters and headers from the CSV file."""
     with open(csv_file, 'r') as file:
         # Extract comment lines and remove the leading '#' and any whitespace
         comment_lines = [line.lstrip('#').strip() for line in file if line.startswith('#')]
     
-    comment_str = ' '.join(comment_lines)  # multiline comments -> single string
-    print("Executing csv code: \n\t", comment_str)
+    # Combine all comment lines into a single block of Python code
+    python_code = "\n".join(comment_lines)
+    print("Executing CSV code: \n\t", python_code)
 
-    namespace = {'np': np} # modules for he exec namespace
-    exec(comment_str, namespace) # Execute the combined string in namespace
-    return namespace['parameters']
+    namespace = {'np': np}  # Modules for the `exec` namespace
+    exec(python_code, namespace)  # Execute the combined string in namespace
+
+    # Load headers using Pandas
+    try:
+        df = pd.read_csv(csv_file, comment='#')  # Skip Python comments
+        headers = list(df.columns)
+    except pd.errors.EmptyDataError:
+        headers = []  # No data yet, assume headers not defined
+
+    parameters = namespace.get('parameters', {})
+    return parameters, headers, namespace
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     # Get the CSV file path from the first command-line argument
