@@ -1,9 +1,25 @@
 # from sagnacMachine import set_parameter, perform_measurement
 import numpy as np
 
-def setNpop_topLevel(variables):
+
+def set_parameter(non_list_variables, namespace):
+    """Set parameters dynamically, supporting method calls and attribute assignment."""
+    for name, value in non_list_variables.items():
+        # Resolve the name into an object
+        obj = eval(name, namespace)
+
+        # If the object is callable, call it with the value
+        if callable(obj):
+            obj(value)
+        else:
+            # Otherwise, directly assign the value
+            exec(f"{name} = {value}", namespace)
+
+
+
+def setNpop_topLevel(variables, namespace):
     non_list_variables = {k: v for k, v in variables.items() if not isinstance(v, (list, np.ndarray))}
-    set_parameter(**non_list_variables)
+    set_parameter(non_list_variables, namespace)
     remaining_variables = {k: v for k, v in variables.items() if isinstance(v, (list, np.ndarray))}
     return remaining_variables
 
