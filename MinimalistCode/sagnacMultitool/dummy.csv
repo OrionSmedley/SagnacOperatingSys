@@ -1,0 +1,10 @@
+# from instruments.instrument import instrument as inst
+
+# parameters = {
+#    "inst.phase": 0,
+#    "inst.frequency": np.linspace(1, 10, 5),
+#    "inst.temperature": [25, 30, 35]
+# }
+
+inst.voltage, inst.current
+0.0,0.0

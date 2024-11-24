@@ -14,14 +14,14 @@ def cartesian_product(dicts):
     return (dict(zip(dicts, x)) for x in product(*dicts.values()))
 
 
-def run_experiment(variables, savePath):
+def run_experiment(variables, header, namespace, csv_file):
     # Step 1
     # set top level params, and remove them from the variables dict
     variables = setNpop_topLevel(variables)
     # Step 2
     if not variables:
         # if there are no variables left, perform the measurement
-        perform_measurement(savePath)
+        perform_measurement(header,namespace,csv_file)
         return
     else:
         print("There are still variables left to set.")
@@ -29,7 +29,7 @@ def run_experiment(variables, savePath):
         prods = cartesian_product(variables)
         # iterate over the products, recursively setting the parameters and performing the measurement
         for prod in prods:
-            run_experiment(prod, savePath)
+            run_experiment(prod, header, namespace, csv_file)
 
 
 # User-provided variables
@@ -60,6 +60,19 @@ def load_variables_from_csv(csv_file):
 
 
 
+def perform_measurement(headers, namespace,csv_file):
+    """Performs the measurement by evaluating the headers."""
+    data = {}
+    for header in headers:
+        # Evaluate the header (e.g., "inst.attribute")
+        obj = eval(header.strip(), namespace)
+        data[header] = obj() if callable(obj) else obj
+
+    # Append the data to the CSV file
+    df = pd.DataFrame([data], columns=headers)
+    df.to_csv(csv_file, mode='a', header=False, index=False)
+
+    return data
 
 
 
