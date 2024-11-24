@@ -1,21 +1,52 @@
 # from sagnacMachine import set_parameter, perform_measurement
 import numpy as np
+import sys
+import pandas as pd
+from itertools import product
 
+## helper functions ##
+def hysteresis(npArray):
+    return np.concatenate([npArray, npArray[::-1]])
+
+def load_variables_from_csv(csv_file):
+    """Loads parameters and headers from the CSV file."""
+    # Run CSV code
+    with open(csv_file, 'r') as file: # Extract comment by removing the leading '#' and whitespace
+        comment_lines = [line.lstrip('#').strip() for line in file if line.startswith('#')]
+    python_code = "\n".join(comment_lines) # Combine comments into a single block of Python code
+    namespace = {'np': np,'pd':pd, "hysteresis":hysteresis}  # Modules for the `exec` namespace
+    exec(python_code, namespace)  # Execute the combined string in namespace
+
+    # Load headers using Pandas
+    df = pd.read_csv(csv_file, comment='#')  # Skip Python comments
+    headers = list(df.columns)
+
+    return namespace['parameters'], headers, namespace
 
 def set_parameter(non_list_variables, namespace):
     """Set parameters dynamically, supporting method calls and attribute assignment."""
     for name, value in non_list_variables.items():
-        # Resolve the name into an object
-        obj = eval(name, namespace)
-
-        # If the object is callable, call it with the value
-        if callable(obj):
+        obj = eval(name, namespace) # Get the object from namespace
+        if callable(obj):  # call if callable
             obj(value)
-        else:
-            # Otherwise, directly assign the value
+        else:  # assign if not callable (for atributtes)
             exec(f"{name} = {value}", namespace)
 
+def perform_measurement(headers, csv_file, namespace):
+    """Performs the measurement by evaluating the headers."""
+    data = {}
+    for header in headers:
+        # Evaluate the header (e.g., "inst.attribute")
+        obj = eval(header.strip(), namespace)
+        data[header] = obj() if callable(obj) else obj
 
+    # Append the data to the CSV file
+    df = pd.DataFrame([data], columns=headers)
+    df.to_csv(csv_file, mode='a', header=False, index=False)
+    return data
+
+
+#### Running the experiment
 
 def setNpop_topLevel(variables, namespace):
     non_list_variables = {k: v for k, v in variables.items() if not isinstance(v, (list, np.ndarray))}
@@ -23,12 +54,8 @@ def setNpop_topLevel(variables, namespace):
     remaining_variables = {k: v for k, v in variables.items() if isinstance(v, (list, np.ndarray))}
     return remaining_variables
 
-
-from itertools import product
-
-def cartesian_product(dicts):
+def cartesian_product(dicts): # cartesian product for dictionaries
     return (dict(zip(dicts, x)) for x in product(*dicts.values()))
-
 
 def run_experiment(variables, header, namespace, csv_file):
     # Step 1
@@ -46,53 +73,6 @@ def run_experiment(variables, header, namespace, csv_file):
         # iterate over the products, recursively setting the parameters and performing the measurement
         for prod in prods:
             run_experiment(prod, header, namespace, csv_file)
-
-
-# User-provided variables
-
-def hysteresis(npArray):
-    return np.concatenate([npArray, npArray[::-1]])
-
-import numpy as np
-import sys
-import pandas as pd
-
-
-
-def load_variables_from_csv(csv_file):
-    """Loads parameters and headers from the CSV file."""
-    # Run CSV code
-    with open(csv_file, 'r') as file: # Extract comment by removing the leading '#' and whitespace
-        comment_lines = [line.lstrip('#').strip() for line in file if line.startswith('#')]
-    python_code = "\n".join(comment_lines) # Combine comments into a single block of Python code
-    namespace = {'np': np,'pd':pd, "hysteresis":hysteresis}  # Modules for the `exec` namespace
-    exec(python_code, namespace)  # Execute the combined string in namespace
-
-    # Load headers using Pandas
-    df = pd.read_csv(csv_file, comment='#')  # Skip Python comments
-    headers = list(df.columns)
-
-    return namespace['parameters'], headers, namespace
-
-
-
-def perform_measurement(headers, namespace,csv_file):
-    """Performs the measurement by evaluating the headers."""
-    data = {}
-    for header in headers:
-        # Evaluate the header (e.g., "inst.attribute")
-        obj = eval(header.strip(), namespace)
-        data[header] = obj() if callable(obj) else obj
-
-    # Append the data to the CSV file
-    df = pd.DataFrame([data], columns=headers)
-    df.to_csv(csv_file, mode='a', header=False, index=False)
-
-    return data
-
-
-
-
 
 
 if __name__ == "__main__":
