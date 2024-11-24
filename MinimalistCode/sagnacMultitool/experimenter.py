@@ -26,7 +26,8 @@ def load_variables_from_csv(csv_file):
 def set_parameter(non_list_variables, namespace):
     """Set parameters dynamically, supporting method calls and attribute assignment."""
     for name, value in non_list_variables.items():
-        obj = eval(name, namespace) # Get the object from namespace
+        print(f"Setting {name} to {value}")
+        obj = eval(name, namespace) # Get object from namespace
         if callable(obj):  # call if callable
             obj(value)
         else:  # assign if not callable (for atributtes)
@@ -57,14 +58,14 @@ def setNpop_topLevel(variables, namespace):
 def cartesian_product(dicts): # cartesian product for dictionaries
     return (dict(zip(dicts, x)) for x in product(*dicts.values()))
 
-def run_experiment(variables, header, namespace, csv_file):
+def run_experiment(variables, header, csv_file, namespace):
     # Step 1
     # set top level params, and remove them from the variables dict
-    variables = setNpop_topLevel(variables)
+    variables = setNpop_topLevel(variables,namespace)
     # Step 2
     if not variables:
         # if there are no variables left, perform the measurement
-        perform_measurement(header,namespace,csv_file)
+        perform_measurement(header, csv_file, namespace)
         return
     else:
         print("There are still variables left to set.")
@@ -72,7 +73,7 @@ def run_experiment(variables, header, namespace, csv_file):
         prods = cartesian_product(variables)
         # iterate over the products, recursively setting the parameters and performing the measurement
         for prod in prods:
-            run_experiment(prod, header, namespace, csv_file)
+            run_experiment(prod, header, csv_file, namespace)
 
 
 if __name__ == "__main__":
@@ -80,7 +81,5 @@ if __name__ == "__main__":
     csv_file = sys.argv[1]
     
     # Load and process the CSV file
-    parameters = load_variables_from_csv(csv_file)
-    run_experiment(parameters, csv_file)
-
-
+    parameters, header, namespace = load_variables_from_csv(csv_file)
+    run_experiment(parameters, header, csv_file, namespace)
