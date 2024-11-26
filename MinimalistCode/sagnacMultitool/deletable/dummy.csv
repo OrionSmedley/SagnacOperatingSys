@@ -1,4 +1,4 @@
-# from instruments.instrument import instrument as inst
+# from instruments.dummy import instrument as inst
 
 # parameters = {
 #    "inst.phase": 0,
