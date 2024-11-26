@@ -7,8 +7,7 @@ class Instrument:
         self.temperature = 0
         self.junk = 100
 
-    @property
-    def voltage(self):
+    def get_voltage(self):
         # Simulate voltage based on current settings
         return self.frequency * np.cos(self.phase) + self.temperature / 10
 

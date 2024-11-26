@@ -8,17 +8,17 @@ from itertools import product
 def hysteresis(npArray):
     return np.concatenate([npArray, npArray[::-1]])
 
-def load_variables_from_csv(csv_file):
+def load_variables_from_csv(csv_file, commentChar = ';'):
     """Loads parameters and headers from the CSV file."""
     # Run CSV code
-    with open(csv_file, 'r') as file: # Extract comment by removing the leading '#' and whitespace
-        comment_lines = [line.lstrip('#').strip() for line in file if line.startswith('#')]
+    with open(csv_file, 'r') as file: # Extract comment by removing the leading ';' and whitespace
+        comment_lines = [line.lstrip(commentChar).strip() for line in file if line.startswith(commentChar)]
     python_code = "\n".join(comment_lines) # Combine comments into a single block of Python code
     namespace = {'np': np,'pd':pd, "hysteresis":hysteresis}  # Modules for the `exec` namespace
     exec(python_code, namespace)  # Execute the combined string in namespace
 
     # Load headers using Pandas
-    df = pd.read_csv(csv_file, comment='#')  # Skip Python comments
+    df = pd.read_csv(csv_file, comment=commentChar)  # Skip Python comments
     headers = list(df.columns)
 
     return namespace['parameters'], headers, namespace
