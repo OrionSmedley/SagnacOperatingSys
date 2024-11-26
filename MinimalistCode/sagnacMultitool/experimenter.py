@@ -43,7 +43,7 @@ def perform_measurement(headers, csv_file, namespace):
         data[header] = obj() if callable(obj) else obj
 
     # Append the data to the CSV file
-    df = pd.DataFrame([data] )#, columns=headers)
+    df = pd.DataFrame(data )
     df.to_csv(csv_file, mode='a', header=False, index=False)
     return data
 
