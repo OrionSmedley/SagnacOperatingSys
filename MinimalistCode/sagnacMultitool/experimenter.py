@@ -35,6 +35,7 @@ def set_parameter(non_list_variables, namespace):
 
 def perform_measurement(headers, csv_file, namespace):
     """Performs the measurement by evaluating the headers."""
+    print("Measuring...")
     data = {}
     for header in headers:
         # Evaluate the header (e.g., "inst.attribute")
@@ -42,7 +43,7 @@ def perform_measurement(headers, csv_file, namespace):
         data[header] = obj() if callable(obj) else obj
 
     # Append the data to the CSV file
-    df = pd.DataFrame([data], columns=headers)
+    df = pd.DataFrame([data] )#, columns=headers)
     df.to_csv(csv_file, mode='a', header=False, index=False)
     return data
 
