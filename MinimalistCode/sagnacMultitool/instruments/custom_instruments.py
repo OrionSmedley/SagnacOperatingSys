@@ -377,7 +377,20 @@ class daedalusProjField:
 
         return (Bx, By, Bz)
 
+    @property
+    def Bx(self):
+        return self.get_cart_vector_field()[0]
 
+    @property
+    def By(self):
+        return self.get_cart_vector_field()[1]
+
+    @property
+    def Bz(self):
+        return self.get_cart_vector_field()[2]
+    
+
+    
 class Keithley220(Instrument):
     """ Represents a Keithley 220 programmable current source """
 
