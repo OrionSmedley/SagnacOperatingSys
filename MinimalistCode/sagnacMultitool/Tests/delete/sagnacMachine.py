@@ -32,7 +32,7 @@ logging.basicConfig(level=logging.WARNING,  # Log only WARNING or above by defau
 
 
 # MAGNET CONTROL
-from instruments.drivers.custom_instruments import daedalusProjField
+from aparatus.drivers.custom_instruments import daedalusProjField
 from pymeasure.adapters import DAQmxAdapter
 
 calib_file = 'C:\\Users\\Ralph Group\\Documents\\Github\\SagnacOperatingSys\\sagnac_control\\calibrations\\sagnac'
