@@ -58,7 +58,7 @@ def setNpop_topLevel(variables, namespace):
 def cartesian_product(dicts): # cartesian product for dictionaries
     return (dict(zip(dicts, x)) for x in product(*dicts.values()))
 
-def run_experiment(variables, csv_file, namespace, demoMode = False):
+def run_experiment(variables, csv_file, namespace, demoMode = True):
     if demoMode: print(f"Running experiment with variables: {variables}") 
     # Step 1: set top level params, and remove them from the variables dict
     variables = setNpop_topLevel(variables,namespace)
