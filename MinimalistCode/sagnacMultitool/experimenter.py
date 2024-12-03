@@ -9,7 +9,7 @@ def hysteresis(npArray):
     return np.concatenate([npArray, npArray[::-1]])
 
 def load_variables_from_csv(csv_file, commentChar = ';'):
-    """Loads parameters and headers from the CSV file."""
+    """Loads parameters from the CSV file."""
     # Run CSV code
     with open(csv_file, 'r') as file: # Extract comment by removing the leading ';' and whitespace
         comment_lines = [line.lstrip(commentChar).strip() for line in file if line.startswith(commentChar)]
@@ -17,11 +17,7 @@ def load_variables_from_csv(csv_file, commentChar = ';'):
     namespace = {'np': np,'pd':pd, "hysteresis":hysteresis}  # Modules for the `exec` namespace
     exec(python_code, namespace)  # Execute the combined string in namespace
 
-    # Load headers using Pandas
-    df = pd.read_csv(csv_file, comment=commentChar)  # Skip Python comments
-    headers = list(df.columns)
-
-    return namespace['parameters'], headers, namespace
+    return namespace['parameters'], namespace
 
 def set_parameter(non_list_variables, namespace):
     """Set parameters dynamically, supporting method calls and attribute assignment."""
@@ -33,9 +29,13 @@ def set_parameter(non_list_variables, namespace):
         else:  # assign if not callable (for atributtes)
             exec(f"{name} = {value}", namespace)
 
-def perform_measurement(headers, csv_file, namespace):
+def perform_measurement(csv_file, namespace, commentChar = ';'):
     """Performs the measurement by evaluating the headers."""
-    print("Measuring...")
+    print("Measuring...\n")
+    # Load headers using Pandas
+    df = pd.read_csv(csv_file, comment=commentChar)  # Skip Python comments
+    headers = list(df.columns)
+    
     data = {}
     for header in headers:
         # Evaluate the header (e.g., "inst.attribute")
@@ -43,10 +43,9 @@ def perform_measurement(headers, csv_file, namespace):
         data[header] = obj() if callable(obj) else obj
 
     # Append the data to the CSV file
-    df = pd.DataFrame(data )
+    df = pd.DataFrame(data)
     df.to_csv(csv_file, mode='a', header=False, index=False)
     return data
-
 
 #### Running the experiment
 
@@ -59,14 +58,14 @@ def setNpop_topLevel(variables, namespace):
 def cartesian_product(dicts): # cartesian product for dictionaries
     return (dict(zip(dicts, x)) for x in product(*dicts.values()))
 
-def run_experiment(variables, header, csv_file, namespace):
+def run_experiment(variables, csv_file, namespace):
     # Step 1
     # set top level params, and remove them from the variables dict
     variables = setNpop_topLevel(variables,namespace)
     # Step 2
     if not variables:
         # if there are no variables left, perform the measurement
-        perform_measurement(header, csv_file, namespace)
+        perform_measurement(csv_file, namespace)
         return
     else:
         print("There are still variables left to set.")
@@ -74,13 +73,12 @@ def run_experiment(variables, header, csv_file, namespace):
         prods = cartesian_product(variables)
         # iterate over the products, recursively setting the parameters and performing the measurement
         for prod in prods:
-            run_experiment(prod, header, csv_file, namespace)
-
+            run_experiment(prod, csv_file, namespace)
 
 if __name__ == "__main__":
     # Get the CSV file path from the first command-line argument
     csv_file = sys.argv[1]
     
     # Load and process the CSV file
-    parameters, header, namespace = load_variables_from_csv(csv_file)
-    run_experiment(parameters, header, csv_file, namespace)
+    parameters, namespace = load_variables_from_csv(csv_file)
+    run_experiment(parameters, csv_file, namespace)
