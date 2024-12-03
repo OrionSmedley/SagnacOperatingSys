@@ -1,5 +1,3 @@
-; from instruments.dummy import instrument as inst
-
 ; from aparatus.dummy import instrument as inst
 ;
 ; parameters = {
