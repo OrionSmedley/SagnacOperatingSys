@@ -1,7 +1,5 @@
 ; from aparatus.sagnac1 import myHF2LI, magnet
 ; dem = myHF2LI.dem
-; from time import sleep
-
 
 
 
@@ -11,11 +9,11 @@
 ;     'magnet.theta': 90,
 ;     'repeat': np.arange(10),
 ;     'magnet.field': hysteresis( np.linspace(-0.1, 0.1, 20+1)),
-;     'sleep': [10*tc]
+;     'time.sleep': [10*tc]
 ; };
-; 
-; 
-; 
+ 
+ 
+
 ; J2J1 = 0.543
 
 magnet.field, magnet.phi, magnet.theta, dem(3)['x'] # X1, dem(3)['y'] # Y1, dem(2)['x'] # X2, dem(2)['y'] # Y2, np.arctan(J2J1 * dem(3)['x'] / dem(2)['y']) / 2 # ThetaK;  J2J1 * dem(4)['x'] / dem(2)['y'] # DeltaThetaK, J2J1 * (dem(4)['x'] + dem(5)['x']) / 2 / dem(2)['y'] # DeltaThetaK_DualSideband, dem(4)['x'] # DeltaX1_C-M, dem(4)['y'] # DeltaY1_C-M, dem(5)['x'] # DeltaX1_C+M, dem(5)['y'] # DeltaY1_C+M, dem(0)['x'] # TX1, dem(0)['y'] # TY1, dem(1)['x'] # TX2, dem(1)['y'] # TY2

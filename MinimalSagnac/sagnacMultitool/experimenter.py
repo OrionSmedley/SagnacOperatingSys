@@ -2,6 +2,7 @@ import numpy as np
 import sys
 import pandas as pd
 from itertools import product
+import time
 
 
 ## heleper fuctions usable from csv file ##
@@ -17,7 +18,7 @@ def load_variables_from_csv(csv_file, commentChar = ';'):
     with open(csv_file, 'r') as file: # Extract comment by removing the leading ';' and whitespace
         comment_lines = [line.lstrip(commentChar).strip() for line in file if line.startswith(commentChar)]
     python_code = "\n".join(comment_lines) # Combine comments into a single block of Python code
-    namespace = {'np': np,'pd':pd, "hysteresis":hysteresis,"repeat":repeat}  # Modules for the `exec` namespace
+    namespace = {'np': np,'pd':pd, "hysteresis":hysteresis,"repeat":repeat,"time":time}  # Modules for the `exec` namespace
     exec(python_code, namespace)  # Execute the combined string in namespace
 
     return namespace['parameters'], namespace
