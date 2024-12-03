@@ -62,9 +62,13 @@ from zhinst.toolkit import Session
 session = Session("localhost", hf2=True)
 myHF2LI = session.connect_device("DEV1004")
 
+# set timeconstants for all channels
+def setTc(Tc): [myHF2LI.demods[demod].timeconstant(Tc) for demod in range(6)]
+myHF2LI.setTc = setTc
 
-
-import time
+# get value of a demodulator
+def dem(demod): return myHF2LI.demods[demod].sample()
+myHF2LI.dem = dem
 
 
 
