@@ -22,7 +22,7 @@ def load_variables_from_csv(csv_file, commentChar = ';'):
 def set_parameter(non_list_variables, namespace):
     """Set parameters dynamically, supporting method calls and attribute assignment."""
     for name, value in non_list_variables.items():
-        print(f"Setting {name} to {value}")
+        print(f"\tSetting {name} to {value}")
         obj = eval(name, namespace) # Get object from namespace
         if callable(obj):  # call if callable
             obj(value)
@@ -31,7 +31,7 @@ def set_parameter(non_list_variables, namespace):
 
 def perform_measurement(csv_file, namespace, commentChar = ';'):
     """Performs the measurement by evaluating the headers."""
-    print("Measuring...\n")
+    print("\tMeasuring...\n")
     # Load headers using Pandas
     df = pd.read_csv(csv_file, comment=commentChar)  # Skip Python comments
     headers = list(df.columns)
@@ -43,7 +43,7 @@ def perform_measurement(csv_file, namespace, commentChar = ';'):
         data[header] = obj() if callable(obj) else obj
 
     # Append the data to the CSV file
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(data,index=[0])
     df.to_csv(csv_file, mode='a', header=False, index=False)
     return data
 
@@ -58,9 +58,9 @@ def setNpop_topLevel(variables, namespace):
 def cartesian_product(dicts): # cartesian product for dictionaries
     return (dict(zip(dicts, x)) for x in product(*dicts.values()))
 
-def run_experiment(variables, csv_file, namespace):
-    # Step 1
-    # set top level params, and remove them from the variables dict
+def run_experiment(variables, csv_file, namespace, demoMode = False):
+    if demoMode: print(f"Running experiment with variables: {variables}") 
+    # Step 1: set top level params, and remove them from the variables dict
     variables = setNpop_topLevel(variables,namespace)
     # Step 2
     if not variables:
@@ -68,12 +68,12 @@ def run_experiment(variables, csv_file, namespace):
         perform_measurement(csv_file, namespace)
         return
     else:
-        print("There are still variables left to set.")
+        print("\nCartesian Product of remaining variables:")
         # take the caresian product of the remaining variables
         prods = cartesian_product(variables)
         # iterate over the products, recursively setting the parameters and performing the measurement
         for prod in prods:
-            run_experiment(prod, csv_file, namespace)
+            run_experiment(prod, csv_file, namespace,demoMode)
 
 if __name__ == "__main__":
     # Get the CSV file path from the first command-line argument

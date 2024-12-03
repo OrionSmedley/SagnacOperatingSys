@@ -1,5 +1,7 @@
 ; from instruments.dummy import instrument as inst
 
+; from aparatus.dummy import instrument as inst
+;
 ; parameters = {
 ;    "inst.phase": 0,
 ;    "inst.frequency": np.linspace(1, 10, 5),
