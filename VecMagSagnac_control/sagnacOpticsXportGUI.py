@@ -54,7 +54,7 @@ class sagnacOpticsXportGUI(ManagedWindow):
         self.run_directory = os.path.dirname(os.path.realpath(__file__))
         self.inputs = fromUi(os.path.join(self.run_directory,'custom_inputs/sagnac_gui_OpticsXport.ui'))
         self.inputs.save_dir.setText("test")
-        print("check self inputs: ", self.inputs)
+        # print("check self inputs: ", self.inputs)
 
     def make_procedure(self):
         """
@@ -82,6 +82,8 @@ class sagnacOpticsXportGUI(ManagedWindow):
         procedure.voltage_start = self.inputs.voltage_start.value()
         procedure.voltage_stop = self.inputs.voltage_stop.value()
         procedure.voltage_step = self.inputs.voltage_step.value()
+        procedure.voltage_scale_main = self.inputs.voltage_scale_main.isChecked()
+        procedure.voltage_scale_sub = self.inputs.voltage_scale_sub.isChecked()
         # procedure.saturating_field_polar = self.inputs.saturating_field_polar.value()
 
 
@@ -127,6 +129,18 @@ class sagnacOpticsXportGUI(ManagedWindow):
         print("check procedures: (len), procedures ", len(procedures), procedures)
         return procedures
     
+    def single_voltage_sweep(self, v):
+        """
+        Makes one voltage sweep
+        """
+        # procedures = []
+        procedure = self.make_procedure()
+        procedure.applied_voltage = v
+        procedure.first = False
+        procedure.last = False
+        # procedures.append(procedure)
+        return [procedure]
+
     def make_4quadrant_sweep(self):
         """
         Makes a series of procedures varying bias field at a given bias field angle
@@ -174,34 +188,49 @@ class sagnacOpticsXportGUI(ManagedWindow):
         do_fourQuadrant = self.inputs.do_fourQuadrant.isChecked()
         do_motion_sweep = self.inputs.do_motion_sweep.isChecked()
         do_voltage_sweep = self.inputs.do_voltage_sweep.isChecked()
-        print("voltage sweep input: ", do_voltage_sweep)
         procedures = []
-        for i in range( int(self.inputs.num_repeat.value())):
-            if do_motion_sweep:
-                steps = range(int(self.inputs.num_step.value()))
-                procedures += self.make_motion_sweep(steps, self.inputs.delta_x.value(), self.inputs.delta_y.value())
-            
-            elif do_voltage_sweep:
-                print("input voltage min: ", self.inputs.voltage_start.value())
-                print("input voltage max: ", self.inputs.voltage_stop.value())
-                if (self.inputs.voltage_start.value() > self.inputs.voltage_stop.value()):
-                    voltages = np.arange(self.inputs.voltage_start.value(), 
-                                    self.inputs.voltage_stop.value(), 
-                                    -1 * self.inputs.voltage_step.value())
-                else: 
-                    voltages = np.arange(self.inputs.voltage_start.value(), 
-                                    self.inputs.voltage_stop.value(), 
-                                    -1 * self.inputs.voltage_step.value())
-                print("check voltage array: ", voltages)
-                if self.inputs.voltage_stop.value() not in voltages:
-                    voltages = np.append(voltages,self.inputs.voltage_stop.value())
-                procedures += self.make_voltage_sweep(voltages)
-
-            elif do_fourQuadrant:
-                procedures += self.make_4quadrant_sweep()
-            else:
-                procedures += [self.make_procedure()]
-            
+        test_list = []
+        if do_voltage_sweep:
+            if (self.inputs.voltage_start.value() > self.inputs.voltage_stop.value()):
+                voltages = np.arange(self.inputs.voltage_start.value(), 
+                                self.inputs.voltage_stop.value(), 
+                                -1 * self.inputs.voltage_step.value())
+            else: 
+                voltages = np.arange(self.inputs.voltage_start.value(), 
+                                self.inputs.voltage_stop.value(), 
+                                self.inputs.voltage_step.value())
+            if self.inputs.voltage_stop.value() not in voltages:
+                voltages = np.append(voltages,self.inputs.voltage_stop.value())
+            # procedures += self.make_voltage_sweep(voltages)
+            # print("check voltage list: ", voltages)
+            for v in voltages:
+                for i in range( int(self.inputs.num_repeat.value())):
+                    # print("check combo: ", v, i)
+                    test_list += self.single_voltage_sweep(v)
+                    procedures += self.single_voltage_sweep(v)
+                    # if do_motion_sweep:
+                    #     steps = range(int(self.inputs.num_step.value()))
+                    #     procedures += self.make_motion_sweep(steps, self.inputs.delta_x.value(), self.inputs.delta_y.value())
+                    
+                    
+                    # elif do_fourQuadrant:
+                    #     procedures += self.make_4quadrant_sweep()
+                    # else:
+                    #     procedures += [self.make_procedure()]
+                
+            print("check procedure: ", test_list)
+        else: 
+            for i in range( int(self.inputs.num_repeat.value())):
+                if do_motion_sweep:
+                    steps = range(int(self.inputs.num_step.value()))
+                    procedures += self.make_motion_sweep(steps, self.inputs.delta_x.value(), self.inputs.delta_y.value())
+                
+                
+                elif do_fourQuadrant:
+                    procedures += self.make_4quadrant_sweep()
+                else:
+                    procedures += [self.make_procedure()]
+        print("check len of procedures: ", len(procedures))    
         for procedure in procedures:
             if procedure.sample_name == '':
                 procedure.sample_name = 'test'
@@ -226,6 +255,17 @@ class sagnacOpticsXportGUI(ManagedWindow):
             results = Results(procedure,filename)
             experiment = self.new_experiment(results)
             self.manager.queue(experiment)
+        # if do_voltage_sweep:
+        #     v_current = self.lockin.get_vout(1, 6)
+        #     voltage_ramp_down = np.arange(v_current,0,-0.01)
+            # for v in voltage_ramp_down: 
+            #     v = float(v)
+            #     if np.isclose(0, v, atol=0.001):
+            #         v = 0
+            #     # print(i)
+            #     self.lockin.set_vout(1, 6, v)
+            #     sleep(0.5)
+            #     log.info(f"ramping down voltage: {self.lockin.get_vout(1, 6)/np.sqrt(2)}")
 
     def finished(self, experiment):
         super().finished(experiment)
