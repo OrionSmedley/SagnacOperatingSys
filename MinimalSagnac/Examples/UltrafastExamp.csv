@@ -1,13 +1,14 @@
-; from aparatus.sagnac1 import myHF2LI, magnet, defaults as parameters
+; from aparatus.sagnac1 import myHF2LI, magnet, delayStage, defaults as parameters
 ; dem = myHF2LI.dem
 
 
 
-; tc = 0.1
-; parameters.update( {
+; tc = 0.01
+; parameters.update({
 ;     'myHF2LI.setTc': tc,
 ;     'magnet.theta': 90,
 ;     'repeat': np.arange(10),
+;     'delayStage.y.position': np.linspace(-10, 10, 20+1),
 ;     'magnet.field': hysteresis( np.linspace(-0.1, 0.1, 20+1)),
 ;     'time.sleep': [10*tc]
 ; });

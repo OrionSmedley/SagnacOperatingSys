@@ -82,7 +82,7 @@ delayStage = ESP300(11)
 
 
 
-
+defaults = {"myHF2LI.setTc": 0.1}
 
 
 
