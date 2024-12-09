@@ -257,13 +257,15 @@ class vectorMagnetFull:
         Sets the field, accepting polar coordinates.
         """
         
-        log.info('Setting to %g %g %g'%(B,phi,theta))
+        log.info('Setting to B, Phi, Theta: %g %g %g'%(B,phi,theta))
+        
         phi = phi*np.pi/180
         theta = theta*np.pi/180
 
-        Bx = B*np.cos(phi)*np.sin(theta)
-        By = B*np.sin(phi)*np.sin(theta)
-        Bz = B*np.cos(theta)
+        Bx = np.round(B*np.cos(phi)*np.sin(theta), 5)
+        By = np.round(B*np.sin(phi)*np.sin(theta), 5)
+        Bz = np.round(B*np.cos(theta), 5)
+        log.info(f"setting to Bx, By, Bz: {Bx}, {By}, {Bz}")
 
         if np.sqrt(Bx*Bx + By*By + Bz*Bz) > self._field_mag_lim: #np.sqrt returns positive square root
             log.error("A large field of %g was requested"%np.sqrt(Bx*Bx + By*By + Bz*Bz))
@@ -273,7 +275,6 @@ class vectorMagnetFull:
             self._B_sign = -1
         else:
             self._B_sign = 1
-
         self.device.magnet.setHSetPoint3D(Bz, By, Bx)
 
     def get_field_polar(self):
@@ -296,19 +297,20 @@ class vectorMagnetFull:
         phi = phi*np.pi/180
         theta = theta*np.pi/180
 
-        Bx_set = B*np.cos(phi)*np.sin(theta)
-        By_set = B*np.sin(phi)*np.sin(theta)
-        Bz_set = B*np.cos(theta)
+        Bx_set = np.round(B*np.cos(phi)*np.sin(theta), 5)
+        By_set = np.round(B*np.sin(phi)*np.sin(theta), 5)
+        Bz_set = np.round(B*np.cos(theta), 5)
 
         Bz_current, By_current, Bx_current = self.device.magnet.getH(0), self.device.magnet.getH(1), self.device.magnet.getH(2)
 
         if np.isclose(Bx_set,Bx_current, atol=ATOL) and np.isclose(By_set,By_current,atol=ATOL) and np.isclose(Bz_set, Bz_current, atol=ATOL):
             log.info("Field is close to the setpoint")
+            log.info(f"magnet finally at Bx, By, Bz: {Bx_current}, {By_current}, {Bz_current}")
             return True
         else:
-            log.info(f"magnet at {Bx_current}, {By_current}, {Bz_current}")
-            log.info(f"setting to {Bx_set}, {By_set}, {Bz_set}")
-            # log.info("field is not close to the setpoint")
+            log.info("field is not close to the setpoint")
+            log.info(f"magnet still at Bx, By, Bz: {Bx_current}, {By_current}, {Bz_current}")
+            log.info(f"Try again setting to Bx, By, Bz: {Bx_set}, {By_set}, {Bz_set}")
             return False
 
     def set_field_cartesian(self, Bx, By, Bz):

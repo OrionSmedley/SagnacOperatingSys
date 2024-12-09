@@ -238,14 +238,15 @@ class sagnacOpticsXportGUI(ManagedWindow):
             # create files
             if not do_motion_sweep:
                 procedure.step = 0
-
+            
             pre = procedure.sample_name + \
-                '_SagnacHeterodyne_V{voltage:0.4f}V_A{azimuth:0.1f}_step{step}_x{delta_x}_y{delta_y}_'.format(
+                '_SagnacHeterodyne_V{voltage:0.4f}V_A{azimuth:0.1f}_step{step}_x{delta_x}_y{delta_y}_B{field}B_'.format(
                 voltage=procedure.applied_voltage,
                 azimuth=procedure.sweep_field_azimuth,
                 step = procedure.step,
                 delta_x = procedure.delta_x,
-                delta_y = procedure.delta_y
+                delta_y = procedure.delta_y,
+                field = procedure.sweep_field_stop
             )
 
             suf = ''

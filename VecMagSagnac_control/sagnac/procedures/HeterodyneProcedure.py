@@ -651,9 +651,6 @@ class sagnacHeterodyneProcedure_vm_PhiSweep(Procedure):
         self.lockin = HF2LI(8005, 1, 18338)
 
         #subscribe to outputs
-        
-
-      
         self.apply_bias_field = False
         if self.voltage_scale_main == False and self.voltage_scale_sub == False:
             self.lockin.set_vout(1, 6, self.applied_voltage/10*np.sqrt(2))
@@ -690,7 +687,6 @@ class sagnacHeterodyneProcedure_vm_PhiSweep(Procedure):
             phi_points = phi_points[::-1]
         
         if self.saturate:
-
             self.magnet.set_field_polar(self.saturating_field, self.saturating_field_azimuth, self.saturating_field_polar)  #saturate the field 
             log.info("Setting saturation field")
             while not self.magnet.check_field_polar(self.saturating_field, self.saturating_field_azimuth, self.saturating_field_polar, 0.002):
@@ -717,7 +713,6 @@ class sagnacHeterodyneProcedure_vm_PhiSweep(Procedure):
         start_time = time()
 
         for progress_iterator, phi in enumerate(phi_points):
-            
             self.magnet.set_field_polar(self.sweep_phi_field,phi,self.sweep_phi_polar)
             log.info("waiting till field is set to setpoint")
             # sleep(0.1)
@@ -725,8 +720,9 @@ class sagnacHeterodyneProcedure_vm_PhiSweep(Procedure):
                 log.info("Caught stop flag in procedure.")
                 break
             # apply bias field
-            while not self.magnet.check_field_polar(self.sweep_phi_field,phi,self.sweep_phi_polar, 2e-3):
+            while not self.magnet.check_field_polar(self.sweep_phi_field,phi,self.sweep_phi_polar, 0.002):
                 sleep(0.5)
+                self.magnet.set_field_polar(self.sweep_phi_field,phi,self.sweep_phi_polar)
                 if self.should_stop():
                     log.info("Caught stop flag in procedure.")
                     break
