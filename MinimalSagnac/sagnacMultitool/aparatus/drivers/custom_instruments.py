@@ -125,6 +125,7 @@ class daedalusProjField:
             self._set_volts(now)
             sleep(self._delay)
         self._set_volts(volts)
+        self.wait_for_operation()
 
     def getVolts(self):
         # create task and set up channel
@@ -144,6 +145,7 @@ class daedalusProjField:
         # phi = modular_range_bidirectional(phi,[-170.,170.])
         self.set_vector_field(self._field, phi, self._theta)
         self._phi = phi
+        self.wait_for_operation()
 
     @handle_timeout("getting phi")
     def getPhi(self):
@@ -156,6 +158,7 @@ class daedalusProjField:
         theta = modular_range_bidirectional(theta,[-180.,180.])
         self.set_vector_field(self._field, self._phi, theta)
         self._theta = theta
+        self.wait_for_operation()
 
     def getTheta(self):
         return self._theta
@@ -165,6 +168,7 @@ class daedalusProjField:
     def setField(self, field):
         self.set_vector_field(field, self._phi, self._theta)
         self._field = field
+        self.wait_for_operation()
 
     def getField(self):
         return self._field # Can maybe make this better by inverting calibrations but w/e
@@ -262,6 +266,7 @@ class daedalusProjField:
         """ Ensures the magnet is set to zero field """
         log.info("Shutting down %s." % self.name)
         self.set_vector_field(0.,0.,0.)
+        self.wait_for_operation()
 
     def base_voltage_calibration(self, B):
         """Determines voltage needed to achieve B, assuming magnet is centered"""
@@ -324,7 +329,7 @@ class daedalusProjField:
             self.set_volts = truncated_range(self.set_volts,self._voltagelims)
             log.warning('Magnet voltage overload! Magnet voltage being set to %g'%self.set_volts)
         self.volts = self.set_volts
-
+        self.wait_for_operation()
 
         self._field = B
     
@@ -353,7 +358,6 @@ class daedalusProjField:
         for err in self.errors:
             log.warning('%s'%err)
         self.set_vector_field(B, phi, theta)
-
 
     def get_cart_vector_field(self):
         B = self.field
@@ -388,6 +392,12 @@ class daedalusProjField:
     @property
     def Bz(self):
         return self.get_cart_vector_field()[2]
+
+    def wait_for_operation(self):
+        while self.in_motion:
+            sleep(0.1)
+        for err in self.errors:
+            log.warning('%s'%err)
     
 
     
