@@ -1,10 +1,12 @@
 ; from aparatus.dummy import instrument as inst
-;
+; yoink  = None #initialization
+
 ; parameters = {
 ;    "inst.phase #an initialization": 0,
 ;    "inst.phase #for real": [1,2,3],
 ;    "inst.frequency": np.linspace(1, 10, 2),
-;    "inst.temperature": [25, 30, 35]
+;    "inst.temperature": [25, 30, 35],
+;    "yoink": [1,2,3]
 ; }
 
-inst.frequency, inst.temperature #angry, inst.get_voltage #cool
+inst.frequency, inst.temperature #angry, inst.get_voltage #cool, yoink #yoink
