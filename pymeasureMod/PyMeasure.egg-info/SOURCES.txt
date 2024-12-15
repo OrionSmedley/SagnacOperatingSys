@@ -155,6 +155,8 @@ pymeasure/instruments/ami/ami430.py
 pymeasure/instruments/anritsu/__init__.py
 pymeasure/instruments/anritsu/anritsuMG3692C.py
 pymeasure/instruments/anritsu/anritsuMS9710C.py
+pymeasure/instruments/attocube/__init__.py
+pymeasure/instruments/attocube/aps100.py
 pymeasure/instruments/danfysik/__init__.py
 pymeasure/instruments/danfysik/adapters.py
 pymeasure/instruments/danfysik/danfysik8500.py

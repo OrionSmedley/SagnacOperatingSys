@@ -6,6 +6,8 @@ sagnac/custom_instruments_indep_x.py
 sagnac/custom_instruments_indep_y.py
 sagnac/custom_instruments_indep_z.py
 sagnac/useful_functions.py
+sagnac/custom_instruments/APS100.py
+sagnac/custom_instruments/__init__.py
 sagnac/procedures/AMRProcedure.py
 sagnac/procedures/DCTiltProcedure.py
 sagnac/procedures/HeterodyneProcedure.py
