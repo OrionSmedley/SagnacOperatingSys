@@ -25,3 +25,7 @@ for attr in dir(pyvisa):
 
 from pymeasure.instruments.keithley import Keithley2400
 keith = Keithley2400("GPIB::24")
+
+
+from pymeasure.instruments.attocube import APS100
+mag = APS100('COM4')
