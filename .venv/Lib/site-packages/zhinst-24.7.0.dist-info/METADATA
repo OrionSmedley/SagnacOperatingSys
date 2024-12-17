@@ -1,0 +1,42 @@
+Metadata-Version: 2.1
+Name: zhinst
+Version: 24.7.0
+Summary: Zurich Instruments Python API
+Author: Zurich Instrument
+Author-email: info@zhinst.com
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Scientific/Engineering
+Classifier: Intended Audience :: Science/Research
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: zhinst.core ==24.7.61797
+Requires-Dist: zhinst.utils ==0.4.1
+Requires-Dist: zhinst.toolkit ==0.6.3
+
+# Zurich Instruments LabOne Packages
+
+![](https://github.com/zhinst/zhinst-meta/blob/main/thumbnail.jpg)
+
+The `zhinst` package is purely a metapackage that installs the whole Python API
+stack for LabOne&reg;, the Zurich Instruments control software.
+
+It includes the following packages:
+
+* [zhinst-core](https://pypi.org/project/zhinst-core/) (native Python API for LabOne)
+* [zhinst-utils](https://pypi.org/project/zhinst-utils/) (utility functions for zhinst-core)
+* [zhinst-toolkit](https://pypi.org/project/zhinst-toolkit/) (high-level Python API for LabOne)
+
+This package includes everything required to interface with LabOne form within Python.
+For more information see the dedicated package documentation or the
+[online documentation](https://docs.zhinst.com).
+
+WARNING: Upgrading from version <= 22.02 to 22.08 requires to uninstall this package first and the reinstalling it, `--upgrade` will corrupt the package.  

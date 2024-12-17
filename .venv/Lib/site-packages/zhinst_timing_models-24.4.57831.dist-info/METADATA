@@ -1,0 +1,68 @@
+Metadata-Version: 2.3
+Name: zhinst-timing-models
+Version: 24.4.57831
+Summary: Feedback Data Latency model for PQSC, SHF- and HDAWG systems.
+Author-email: Zurich Instruments <info@zhinst.com>
+License-Expression: MIT
+License-File: LICENSE.txt
+Keywords: zhinst
+Classifier: Development Status :: 4 - Beta
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Requires-Python: >=3.7
+Requires-Dist: numpy>=1.14
+Description-Content-Type: text/markdown
+
+# Feedback Latency Model Parameters
+
+[![PyPI - Version](https://img.shields.io/pypi/v/zhinst-timing-models.svg)](https://pypi.org/project/zhinst-timing-models)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/zhinst-timing-models.svg)](https://pypi.org/project/zhinst-timing-models)
+
+-----
+
+Feedback Data Latency model for PQSC, SHF- and HDAWG systems.
+
+**Table of Contents**
+
+- [Feedback Latency Model Parameters](#feedback-latency-model-parameters)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [License](#license)
+
+## Installation
+
+```console
+pip install zhinst-timing-models
+```
+
+## Usage
+
+```python
+from zhinst.timing_models import (
+    PQSCMode,
+    QAType,
+    QCCSFeedbackModel,
+    SGType,
+    TriggerSource,
+    get_feedback_system_description,
+)
+
+model = QCCSFeedbackModel(
+    description=get_feedback_system_description(
+        generator_type=SGType.HDAWG,
+        analyzer_type=QAType.SHFQA,
+        pqsc_mode=PQSCMode.DECODER,
+        trigger_source=TriggerSource.ZSYNC,
+        )
+    )
+awg_clock_cycles = model.get_latency(...)
+```
+
+## License
+
+`zhinst-timing-models` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
