@@ -80,8 +80,6 @@ class ZScanProcedure(Procedure):
 
 
 		for progress in range(0, self.z_total, self.z_step):
-
-
 			z_pos = progress / self.z_total
 			zs.append(z_pos)
 			Xs.append(self.lockin.x)
@@ -108,13 +106,6 @@ class ZScanProcedure(Procedure):
 			max = np.argmax(Xs)
 			log.info("Maximum voltage position: " + str(zs[max]))
 			log.info("Maximum voltage: " + str(Xs[max]))
-
-
-
-
-
-
-
 
 	def shutdown(self):
 		self.stepper.shut_down()

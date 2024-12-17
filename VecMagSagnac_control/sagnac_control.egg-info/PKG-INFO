@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: sagnac_control
+Version: 0.1
+Summary: sagnac measurement package.
+Requires-Dist: pymeasure>=0.5.1
+
+Sagnac Setup Measurement Software
+===================================
+
+This software provides the instrument control methods to make
+experiments with the Sagnac setup easy.
+
+Authors:
+--------
+
+Saba Karimeddiny
+Kelly Luo

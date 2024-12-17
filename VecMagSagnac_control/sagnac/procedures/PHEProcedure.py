@@ -11,7 +11,7 @@ from pymeasure.experiment import Procedure
 from pymeasure.experiment import IntegerParameter, FloatParameter, BooleanParameter, Parameter
 from pymeasure.adapters import DAQmxAdapter
 from ..custom_instruments import vectorMagnetBase, vectorMagnetX, vectorMagnetY, vectorMagnetZ, vectorMagnetFull
-from scanning import ANC300
+# from scanning import ANC300
 from time import sleep, time
 import numpy as np
 
