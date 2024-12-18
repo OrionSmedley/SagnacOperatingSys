@@ -1,3 +1,31 @@
+#############################################################################################################################
+
+from PyQt5 import QtWidgets, QtGui
+
+# Map all attributes from QtWidgets to QtGui without checking if they exist in QtGui
+for attr in dir(QtWidgets):
+    setattr(QtGui, attr, getattr(QtWidgets, attr))
+
+
+
+
+#############################################################################################################################
+import pyvisa
+
+# Simulate the `visa` module as an alias for `pyvisa`
+import sys
+
+# Create a fake 'visa' module, which is essentially an alias for pyvisa
+sys.modules['visa'] = pyvisa
+
+# Optionally, map all attributes from pyvisa to visa (this is technically unnecessary because the alias works)
+for attr in dir(pyvisa):
+    setattr(sys.modules['visa'], attr, getattr(pyvisa, attr))
+
+#############################################################################################################################
+
+
+
 import logging
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
