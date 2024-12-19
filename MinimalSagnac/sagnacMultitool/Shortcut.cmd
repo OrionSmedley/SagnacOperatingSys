@@ -1,36 +1,24 @@
-:: Ask user what they want to do
 @echo off
+call code "%~1"
 echo Your File is "%~1"
-set /p choice=Enter your choice - [v]iew, [p]lot, [r]un, [a]ll: 
+
+call conda activate pipPymeasMod
+cd /d "%~dp0"
+
+:: Ask user what they want to do
+set /p choice=Enter your choice - [p]lot, [r]un, [a]ll: 
 
 
 :: Run the appropriate script
-
-
-
-
-if "%choice%"=="v" (
-    code "%~1"  
-)
-
 if "%choice%"=="p" (
-    call conda activate pipPymeasMod
-    cd /d "%~dp0"
-
     python plotter.py "%~1"  
 )
 
 if "%choice%"=="r" (
-    call conda activate pipPymeasMod
-    cd /d "%~dp0"
-
     python experimenter.py "%~1"
 )
 
 if "%choice%"=="a" (
-    call conda activate pipPymeasMod
-    cd /d "%~dp0"
-
     start /b python plotter.py "%~1"  
     :: Runs plotter.py in the background
     python experimenter.py "%~1" 

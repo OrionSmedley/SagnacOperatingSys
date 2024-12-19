@@ -10,3 +10,10 @@
 ; }
 
 inst.frequency, inst.temperature #angry, inst.get_voltage #cool, yoink #yoink
+1.0,25,3.5,1
+1.0,25,3.5,2
+1.0,25,3.5,3
+1.0,30,4.0,1
+1.0,30,4.0,2
+1.0,30,4.0,3
+1.0,35,4.5,1
