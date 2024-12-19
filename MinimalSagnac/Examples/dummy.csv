@@ -1,5 +1,6 @@
 ; from aparatus.dummy import instrument as inst
 ; yoink  = None #initialization
+; from random import random
 
 ; parameters = {
 ;    "inst.phase #an initialization": 0,
@@ -9,4 +10,4 @@
 ;    "yoink": [1,2,3]
 ; }
 
-inst.frequency, inst.temperature #angry, inst.get_voltage #cool, yoink #yoink
+inst.frequency, inst.temperature #angry, inst.get_voltage #cool, yoink + random() #yoink
