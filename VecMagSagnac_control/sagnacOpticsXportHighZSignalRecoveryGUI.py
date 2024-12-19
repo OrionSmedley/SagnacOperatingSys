@@ -95,7 +95,7 @@ class sagnacOpticsXportHighZSignalRecoveryGUI(ManagedWindow):
         procedure.second_harm_order = self.inputs.second_harm_order.value()
         procedure.first_harm_tc = self.inputs.first_harm_tc.value()
         procedure.second_harm_tc = self.inputs.second_harm_tc.value()
-
+    
         procedure.eom_voltage = self.inputs.eom_voltage.value()
         procedure.queued_time = datetime.now().strftime("%I:%M%p %Y-%m-%d").lower()
 

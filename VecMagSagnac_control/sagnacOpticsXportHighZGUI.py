@@ -15,7 +15,7 @@ from pymeasure.display.Qt import QtCore, QtGui, fromUi
 from pymeasure.display.windows import ManagedWindow
 from pymeasure.experiment import Results, unique_filename
 from sagnac.procedures import sagnacOpticsXportProcedure_vm_highZ
-
+from PyQt5 import QtWidgets
 class sagnacOpticsXportHighZGUI(ManagedWindow):
 
     SWEEP_PARAM_NAMES = ['sweep_field', 'sweep_field_azimuth']
@@ -28,7 +28,8 @@ class sagnacOpticsXportHighZGUI(ManagedWindow):
                 'sample_name',
                 'current_frequency',
                 'amp_gain',
-                'sweep_field',
+                'sweep_field_start',
+                'sweep_field_stop', 
                 'sweep_field_step',
                 'sweep_field_azimuth',
                 'saturating_field',
@@ -39,7 +40,7 @@ class sagnacOpticsXportHighZGUI(ManagedWindow):
             x_axis='sweep_field',
             y_axis='ThetaK'
         )
-        self.setWindowTitle('PyMeasure Sagnac Vector Magnet Optics Xport Combo Scan')
+        self.setWindowTitle('Sagnac HighZ Scan')
         self.last_series_fname = None
 
     def _setup_ui(self):
@@ -50,7 +51,7 @@ class sagnacOpticsXportHighZGUI(ManagedWindow):
         self.inputs.hide()
         self.run_directory = os.path.dirname(os.path.realpath(__file__))
         self.inputs = fromUi(os.path.join(self.run_directory,'custom_inputs/sagnac_gui_OpticsXport_HighZ.ui'))
-        self.inputs.save_dir.setText("junk")
+        self.inputs.save_dir.setText("test")
 
     def make_procedure(self):
         """
@@ -77,7 +78,9 @@ class sagnacOpticsXportHighZGUI(ManagedWindow):
 
         procedure.hysteresis = self.inputs.hysteresis.isChecked()
         procedure.reverse = self.inputs.reverse.isChecked()
-        procedure.sweep_field = self.inputs.sweep_field.value()
+        # procedure.sweep_field = self.inputs.sweep_field.value()
+        procedure.sweep_field_start = self.inputs.sweep_field_start.value()
+        procedure.sweep_field_stop = self.inputs.sweep_field_stop.value()
         procedure.sweep_field_step = self.inputs.sweep_field_step.value()
         procedure.sweep_field_azimuth = self.inputs.sweep_field_azimuth.value()
         procedure.sweep_field_polar = self.inputs.sweep_field_polar.value()
@@ -130,7 +133,7 @@ class sagnacOpticsXportHighZGUI(ManagedWindow):
         return procedures
 
     def queue(self):
-        direc = 'C:\\Users\\Ralph Group\\Documents\\Data\\' + self.inputs.save_dir.text()
+        direc = 'C:\\Users\\luogroup\\Documents\\Sagnac Data\\' + self.inputs.save_dir.text()
         # do_sweep = self.inputs.do_voltage_sweep.isChecked()
         # if do_sweep:
         #     voltages = np.arange(self.inputs.voltage_min.value(), 
@@ -157,12 +160,13 @@ class sagnacOpticsXportHighZGUI(ManagedWindow):
                 procedure.step = 0
 
             pre = procedure.sample_name + \
-                '_SagnacHeterodyne_V{voltage:0.4f}V_A{azimuth:0.1f}_step{step}_x{delta_x}_y{delta_y}_'.format(
+                '_SagnacHeterodyneHighZ_V{voltage:0.4f}V_A{azimuth:0.1f}_step{step}_x{delta_x}_y{delta_y}_B{field}B_'.format(
                 voltage=procedure.applied_voltage,
                 azimuth=procedure.sweep_field_azimuth,
                 step = procedure.step,
                 delta_x = procedure.delta_x,
-                delta_y = procedure.delta_y
+                delta_y = procedure.delta_y,
+                field = procedure.sweep_field_stop
             )
 
             suf = ''
@@ -177,7 +181,7 @@ class sagnacOpticsXportHighZGUI(ManagedWindow):
         super().finished(experiment)
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     window = sagnacOpticsXportHighZGUI()
     window.show()
     sys.exit(app.exec_())

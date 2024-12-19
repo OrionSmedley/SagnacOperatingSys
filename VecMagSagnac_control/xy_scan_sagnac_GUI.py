@@ -16,7 +16,7 @@ from pymeasure.display.Qt import QtCore, QtGui, fromUi
 from pymeasure.display.windows import ManagedWindow, ManagedImageWindow
 from pymeasure.experiment import Results, unique_filename
 # from pymeasure.instruments.attocube import ANC150
-from scanning import ANC150
+# from scanning import ANC150
 from sagnac.procedures import xy_scan_sagnac_procedure
 
 #import send_gmail
