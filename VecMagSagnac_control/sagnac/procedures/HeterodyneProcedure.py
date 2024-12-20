@@ -3,23 +3,26 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 import sys
-from pymeasure.log import console_log
-from pymeasure.experiment import Results, unique_filename
-from pymeasure.instruments.keithley import Keithley2400
-from pymeasure.instruments.zurich import HF2LI
-from pymeasure.instruments.signalrecovery import DSP7265
+import pymeasure
+# from pymeasure.log import console_log
+# from pymeasure.experiment import Results, unique_filename
+# from pymeasure.instruments.keithley import Keithley2400
+# from pymeasure.instruments.zurich import HF2LI
+# from pymeasure.instruments.attocube import APS100
+# from pymeasure.instruments.signalrecovery import DSP7265
 from ..custom_instruments import vectorMagnetBase, vectorMagnetX, vectorMagnetY, vectorMagnetZ, vectorMagnetFull, vectorMagnetFullUSB
+from ..instruments import APS100, HF2LI
+
 # from ..instruments.LTC20 import LTC20, change to our temperature controller
 
 from pymeasure.instruments.keithley import Keithley6221
 from pymeasure.experiment import Procedure
 from pymeasure.experiment import IntegerParameter, FloatParameter, BooleanParameter, Parameter
-from pymeasure.adapters import DAQmxAdapter
+# from pymeasure.adapters import DAQmxAdapter
 # from scanning import ANC150, ANC300
 from time import sleep, time
 import numpy as np
 import atto_device.CRYO2100 as cr
-from pymeasure.instruments.attocube import APS100
 
 class sagnacHeterodyneProcedure_vm(Procedure):
     """
@@ -1053,8 +1056,6 @@ class sagnacOpticsXportProcedure_vm(Procedure):
         while (abs(self.device.magnet.getH(0)) > 0.001):
             sleep(2)
         log.info(f"Field set to {0}T")
-
-
 
 class sagnacOpticsXportProcedure_vm_highZ(Procedure):
     """
@@ -2965,7 +2966,7 @@ class sagnacOpticsXportProcedure_vm_PhiSweep_usbMagCom(Procedure):
     sweep_phi_step = FloatParameter("Bias Magnetic Field Phi step", units="deg", default=0)
     sweep_phi_field = FloatParameter("Bias Magnetic Field Magnitude", units="T", default=0.)
     sweep_phi_polar = FloatParameter("Bias Magnetic Field Polar", units="deg", default=0.0)
-    vti_threshold = FloatParameter("VTI threshold safety", units="K", default=0.5)
+    r_threshold = FloatParameter("VTI threshold safety", units="K", default=0.5)
 
     apply_bias_field = BooleanParameter("Apply a Bias Field?", default = False)
     bias_field_x = FloatParameter("Bias Field x", units="T", default=0)
@@ -3028,6 +3029,9 @@ class sagnacOpticsXportProcedure_vm_PhiSweep_usbMagCom(Procedure):
         if self.sweep_phi_start not in phi_points:
             phi_points = np.append(phi_points,self.sweep_phi_start)
 
+        if self.sweep_phi_end not in phi_points:
+            phi_points = np.append(phi_points,self.sweep_phi_end)
+
         if self.hysteresis:                        
             phi_points = np.append(phi_points, phi_points[::-1][1:])
 
@@ -3045,12 +3049,12 @@ class sagnacOpticsXportProcedure_vm_PhiSweep_usbMagCom(Procedure):
             log.info("Set to saturation field")
         
         # self.device.magnet.setHSetPoint3D(0.0, 0.0, 0.0)
-        self.magnet.set_field_cartesian(0, 0, 0)
-        Bx, By, Bz = self.magnet.get_field_cartesian()
-        while (abs(Bz) > 0.002):
+            self.magnet.set_field_cartesian(0, 0, 0)
+            Bx, By, Bz = self.magnet.get_field_cartesian()
+            while (abs(Bz) > 0.002):
+                sleep(0.5)
+            log.info(f"Field set to 0 T")
             sleep(0.5)
-        log.info(f"Field set to 0 T")
-        sleep(0.5)
 
         log.info("Waiting a while to equilibrate")
         sleep(self.wait)
@@ -3060,7 +3064,7 @@ class sagnacOpticsXportProcedure_vm_PhiSweep_usbMagCom(Procedure):
 
         # while float(self.attocube_device.vti.getTemperature()) < 2.0: # temperature safety constraint
         for progress_iterator, phi in enumerate(phi_points):
-            if float(self.attocube_device.condenser.getTemperature()) < self.vti_threshold:
+            if float(self.attocube_device.condenser.getTemperature()) < self.r_threshold:
                 self.magnet.set_field_polar(self.sweep_phi_field,phi,self.sweep_phi_polar)
                 log.info("waiting till field is set to setpoint")
                 # sleep(0.1)
@@ -3142,19 +3146,19 @@ class sagnacOpticsXportProcedure_vm_PhiSweep_usbMagCom(Procedure):
                 if self.should_stop():
                     log.warning("Caught stop flag in procedure.")
                     break
-            # else:
-            #     break
+            else:
+                break
 
     def shutdown(self):
         log.info("Finished with scans. Shutting down instruments.")
         Bx, By, Bz = self.magnet.get_field_cartesian()
         self.magnet.set_field_cartesian(0.0, 0.0, 0.0)
-        while (abs(Bz) > 0.001):
-            sleep(2)
+        # while (abs(Bz) > 0.001):
+        #     sleep(2)
         self.magnet.shutdown()
-        sleep(1)
-        self.lockin.shutdown()
-        sleep(1)
+        # sleep(1)
+        # self.lockin.shutdown()
+        # sleep(1)
         log.info(f"Field set to {Bx}, {By}, {Bz} T (this should be 0)")
 
 class voltage_sweep_procedure(Procedure):

@@ -8,7 +8,8 @@ from pymeasure.instruments.validators import truncated_range
 from pymeasure.instruments import Instrument
 import pyvisa
 from .instruments.AMI420 import AMI420
-from pymeasure.instruments.attocube import APS100
+# from pymeasure.instruments.attocube import APS100
+from sagnac.instruments import APS100
 
 def handle_timeout(fail_mode):
     def handle_timeout_decorator(func):
@@ -498,14 +499,11 @@ class vectorMagnetFullUSB:
             self._B_sign = 1
         # self.device.magnet.setHSetPoint3D(Bz, By, Bx)
 
+        self.device_2.set_channel(2) # y
+        self.device_2.set_field(By)
         self.device_x.set_field(Bx)
         self.device_2.set_channel(1) # z 
         self.device_2.set_field(Bz)
-        self.device_2.set_channel(2) # y
-        self.device_2.set_field(By)
-    
-
-
 
     def get_field_polar(self):
         """

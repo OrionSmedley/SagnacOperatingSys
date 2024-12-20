@@ -85,7 +85,8 @@ class sagnacHeterodynePhiSweepGUI_usb(ManagedWindow):
                 'bias_field_y',
                 'bias_field_z'],
             x_axis='sweep_phi',
-            y_axis='ThetaK'
+            y_axis='ThetaK',
+            enable_file_input = False
         )
         self.setWindowTitle('PyMeasure Sagnac Heterodyne Hysteresis Scan for Phi Sweep')
         self.last_series_fname = None
@@ -128,7 +129,7 @@ class sagnacHeterodynePhiSweepGUI_usb(ManagedWindow):
         procedure.sweep_phi_step = self.inputs.sweep_phi_step.value()
         procedure.sweep_phi_field = self.inputs.sweep_phi_field.value()
         procedure.sweep_phi_polar = self.inputs.sweep_phi_polar.value()
-        procedure.vti_threshold = self.inputs.vti_threshold.value()
+        procedure.r_threshold = self.inputs.r_threshold.value()
 
         # procedure.bias_field_x = self.inputs.bias_field_x.value()
         # procedure.bias_field_y = self.inputs.bias_field_y.value()
