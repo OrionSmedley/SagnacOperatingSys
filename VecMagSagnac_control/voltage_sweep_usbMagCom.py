@@ -42,30 +42,29 @@ from pymeasure.log import console_log
 from pymeasure.display.Qt import QtCore, QtGui, fromUi
 from pymeasure.display.windows import ManagedWindow
 from pymeasure.experiment import Results, unique_filename
-from sagnac.procedures import sagnacOpticsXportProcedure_usbMagCom
+from sagnac.procedures import voltage_sweep_procedure
 from PyQt5 import QtWidgets
 
-class sagnacOpticsXportGUI_usbMagCom(ManagedWindow):
+class voltage_sweep(ManagedWindow):
 
-    SWEEP_PARAM_NAMES = ['sweep_field', 'sweep_field_azimuth']
+    SWEEP_PARAM_NAMES = ['voltage']
     NUM_SWEEP_PARAMS = len(SWEEP_PARAM_NAMES)
 
     def __init__(self):
-        super(sagnacOpticsXportGUI_usbMagCom, self).__init__(
-            procedure_class=sagnacOpticsXportProcedure_usbMagCom,
+        super(voltage_sweep, self).__init__(
+            procedure_class=voltage_sweep_procedure,
             displays=[
                 'sample_name',
-                'current_frequency',
                 'amp_gain',
-                'sweep_field_start',
-                'sweep_field_stop',
-                'sweep_field_step',
+                'sweep_field',
                 'sweep_field_azimuth',
                 'sweep_field_polar',
-                'saturating_field',
-                'saturating_field_polar',
+                'voltage_start',
+                'voltage_stop',
+                'voltage_step', 
                 'bias_field_x',
                 'bias_field_y',
+                
                 'bias_field_z'],
             x_axis='sweep_field',
             y_axis='ThetaK'
@@ -77,10 +76,10 @@ class sagnacOpticsXportGUI_usbMagCom(ManagedWindow):
         """
         Loads custom QT UI for Sagnac DC Hysteresis measurements
         """
-        super(sagnacOpticsXportGUI_usbMagCom, self)._setup_ui()
+        super(voltage_sweep, self)._setup_ui()
         self.inputs.hide()
         self.run_directory = os.path.dirname(os.path.realpath(__file__))
-        self.inputs = fromUi(os.path.join(self.run_directory,'custom_inputs/sagnac_gui_OpticsXport.ui'))
+        self.inputs = fromUi(os.path.join(self.run_directory,'custom_inputs/sagnac_gui_OpticsXport_voltage_sweep.ui'))
         self.inputs.save_dir.setText("test")
         # print("check self inputs: ", self.inputs)
 
@@ -88,38 +87,38 @@ class sagnacOpticsXportGUI_usbMagCom(ManagedWindow):
         """
         Constructs a single procedure
         """
-        procedure = sagnacOpticsXportProcedure_usbMagCom()
+        procedure = voltage_sweep_procedure()
 
         procedure.sample_name = self.inputs.sample_name.text()
 
         procedure.x_enable = self.inputs.x_enable.isChecked()
         procedure.y_enable = self.inputs.y_enable.isChecked()
 
-        procedure.applied_voltage = self.inputs.applied_voltage.value()
-        procedure.current_frequency = self.inputs.current_frequency.value()
+        # procedure.applied_voltage = self.inputs.applied_voltage.value()
+        # procedure.current_frequency = self.inputs.current_frequency.value()
         procedure.amp_gain = self.inputs.amp_gain.value()
         procedure.settling = self.inputs.settling.value()
         procedure.wait = self.inputs.wait.value()
 
-        procedure.saturate = self.inputs.saturate.isChecked()
-        procedure.saturating_field = self.inputs.saturating_field.value()
-        procedure.saturating_field_azimuth = self.inputs.saturating_field_azimuth.value()
-        procedure.saturating_field_polar = self.inputs.saturating_field_polar.value()
+        # procedure.saturate = self.inputs.saturate.isChecked()
+        # procedure.saturating_field = self.inputs.saturating_field.value()
+        # procedure.saturating_field_azimuth = self.inputs.saturating_field_azimuth.value()
+        # procedure.saturating_field_polar = self.inputs.saturating_field_polar.value()
         
-        procedure.voltage_sweep = self.inputs.do_voltage_sweep.isChecked()
+        # procedure.voltage_sweep = self.inputs.do_voltage_sweep.isChecked()
         procedure.voltage_start = self.inputs.voltage_start.value()
         procedure.voltage_stop = self.inputs.voltage_stop.value()
         procedure.voltage_step = self.inputs.voltage_step.value()
-        procedure.voltage_scale_main = self.inputs.voltage_scale_main.isChecked()
-        procedure.voltage_scale_sub = self.inputs.voltage_scale_sub.isChecked()
+        # procedure.voltage_scale_main = self.inputs.voltage_scale_main.isChecked()
+        # procedure.voltage_scale_sub = self.inputs.voltage_scale_sub.isChecked()
         # procedure.saturating_field_polar = self.inputs.saturating_field_polar.value()
 
 
-        procedure.hysteresis = self.inputs.hysteresis.isChecked()
-        procedure.reverse = self.inputs.reverse.isChecked()
-        procedure.sweep_field_start = self.inputs.sweep_field_start.value()
-        procedure.sweep_field_stop = self.inputs.sweep_field_stop.value()
-        procedure.sweep_field_step = self.inputs.sweep_field_step.value()
+        # procedure.hysteresis = self.inputs.hysteresis.isChecked()
+        # procedure.reverse = self.inputs.reverse.isChecked()
+        procedure.sweep_field = self.inputs.sweep_field.value()
+        # procedure.sweep_field_stop = self.inputs.sweep_field_stop.value()
+        # procedure.sweep_field_step = self.inputs.sweep_field_step.value()
         procedure.sweep_field_azimuth = self.inputs.sweep_field_azimuth.value()
         procedure.sweep_field_polar = self.inputs.sweep_field_polar.value()
 
@@ -213,76 +212,71 @@ class sagnacOpticsXportGUI_usbMagCom(ManagedWindow):
 
     def queue(self):
         direc = 'C:\\Users\\luogroup\\Documents\\Sagnac Data\\' + self.inputs.save_dir.text()
-        do_fourQuadrant = self.inputs.do_fourQuadrant.isChecked()
-        do_motion_sweep = self.inputs.do_motion_sweep.isChecked()
-        do_voltage_sweep = self.inputs.do_voltage_sweep.isChecked()
+        # do_fourQuadrant = self.inputs.do_fourQuadrant.isChecked()
+        # do_motion_sweep = self.inputs.do_motion_sweep.isChecked()
+        # do_voltage_sweep = self.inputs.do_voltage_sweep.isChecked()
         procedures = []
         test_list = []
-        if do_voltage_sweep:
-            if (self.inputs.voltage_start.value() > self.inputs.voltage_stop.value()):
-                voltages = np.arange(self.inputs.voltage_start.value(), 
-                                self.inputs.voltage_stop.value(), 
-                                -1 * self.inputs.voltage_step.value())
-            else: 
-                voltages = np.arange(self.inputs.voltage_start.value(), 
-                                self.inputs.voltage_stop.value(), 
-                                self.inputs.voltage_step.value())
-            if self.inputs.voltage_stop.value() not in voltages:
-                voltages = np.append(voltages,self.inputs.voltage_stop.value())
-            # procedures += self.make_voltage_sweep(voltages)
-            # print("check voltage list: ", voltages)
-            for v in voltages:
-                for i in range( int(self.inputs.num_repeat.value())):
-                    # print("check combo: ", v, i)
-                    test_list += self.single_voltage_sweep(v)
-                    procedures += self.single_voltage_sweep(v)
-                    # if do_motion_sweep:
-                    #     steps = range(int(self.inputs.num_step.value()))
-                    #     procedures += self.make_motion_sweep(steps, self.inputs.delta_x.value(), self.inputs.delta_y.value())
+        # if do_voltage_sweep:
+        #     if (self.inputs.voltage_start.value() > self.inputs.voltage_stop.value()):
+        #         voltages = np.arange(self.inputs.voltage_start.value(), 
+        #                         self.inputs.voltage_stop.value(), 
+        #                         -1 * self.inputs.voltage_step.value())
+        #     else: 
+        #         voltages = np.arange(self.inputs.voltage_start.value(), 
+        #                         self.inputs.voltage_stop.value(), 
+        #                         self.inputs.voltage_step.value())
+        #     if self.inputs.voltage_stop.value() not in voltages:
+        #         voltages = np.append(voltages,self.inputs.voltage_stop.value())
+        #     # procedures += self.make_voltage_sweep(voltages)
+        #     # print("check voltage list: ", voltages)
+        #     for v in voltages:
+        #         for i in range( int(self.inputs.num_repeat.value())):
+        #             # print("check combo: ", v, i)
+        #             test_list += self.single_voltage_sweep(v)
+        #             procedures += self.single_voltage_sweep(v)
+        #             # if do_motion_sweep:
+        #             #     steps = range(int(self.inputs.num_step.value()))
+        #             #     procedures += self.make_motion_sweep(steps, self.inputs.delta_x.value(), self.inputs.delta_y.value())
                     
                     
-                    # elif do_fourQuadrant:
-                    #     procedures += self.make_4quadrant_sweep()
-                    # else:
-                    #     procedures += [self.make_procedure()]
+        #             # elif do_fourQuadrant:
+        #             #     procedures += self.make_4quadrant_sweep()
+        #             # else:
+        #             #     procedures += [self.make_procedure()]
                 
-            print("check procedure: ", test_list)
-        else: 
-            for i in range( int(self.inputs.num_repeat.value())):
-                if do_motion_sweep:
-                    steps = range(int(self.inputs.num_step.value()))
-                    procedures += self.make_motion_sweep(steps, self.inputs.delta_x.value(), self.inputs.delta_y.value())
-                
-                
-                elif do_fourQuadrant:
-                    procedures += self.make_4quadrant_sweep()
-                else:
-                    procedures += [self.make_procedure()]
-                    print(self.make_procedure())
+        #     print("check procedure: ", test_list)
+        # else: 
+        for i in range( int(self.inputs.num_repeat.value())):
+            procedures += [self.make_procedure()]
         print("check len of procedures: ", len(procedures))    
         for procedure in procedures:
             if procedure.sample_name == '':
                 procedure.sample_name = 'test'
 
             # create files
-            if not do_motion_sweep:
-                procedure.step = 0
+            # if not do_motion_sweep:
+            procedure.step = 0
             
             pre = procedure.sample_name + \
-                '_SagnacHeterodyne_V{voltage:0.4f}V_A{azimuth:0.1f}_step{step}_x{delta_x}_y{delta_y}_B{field}B_'.format(
-                voltage=procedure.applied_voltage,
+                '_SagnacHeterodyne_B{sweep_field:0.1f}B_A{azimuth:0.1f}_step{step}_x{delta_x}_y{delta_y}_B{field}B_'.format(
+                sweep_field = procedure.sweep_field,
                 azimuth=procedure.sweep_field_azimuth,
                 step = procedure.step,
                 delta_x = procedure.delta_x,
                 delta_y = procedure.delta_y,
-                field = procedure.sweep_field_stop
+                field = procedure.sweep_field
             )
-            print("check procedure: ", procedure)
+
             suf = ''
             filename = unique_filename(direc,dated_folder=True,suffix=suf,
                                         prefix=pre)
             # Queue experiment
+            print("check procedure: ", procedure)
+            print("filename: ", filename)
             results = Results(procedure,filename)
+
+            print(procedure)
             experiment = self.new_experiment(results)
             self.manager.queue(experiment)
         # if do_voltage_sweep:
@@ -302,6 +296,6 @@ class sagnacOpticsXportGUI_usbMagCom(ManagedWindow):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    window = sagnacOpticsXportGUI_usbMagCom()
+    window = voltage_sweep()
     window.show()
     sys.exit(app.exec_())

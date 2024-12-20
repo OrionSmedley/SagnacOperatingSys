@@ -440,26 +440,18 @@ class vectorMagnetFullUSB:
 
     def __init__(self):
         # in this case device = APS100("port")
+
         self.device_x = APS100("COM4")
         self.device_2 = APS100("COM5")
+        # if self.device_x.connection and self.device_x.connection.is_open:
+        # self.device_x.disconnect()
+        # if self.device_2.connection and self.device_2.connection.is_open:
+        # self.device_2.disconnect()
+        
 
-        self.device_x.connect()
-        self.device_2.connect()
 
-        # self.device_y = self.device_2.set_channel(2)
-        # self.device_z = self.device_2.set_channel(1)
         # device 2 channel 1 is Z
         # device 2 channel 2 is Y
-        self.device_x.send_command("REMOTE")
-        self.device_2.send_command("REMOTE")
- 
-        # self.magnet_x = 2
-        # self.magnet_y = 1
-        # self.magnet_z = 0
-
-        # self._x_field = self.magnet_x.field
-        # self._y_field = self.magnet_y.field
-        # self._z_field = self.magnet_z.field
 
         # limit such that below this field change the magnet does not actually change field,
         # to limit commands sent to the magnet
@@ -471,7 +463,16 @@ class vectorMagnetFullUSB:
         self._field_mag_lim = 1 # set to 1? originally 0.92 unit in T not kG
 
         self._B_sign = 1
-
+    
+    def connect(self):
+        if self.device_x.connection and self.device_x.connection.is_open:
+            self.device_x.disconnect()
+        if self.device_2.connection and self.device_2.connection.is_open:
+            self.device_2.disconnect()
+        self.device_x.connect()
+        self.device_x.send_command("REMOTE")
+        self.device_2.connect()
+        self.device_2.send_command("REMOTE")
     def set_field_polar(self, B, phi, theta):
         """
         Sets the field, accepting polar coordinates.
@@ -622,9 +623,6 @@ class vectorMagnetFullUSB:
         Shuts down each of the magnets individually
         """
         log.info("Shutting down all of the magnets")
-        # self.magnet_x.shutdown()
-        # self.magnet_y.shutdown()
-        # self.magnet_z.shutdown()
         self.device_x.zero_field()
         self.device_2.set_channel(1) # z
         self.device_2.zero_field()

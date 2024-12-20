@@ -17,6 +17,8 @@ class APS100:
             baudrate (int): Communication baud rate (default: 9600).
             timeout (float): Timeout for read operations in seconds (default: 2).
         """
+        # if self.connection and self.connection.is_open:
+        #     self.disconnect()
         self.port = port
         self.baudrate = baudrate
         self.timeout = timeout
@@ -26,6 +28,9 @@ class APS100:
         """
         Open the serial connection to the APS100.
         """
+        if self.connection and self.connection.is_open:
+            print(f"connection is already open on {self.port}")
+            self.disconnect()
         try:
             self.connection = serial.Serial(
                 port=self.port,
@@ -40,9 +45,9 @@ class APS100:
         """
         Close the serial connection.
         """
-        if self.connection and self.connection.is_open:
+        if self.connection:
             self.connection.close()
-            print("Disconnected from APS100")
+        print("Disconnected from APS100")
 
     def send_command(self, command):
         """
