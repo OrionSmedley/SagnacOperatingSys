@@ -2965,7 +2965,7 @@ class sagnacOpticsXportProcedure_vm_PhiSweep_usbMagCom(Procedure):
     sweep_phi_step = FloatParameter("Bias Magnetic Field Phi step", units="deg", default=0)
     sweep_phi_field = FloatParameter("Bias Magnetic Field Magnitude", units="T", default=0.)
     sweep_phi_polar = FloatParameter("Bias Magnetic Field Polar", units="deg", default=0.0)
-    
+    vti_threshold = FloatParameter("VTI threshold safety", units="K", default=0.5)
 
     apply_bias_field = BooleanParameter("Apply a Bias Field?", default = False)
     bias_field_x = FloatParameter("Bias Field x", units="T", default=0)
@@ -3058,88 +3058,92 @@ class sagnacOpticsXportProcedure_vm_PhiSweep_usbMagCom(Procedure):
         num_progress = phi_points.size
         start_time = time()
 
+        # while float(self.attocube_device.vti.getTemperature()) < 2.0: # temperature safety constraint
         for progress_iterator, phi in enumerate(phi_points):
-            self.magnet.set_field_polar(self.sweep_phi_field,phi,self.sweep_phi_polar)
-            log.info("waiting till field is set to setpoint")
-            # sleep(0.1)
-            if self.should_stop():
-                log.info("Caught stop flag in procedure.")
-                break
-            # apply bias field
-            while not self.magnet.check_field_polar(self.sweep_phi_field,phi,self.sweep_phi_polar, 0.002):
-                sleep(0.5)
+            if float(self.attocube_device.condenser.getTemperature()) < self.vti_threshold:
                 self.magnet.set_field_polar(self.sweep_phi_field,phi,self.sweep_phi_polar)
+                log.info("waiting till field is set to setpoint")
+                # sleep(0.1)
                 if self.should_stop():
                     log.info("Caught stop flag in procedure.")
                     break
+                # apply bias field
+                while not self.magnet.check_field_polar(self.sweep_phi_field,phi,self.sweep_phi_polar, 0.002):
+                    sleep(0.5)
+                    self.magnet.set_field_polar(self.sweep_phi_field,phi,self.sweep_phi_polar)
+                    if self.should_stop():
+                        log.info("Caught stop flag in procedure.")
+                        break
 
-            if self.should_stop():
-                log.info("Caught stop flag in procedure.")
-                break
-            log.info("Recording results")
+                if self.should_stop():
+                    log.info("Caught stop flag in procedure.")
+                    break
+                log.info("Recording results")
 
-            rec_Bx,rec_By,rec_Bz = self.magnet.get_field_cartesian()
-            log.info(f"Field set to {rec_Bx}, {rec_By}, {rec_Bz}")
-            sleep(0.5)
+                rec_Bx,rec_By,rec_Bz = self.magnet.get_field_cartesian()
+                log.info(f"Field set to {rec_Bx}, {rec_By}, {rec_Bz}")
+                sleep(0.5)
 
-            self.emit("progress", 100*progress_iterator/num_progress)
-            self.lockin.sub(0)
-            self.lockin.sub(1)
-            self.lockin.sub(2)
-            self.lockin.sub(3)
-            self.lockin.sub(4)
-            self.lockin.sub(5)
-            try:
-                sample_temp = float(self.attocube_device.sample.getTemperature())
-            except:
-                sample_temp = 0
+                self.emit("progress", int(100*progress_iterator/num_progress))
+                self.lockin.sub(0)
+                self.lockin.sub(1)
+                self.lockin.sub(2)
+                self.lockin.sub(3)
+                self.lockin.sub(4)
+                self.lockin.sub(5)
+                try:
+                    sample_temp = float(self.attocube_device.sample.getTemperature())
+                except:
+                    sample_temp = 0
+                    
+                vti_temp = float(self.attocube_device.vti.getTemperature())
+                reservoir_temp = float(self.attocube_device.condenser.getTemperature())
+                print("check temp:", vti_temp, reservoir_temp)
                 
-            vti_temp = float(self.attocube_device.vti.getTemperature())
-            reservoir_temp = float(self.attocube_device.condenser.getTemperature())
-            print("check temp:", vti_temp, reservoir_temp)
-            
-            dat_list = []
-            for i in range(self.avgs):
-                self.lockin.sync() # clears buffer since field has changed
-                sleep(self.settling)
-                self.lockin.sync()
-                log.info("recording average #%d"%i)
-                dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
-                print("check dat list: ", dat_list)
-                log.info(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
-            dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
-            print("data_list: ", dat_list)
-            self.lockin.unsubscribe("*")
+                dat_list = []
+                for i in range(self.avgs):
+                    self.lockin.sync() # clears buffer since field has changed
+                    sleep(self.settling)
+                    self.lockin.sync()
+                    log.info("recording average #%d"%i)
+                    dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
+                    print("check dat list: ", dat_list)
+                    log.info(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
+                dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
+                print("data_list: ", dat_list)
+                self.lockin.unsubscribe("*")
 
-            log.info("Recording results")
-            self.emit('results', {
-                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, 
-                "X1": dat[3]['x'],
-                "Y1": dat[3]['y'],
-                "X2": dat[2]['x'],
-                "Y2": dat[2]['y'],
-                "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y']*2, #sideband signal is diminished by 1/2 relative to main carrier so *2 to get the actual signal,
-                "DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
-                "DeltaX1_C-M": dat[4]['x'],
-                "DeltaY1_C-M": dat[4]['y'],
-                "DeltaX1_C+M": dat[5]['x'],
-                "DeltaY1_C+M": dat[5]['y'],
-                "TX1": dat[0]['x'],
-                "TY1": dat[0]['y'],
-                "TX2": dat[1]['x'],
-                "TY2": dat[1]['y'],
-                "sweep_phi": phi,
-                "Bx": rec_Bx,
-                "By": rec_By,
-                "Bz": rec_Bz,
-                "sample_temp": sample_temp,
-                "vti_temp": vti_temp,
-                "reservoir_temp": reservoir_temp,
-                "elapsed_time": time()-start_time
-                })
-            if self.should_stop():
-                log.warning("Caught stop flag in procedure.")
-                break
+                log.info("Recording results")
+                self.emit('results', {
+                    "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, 
+                    "X1": dat[3]['x'],
+                    "Y1": dat[3]['y'],
+                    "X2": dat[2]['x'],
+                    "Y2": dat[2]['y'],
+                    "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y']*2, #sideband signal is diminished by 1/2 relative to main carrier so *2 to get the actual signal,
+                    "DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
+                    "DeltaX1_C-M": dat[4]['x'],
+                    "DeltaY1_C-M": dat[4]['y'],
+                    "DeltaX1_C+M": dat[5]['x'],
+                    "DeltaY1_C+M": dat[5]['y'],
+                    "TX1": dat[0]['x'],
+                    "TY1": dat[0]['y'],
+                    "TX2": dat[1]['x'],
+                    "TY2": dat[1]['y'],
+                    "sweep_phi": phi,
+                    "Bx": rec_Bx,
+                    "By": rec_By,
+                    "Bz": rec_Bz,
+                    "sample_temp": sample_temp,
+                    "vti_temp": vti_temp,
+                    "reservoir_temp": reservoir_temp,
+                    "elapsed_time": time()-start_time
+                    })
+                if self.should_stop():
+                    log.warning("Caught stop flag in procedure.")
+                    break
+            # else:
+            #     break
 
     def shutdown(self):
         log.info("Finished with scans. Shutting down instruments.")
@@ -3148,9 +3152,13 @@ class sagnacOpticsXportProcedure_vm_PhiSweep_usbMagCom(Procedure):
         while (abs(Bz) > 0.001):
             sleep(2)
         self.magnet.shutdown()
+        sleep(1)
+        self.lockin.shutdown()
+        sleep(1)
         log.info(f"Field set to {Bx}, {By}, {Bz} T (this should be 0)")
 
 class voltage_sweep_procedure(Procedure):
+
     """
     Procedure for taking Heterodyne Hysteresis Measurements 
     with the Sagnac setup
@@ -3312,91 +3320,94 @@ class voltage_sweep_procedure(Procedure):
         num_progress = voltages.size
         print("check point 3 num progress: ", num_progress)
         start_time = time()
+        
+        print("check vti safety constraint")
+        while float(self.attocube_device.vti.getTemperature()) < 0.5: # temperature safety constraint
+            for progress_iterator, v in enumerate(voltages):
+                # specify which direction
+                # set cap to 1T
+                # log.info(f"how many iterations: {len(field_points)}")
+                # log.info(f"set voltage to {self.lockin.get_vout(1, 6)}")
+                # if self.voltage_sweep == True:
+                self.lockin.set_vout(1,6,v/10*np.sqrt(2))
+                print("check vout: ", self.lockin.get_vout(1, 6))
+                # else: 
+                # print("check point 4 (iterating process)")
+                # if self.apply_bias_field:
+                #     Bx = field*np.cos(np.deg2rad(self.sweep_field_azimuth))*np.sin(np.deg2rad(self.sweep_field_polar)) + self.bias_field_x
+                #     By = field*np.sin(np.deg2rad(self.sweep_field_azimuth))*np.sin(np.deg2rad(self.sweep_field_polar)) + self.bias_field_y
+                #     Bz = field*np.cos(np.deg2rad(self.sweep_field_polar)) + self.bias_field_z
+                #     self.magnet.set_field_cartesian(Bx, By, Bz)
+                #     while not self.magnet.check_field_cartesian(Bx, By, Bz, 2e-3):
+                #         sleep(0.5)
+                #     x,y,z = self.magnet.get_field_cartesian()
+                log.info(f"voltage set to {self.lockin.get_vout(1, 6)} V")
 
-        for progress_iterator, v in enumerate(voltages):
-            # specify which direction
-            # set cap to 1T
-            # log.info(f"how many iterations: {len(field_points)}")
-            # log.info(f"set voltage to {self.lockin.get_vout(1, 6)}")
-            # if self.voltage_sweep == True:
-            self.lockin.set_vout(1,6,v/10*np.sqrt(2))
-            print("check vout: ", self.lockin.get_vout(1, 6))
-            # else: 
-            # print("check point 4 (iterating process)")
-            # if self.apply_bias_field:
-            #     Bx = field*np.cos(np.deg2rad(self.sweep_field_azimuth))*np.sin(np.deg2rad(self.sweep_field_polar)) + self.bias_field_x
-            #     By = field*np.sin(np.deg2rad(self.sweep_field_azimuth))*np.sin(np.deg2rad(self.sweep_field_polar)) + self.bias_field_y
-            #     Bz = field*np.cos(np.deg2rad(self.sweep_field_polar)) + self.bias_field_z
-            #     self.magnet.set_field_cartesian(Bx, By, Bz)
-            #     while not self.magnet.check_field_cartesian(Bx, By, Bz, 2e-3):
-            #         sleep(0.5)
-            #     x,y,z = self.magnet.get_field_cartesian()
-            log.info(f"voltage set to {self.lockin.get_vout(1, 6)} V")
+                # elif self.apply_bias_field == False:
+                #     self.magnet.set_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar)
+                #     while not self.magnet.check_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar, 2e-3):
+                #         sleep(0.5)
+                #     x,y,z = self.magnet.get_field_cartesian()
+                #     log.info(f"Field set to {x}, {y}, {z}")
 
-            # elif self.apply_bias_field == False:
-            #     self.magnet.set_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar)
-            #     while not self.magnet.check_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar, 2e-3):
-            #         sleep(0.5)
-            #     x,y,z = self.magnet.get_field_cartesian()
-            #     log.info(f"Field set to {x}, {y}, {z}")
+                self.emit("progress", int(100*progress_iterator/num_progress))
+                self.lockin.sub(0)
+                self.lockin.sub(1)
+                self.lockin.sub(2)
+                self.lockin.sub(3)
+                self.lockin.sub(4)
+                self.lockin.sub(5)
+                print("checkpoint 5")
+                try:
+                    sample_temp = self.attocube_device.sample.getTemperature()
+                except:
+                    sample_temp = 0
+                    
+                vti_temp = self.attocube_device.vti.getTemperature()
+                reservoir_temp = self.attocube_device.condenser.getTemperature()
 
-            self.emit("progress", int(100*progress_iterator/num_progress))
-            self.lockin.sub(0)
-            self.lockin.sub(1)
-            self.lockin.sub(2)
-            self.lockin.sub(3)
-            self.lockin.sub(4)
-            self.lockin.sub(5)
-            print("checkpoint 5")
-            try:
-                sample_temp = self.attocube_device.sample.getTemperature()
-            except:
-                sample_temp = 0
+                dat_list = []
+                print("checkpoint 6: avgs ", vti_temp, sample_temp, reservoir_temp)
+                for i in range(self.avgs):
+                    self.lockin.sync() # clears buffer since field has changed
+                    sleep(self.settling)
+                    self.lockin.sync() # clears buffer since field has changed
+                    log.info("recording average #%d"%i)
+                    dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
+                    print("checkpoint 7: ", dat_list)
+                dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
+                print("checkpoint 8: ", dat)
+                self.lockin.unsubscribe("*")
+
+                log.info("Recording results")
+                self.emit('results', {
+                    "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, 
+                    "X1": dat[3]['x'],
+                    "Y1": dat[3]['y'],
+                    "X2": dat[2]['x'],
+                    "Y2": dat[2]['y'],
+                    "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y'],
+                    "DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
+                    "DeltaX1_C-M": dat[4]['x'],
+                    "DeltaY1_C-M": dat[4]['y'],
+                    "DeltaX1_C+M": dat[5]['x'],
+                    "DeltaY1_C+M": dat[5]['y'],
+                    "TX1": dat[0]['x'],
+                    "TY1": dat[0]['y'],
+                    "TX2": dat[1]['x'],
+                    "TY2": dat[1]['y'],
+                    "voltage": self.lockin.get_vout(1, 6),
+                    "sweep_field": self.sweep_field,
+                    "sample_temp": sample_temp,
+                    "vti_temp": vti_temp,
+                    "reservoir_temp": reservoir_temp,
+                    "elapsed_time": time()-start_time
+                    })
                 
-            vti_temp = self.attocube_device.vti.getTemperature()
-            reservoir_temp = self.attocube_device.condenser.getTemperature()
-
-            dat_list = []
-            print("checkpoint 6: avgs ", vti_temp, sample_temp, reservoir_temp)
-            for i in range(self.avgs):
-                self.lockin.sync() # clears buffer since field has changed
-                sleep(self.settling)
-                self.lockin.sync() # clears buffer since field has changed
-                log.info("recording average #%d"%i)
-                dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
-                print("checkpoint 7: ", dat_list)
-            dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
-            print("checkpoint 8: ", dat)
-            self.lockin.unsubscribe("*")
-
-            log.info("Recording results")
-            self.emit('results', {
-                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, 
-                "X1": dat[3]['x'],
-                "Y1": dat[3]['y'],
-                "X2": dat[2]['x'],
-                "Y2": dat[2]['y'],
-                "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y'],
-                "DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
-                "DeltaX1_C-M": dat[4]['x'],
-                "DeltaY1_C-M": dat[4]['y'],
-                "DeltaX1_C+M": dat[5]['x'],
-                "DeltaY1_C+M": dat[5]['y'],
-                "TX1": dat[0]['x'],
-                "TY1": dat[0]['y'],
-                "TX2": dat[1]['x'],
-                "TY2": dat[1]['y'],
-                "voltage": self.lockin.get_vout(1, 6),
-                "sweep_field": self.sweep_field,
-                "sample_temp": sample_temp,
-                "vti_temp": vti_temp,
-                "reservoir_temp": reservoir_temp,
-                "elapsed_time": time()-start_time
-                })
-            
-            if self.should_stop():
-                log.warning("Caught stop flag in procedure.")
-                break
+                if self.should_stop():
+                    log.warning("Caught stop flag in procedure.")
+                    break
+        self.shutdown()
 
     def shutdown(self):
         log.info("Finished with scans. Shutting down instruments.")

@@ -7,3 +7,4 @@ from .TempTrackingProcedure import TempTrackingProcedure
 from .XYScanProcedure import sagnacXYScanProcedure
 from .xy_scan_sagnac_procedure import xy_scan_sagnac_procedure
 from .XYScanANC300Procedure import XYScanANC300Procedure
+from .TestPymeasure import sagnacOpticsXportProcedure_vm_PhiSweep_usbMagCom
