@@ -1,11 +1,20 @@
-call conda activate pipPymeasMod  
-:: Activates the `pipPymeasMod` Conda environment
+@echo off
+call code "%~1"
+echo Your File is "%~1"
 
-cd /d "%~dp0"  
-:: Changes to the directory where this script is located (`%~dp0`), including changing drives if needed
+call conda activate pipPymeasMod
+cd /d "%~dp0"
 
-python experimenter.py "%~1"  
-:: Runs `experimenter.py` with the first argument passed to this script (`%~1`)
 
-cmd /k  
-:: Keeps the Command Prompt open after execution to view output or errors
+set /p choice= [P]lot? (default no)
+if "%choice%"=="p" (
+    start /b python plotter.py "%~1"  
+)
+
+set /p choice= [r]un? (default no)
+if "%choice%"=="r" (
+    python experimenter.py "%~1"
+)
+
+cmd /k
+
