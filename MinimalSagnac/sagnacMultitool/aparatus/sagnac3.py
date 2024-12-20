@@ -1,9 +1,3 @@
-# User instructions: import the myHF2LI and magnet objects for the sagnac interferometer
-
-
-
-
-
 # patch the old packages calling visa
 # this is a hack to make the old packages work with pyvisa
 
@@ -31,80 +25,81 @@ logging.basicConfig(level=logging.WARNING,  # Log only WARNING or above by defau
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     handlers=[logging.StreamHandler()])
 
-
-
 #############################################################################################################################
-#imports for Zurich Instruments
-import os
-import numpy as np
-import pandas as pd
-from zhinst.toolkit import Session
-session = Session("localhost", hf2=True)
-myHF2LI = session.connect_device("DEV18338")
-
-# set timeconstants for all channels
-def setTc(Tc): [myHF2LI.demods[demod].timeconstant(Tc) for demod in range(6)]
-myHF2LI.setTc = setTc
-
-# get value of a demodulator
-def dem(demod): return myHF2LI.demods[demod].sample()
-myHF2LI.dem = dem
-
-# def get_vout(self, out_num, osc_num):
-#     return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num))
-# def set_vout(self, out_num, osc_num, x):
-#     self.setDouble(self.dev + 'sigouts/'+ str(out_num) + '/amplitudes/' + str(osc_num), x)
-# myHF2LI.get_vout = get_vout
-# myHF2LI.get_vout = set_vout
-
-from types import MethodType
-
-# Define the new methods
-def get_vout(self, out_num, osc_num):
-    return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num))
-
-def set_vout(self, out_num, osc_num, x):
-    self.setDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num), x)
-
-# Bind the methods to the instance `myHF2LI`
-myHF2LI.get_vout = MethodType(get_vout, myHF2LI)
-myHF2LI.set_vout = MethodType(set_vout, myHF2LI)
-
-
-
-
-
-
-# from pymeasure.instruments.zurich import HF2LI
-# pyHF2LI(8005, 1, 18338)
-
-
-
-
-
-
-
 #############################################################################################################################
-# Magnet
-from pymeasure.instruments.attocube import APS100
-mag = APS100('COM4')
 
 
 
-#############################################################################################################################
-# MISC
 
 
-# Keithly
-from pymeasure.instruments.keithley import Keithley2400
-try:
-    keith = Keithley2400("GPIB::24")
+try: # Zurich Instruments
+    import os
+    import numpy as np
+    import pandas as pd
+    from zhinst.toolkit import Session
+    session = Session("localhost", hf2=True)
+    myHF2LI = session.connect_device("DEV18338")
+
+    # set timeconstants for all channels
+    def setTc(Tc): [myHF2LI.demods[demod].timeconstant(Tc) for demod in range(6)]
+    myHF2LI.setTc = setTc
+
+    # get value of a demodulator
+    def dem(demod): return myHF2LI.demods[demod].sample()
+    myHF2LI.dem = dem
+
+    # def get_vout(self, out_num, osc_num):
+    #     return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num))
+    # def set_vout(self, out_num, osc_num, x):
+    #     self.setDouble(self.dev + 'sigouts/'+ str(out_num) + '/amplitudes/' + str(osc_num), x)
+    # myHF2LI.get_vout = get_vout
+    # myHF2LI.get_vout = set_vout
+
+    from types import MethodType
+
+    # Define the new methods
+    def get_vout(self, out_num, osc_num):
+        return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num))
+
+    def set_vout(self, out_num, osc_num, x):
+        self.setDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num), x)
+
+    # Bind the methods to the instance `myHF2LI`
+    myHF2LI.get_vout = MethodType(get_vout, myHF2LI)
+    myHF2LI.set_vout = MethodType(set_vout, myHF2LI)
+
+
+
+
+
+
+    # from pymeasure.instruments.zurich import HF2LI
+    # pyHF2LI(8005, 1, 18338)
+except:
+    print("sagnac3.0: no Zurich")
+
+
+
+try: # Magnet
+    from pymeasure.instruments.attocube import APS100
+    mag = APS100('COM4')
+except:
+    print("sagnac3.0: no magnet aps100")
+
+
+
+try: # Keithly
+    from pymeasure.instruments.keithley import Keithley2400
+    keith = Keithley2400("GPIB::26")
 except:
     print( "sagnac3.0: no keith")
 
 
-# Owon osciloscope
-import vds1022 as owon
-vds = owon.VDS1022(debug=0)
-vds.set_channel(owon.CH1, range='10v', probe='x1')
-# usage: vds.fetch().ch1.rms()
+
+try: # Owon osciloscope
+    import vds1022 as owon
+    vds = owon.VDS1022(debug=0)
+    vds.set_channel(owon.CH1, range='10v', probe='x1')
+    # usage: vds.fetch().ch1.rms()
+except:
+    print("sagnac3.0: no owon")

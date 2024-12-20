@@ -6,4 +6,4 @@
 ;    "time.sleep" : [0.1]
 ; }
 
-repeat, time.time, dev.fetch().ch1.rms()
+repeat, time.time, dev.fetch().ch1.rms(), 
