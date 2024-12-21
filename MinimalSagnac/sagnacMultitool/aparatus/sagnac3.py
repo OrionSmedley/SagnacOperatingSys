@@ -81,13 +81,63 @@ except:
 
 
 try: # Magnet
-    from .drivers.magnet_usbCom import vectorMagnetFullUSB
+
+    import sys
+    module_dir = r"D:\Github\SagnacOperatingSys\VecMagSagnac_control"
+    sys.path.append(module_dir)
+    from sagnac.custom_instruments import vectorMagnetFullUSB
     mag = vectorMagnetFullUSB()
     mag.connect()
+
 
     import atto_device.CRYO2100 as cr
     atto = cr("192.168.1.1")
     atto.connect()
+
+
+
+
+
+    import time
+
+    Tthresh = 4.2
+    ATOL = 1e-3
+    def setSafe_wait_cart(bx,by,bz):
+        temp = atto.condenser.getTemperature()
+        if temp >Tthresh:
+            # atto.disconnect() 
+            print( f"yikes, resevoir at {temp}C > max {Tthresh}")
+            mag.shutdown()
+            raise RuntimeError(f"shut down bc resevoir at {temp}C > max {Tthresh}")
+
+        
+        mag.set_field_cartesian(bx,by,bz)
+
+        tic = time.time()
+        while not mag.check_field_cartesian(bx, by, bz, ATOL):
+            time.sleep(0.1)
+            print(f"waiting for mag for {time.time()-tic}")
+
+    # setSafe_wait_cart(0.01,0.02,0.03)
+
+    mag.setSafeWaitBx = lambda b: setSafe_wait_cart(b,0,0)
+    mag.setSafeWaitBy = lambda b: setSafe_wait_cart(0,b,0)
+    mag.setSafeWaitBz = lambda b: setSafe_wait_cart(0,0,b)
+
+    ## usage: mag.setSafeWaitBx(0.04)
+
+
+    ##########################################################
+    ##### This should work, but doesn't. 
+    ##### It's better practice than the above import
+    # from .drivers.magnet_usbCom import vectorMagnetFullUSB
+    # mag = vectorMagnetFullUSB()
+    # # mag.connect()
+
+
+    # # import atto_device.CRYO2100 as cr
+    # # atto = cr("192.168.1.1")
+    # # atto.connect()
 
 
 except:
