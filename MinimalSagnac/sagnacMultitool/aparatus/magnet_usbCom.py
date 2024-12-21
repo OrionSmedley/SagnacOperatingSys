@@ -212,6 +212,9 @@ class vectorMagnetFullUSB:
         self.device_2.send_command("REMOTE")
 
 
+####################################################################################
+############################## safe wait Additions #################################
+
     def safeSetWait(
             self,
             set_func,
@@ -234,6 +237,14 @@ class vectorMagnetFullUSB:
         """
 
         # 1) Issue the set command
+
+        magTemp = float(self.attocube_device.condenser.getTemperature())
+        if magtemp < self.temp_threshold:
+            self.magnet.set_field_cartesian(bx,by,bz)
+        else: # ramp mag to 0, and throw error 
+            self.magnet.set_field_cartesian(0,0,0)
+            raise "reservoir temperature higher than threshold"
+
         set_func(*target_values)
 
         start_time = time.time()
@@ -261,8 +272,31 @@ class vectorMagnetFullUSB:
             time.sleep(poll_interval)
 
 
+    @staticmethod
+    def angles_are_close(angle1, angle2, atol=0.1):
+        """
+        Returns True if angle1 and angle2 (in degrees) differ by less than atol
+        when accounting for 0 = 360, etc.
+        """
+        diff = abs(angle1 - angle2) % 360
+        if diff > 180:
+            diff = 360 - diff
+        return diff <= atol
+
+    def polar_compare_func(self, current, target, atol_B=1e-4, atol_angle=0.5):
+        """
+        Compare (B, phi, theta) with wrap-around for angles.
+        """
+        (Bc, phic, thetac) = current
+        (Bt, phit, thetat) = target
+        close_B = (abs(Bc - Bt) <= atol_B)
+        close_phi = self.angles_are_close(phic, phit, atol=atol_angle)
+        close_theta = self.angles_are_close(thetac, thetat, atol=atol_angle)
+        return (close_B and close_phi and close_theta)
 
 
+############################## safe wait Additions #################################
+####################################################################################
 
     
     def set_field_polar(self, B, phi, theta):
@@ -314,6 +348,8 @@ class vectorMagnetFullUSB:
         return B, phi, theta
 
 
+
+
     def check_field_polar(self, B, phi, theta, ATOL):
         """Checks the current field value to make sure it is within absolute tolerance of setpoint"""
         phi = phi*np.pi/180
@@ -355,12 +391,6 @@ class vectorMagnetFullUSB:
         self.device_2.set_channel(2) # y
         self.device_2.set_field(By)
         while not np.isclose()
-
-    def set_safely_wait(self, func,*args):
-        if float(self.atto.condenser.getTemperature()) < self.temp_threshold:
-            func(*args)
-
-   
 
 
     def get_field_cartesian(self):
