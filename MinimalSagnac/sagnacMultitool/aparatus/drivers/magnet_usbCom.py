@@ -9,7 +9,7 @@ from pymeasure.instruments import Instrument
 import pyvisa
 # from .instruments.AMI420 import AMI420
 # from pymeasure.instruments.attocube import APS100
-from aps100 import APS100
+from .aps100 import APS100
 import atto_device.CRYO2100 as cr
 import time
 
@@ -237,7 +237,7 @@ class vectorMagnetFullUSB:
             # 3) Check if we're close enough
             if compare_func is None:
                 # naive approach using np.allclose
-                if np.allclose(current_values, target_values, atol=1e-4):
+                if np.allclose(current_values, target_values, atol=3e-4):
                     log.info(f"Field converged to {current_values}")
                     return
             else:
@@ -265,7 +265,7 @@ class vectorMagnetFullUSB:
             diff = 360 - diff
         return diff <= atol
 
-    def polar_compare_func(self, current, target, atol_B=1e-4, atol_angle=0.5):
+    def polar_compare_func(self, current, target, atol_B=3e-4, atol_angle=0.5):
         """
         Compare (B, phi, theta) with wrap-around for angles.
         """
@@ -451,7 +451,7 @@ class vectorMagnetFullUSB:
     # --------------------------------------------------------------------------
     # OPTIONAL: Two shortcut methods so external code can simply call these
     # --------------------------------------------------------------------------
-    def safeWaitCart(self, Bx, By, Bz, poll_interval=0.5, timeout=30.0):
+    def safeWaitCart(self, Bx, By, Bz, poll_interval=0.1, timeout=30.0):
         """
         Safely set the magnet in Cartesian coords and wait until converged.
         """
@@ -463,12 +463,12 @@ class vectorMagnetFullUSB:
             timeout=timeout,
         )
 
-    def safeWaitPolar(self, B, phi, theta, poll_interval=1.0, timeout=30.0):
+    def safeWaitPolar(self, B, phi, theta, poll_interval=0.1, timeout=30.0):
         """
         Safely set the magnet in Polar coords and wait until converged (angle wrap-around aware).
         """
         def compare_func(current_values, target_values):
-            return self.polar_compare_func(current_values, target_values, atol_B=1e-4, atol_angle=0.5)
+            return self.polar_compare_func(current_values, target_values, atol_B=3e-4, atol_angle=1)
         
         self.safeSetWait(
             set_func=self.set_field_polar,

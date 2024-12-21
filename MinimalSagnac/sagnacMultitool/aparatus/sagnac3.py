@@ -81,26 +81,14 @@ except:
 
 
 try: # Magnet
-    from magnet_usbCom import vectorMagnetFullUSB
-    import atto_device.CRYO2100 as cr
+    from .drivers.magnet_usbCom import vectorMagnetFullUSB
     mag = vectorMagnetFullUSB()
-    magnet.connect()
-    atto_device = cr("192.168.1.1")
-    # def set_field_polar(self, field, azimuth_angle, polar_angle):
-    #     if float(self.attocube_device.condenser.getTemperature()) < 4.5:
-    #         self.magnet.set_field_polar(field,azimuth_angle,polar_angle)
-    #     else: 
-    #         print("reservoir temperature higher than threshold")
-    # def set_field_cartesian(self, bx, by, bz):
-    #     if float(self.attocube_device.condenser.getTemperature()) < 4.5:
-    #         self.magnet.set_field_cartesian(bx,by,bz)
-    #     else: 
-    #         print("reservoir temperature higher than threshold")
-    # def get_field_polar(self):
-    #     self.magnet.get_field_polar()
+    mag.connect()
 
-    # def get_field_cartesian(self):
-    #     self.magnet.get_field_polar()
+    import atto_device.CRYO2100 as cr
+    atto = cr("192.168.1.1")
+    atto.connect()
+
 
 except:
     print("sagnac3.0: no magnet aps100")
