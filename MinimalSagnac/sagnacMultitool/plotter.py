@@ -57,7 +57,7 @@ app.layout = html.Div([
     dcc.Graph(id="line-plot"),
 
     # Interval for auto-refresh
-    dcc.Interval(id="interval-update", interval=20*1000, n_intervals=0),
+    dcc.Interval(id="interval-update", interval=1*1000, n_intervals=0),
 ])
 
 # Callback to update the graph dynamically
