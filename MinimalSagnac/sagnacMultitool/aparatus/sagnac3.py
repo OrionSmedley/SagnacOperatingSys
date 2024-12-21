@@ -118,6 +118,10 @@ try: # Magnet
             time.sleep(0.1)
             print(f"waiting for mag for {time.time()-tic}")
 
+        mag.Bx_set = bx
+        mag.By_set = by
+        mag.Bz_set = bz
+
     # setSafe_wait_cart(0.01,0.02,0.03)
 
     mag.setSafeWaitBx = lambda b: setSafe_wait_cart(b,0,0)

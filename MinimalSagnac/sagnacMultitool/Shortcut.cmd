@@ -8,7 +8,7 @@ cd /d "%~dp0"
 
 set /p choice= [P]lot? (default no)
 if "%choice%"=="p" (
-    start /b python plotter.py "%~1"  
+    start python plotter.py "%~1"  
 )
 
 set /p choice= [r]un? (default no)
