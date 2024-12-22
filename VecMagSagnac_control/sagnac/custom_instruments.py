@@ -439,7 +439,7 @@ class vectorMagnetFullUSB:
     Uses the usual physics parameterization of the magnetic field.
     """
 
-    def __init__(self):
+    def __init__(self, limit = 9):
         # in this case device = APS100("port")
         self.device_x = APS100("COM4")
         self.device_2 = APS100("COM5")
@@ -457,7 +457,7 @@ class vectorMagnetFullUSB:
         # TODO: should we reset the current limit of the z magnet or just
         # trust that the checking in this class will always be OK?
 
-        self._field_mag_lim = 10 # set to 1? bootleg version is kG, previous auttodry gui was T
+        self._field_mag_lim = limit # set to 1? bootleg version is kG, previous auttodry gui was T
 
         self._B_sign = 1
     
@@ -470,6 +470,14 @@ class vectorMagnetFullUSB:
         self.device_x.write_command("REMOTE")
         self.device_2.connect()
         self.device_2.write_command("REMOTE")
+        Bx, By, Bz = self.get_field_cartesian()
+        print( "conecting. The field is", np.sqrt(Bx*Bx + By*By + Bz*Bz))
+        if np.sqrt(Bx*Bx + By*By + Bz*Bz) > self._field_mag_lim:
+            self.device_x.disconnect()
+            self.device_2.disconnect()
+            print( "Bmag vector is larger than 0.9 T! Don't touch anything else! call Kelly")
+            raise ValueError("Bmag vector is larger than 0.9 T! Don't touch anything else! call Kelly")
+
     def set_field_polar(self, B, phi, theta):
         """
         Sets the field, accepting polar coordinates.
@@ -516,9 +524,7 @@ class vectorMagnetFullUSB:
         ang_sign_offset = 0 if self._B_sign > 0 else 180
         phi = (np.arctan2(self._B_sign*By, self._B_sign*Bx)*180/np.pi + ang_sign_offset) % 360
         theta = (np.arctan2(np.sqrt(Bx**2 + By**2), self._B_sign*Bz)*180/np.pi+ ang_sign_offset) % 360
-
         return B, phi, theta
-
 
     def check_field_polar(self, B, phi, theta, ATOL):
         """Checks the current field value to make sure it is within absolute tolerance of setpoint"""
@@ -640,3 +646,116 @@ class vectorMagnetFullUSB:
             self.device_2.set_field(setPoint)
         elif magnet == 2:
             self.device_x.set_field(setPoint)
+
+class vectorMagnetFullUSB_highZ:
+    """
+    Class to control all three axes of the vector magnet simultaneously.
+    Uses the usual physics parameterization of the magnetic field.
+    """
+
+    def __init__(self, limit = 50):
+        self.device_x = APS100("COM4")
+        self.device_2 = APS100("COM5")
+        self._field_difference_cutoff = 0 #1e-5 # 0.1 G
+        self._field_mag_lim = limit # bootleg version is kG, previous auttodry gui was T
+        self._B_sign = 1
+
+    def connect_highZ(self):
+        if self.device_x.connection and self.device_x.connection.is_open:
+            self.device_x.disconnect()
+        if self.device_2.connection and self.device_2.connection.is_open:
+            self.device_2.disconnect()
+        self.device_x.connect()
+        self.device_2.connect()
+        self.device_x.write_command("REMOTE")
+        self.device_2.write_command("REMOTE")
+        
+        BxCon,ByCon,BzCon = self.get_field_cartesian()
+        
+        
+        
+        
+        if BzCon > 9:
+            if BxCon>0 or ByCon > 0:
+                self.device_x.disconnect()
+                self.device_2.disconnect()
+                print( "Bmag vector is larger than 0.9 T! Don't touch anything else! call Kelly")
+                raise ValueError("Bmag vector is larger than 0.9 T! Don't touch anything else! call Kelly")
+            else:
+                print( "Not zeroing Bx and By, because if useful, you were already screwed.")
+        else:
+            print("Zeroing X magnet")
+            self.device_x.zero_field()
+
+            print("Zeroing Y magnet")
+            self.device_2.set_channel(2)
+            self.device_2.zero_field()
+
+
+        print("disconnecting from x for safety")
+        self.device_x.disconnect()
+        self.device_2.set_channel(1)
+
+    def set_field_highZ(self, Bz):
+        log.info('Setting Bz to : %g'%(Bz))
+        if Bz > self._field_mag_lim: #np.sqrt returns positive square root
+            log.error("A large field of %g was requested"%Bz)
+            raise ValueError("Large field requested! Limit is %g"%self._field_mag_lim)
+
+        if Bz < 0:
+            self._B_sign = -1
+        else:
+            self._B_sign = 1
+
+        self.device_2.set_channel(1)
+        self.device_2.set_field(Bz)
+
+    def get_field_highZ(self):
+        self.device_2.set_channel(1) # z
+        Bz = self.device_2.get_field()
+        return Bz
+
+
+    def get_field_cartesian(self):
+            """
+            Returns the cartesian parameterization of the field in the order X, Y, Z.
+            will throw error after class is connected.
+            """
+            # Bz, By, Bx = self.device.magnet.getH(0), self.device.magnet.getH(1), self.device.magnet.getH(2)
+            self.device_2.set_channel(1) # z
+            Bz = self.device_2.get_field()
+            self.device_2.set_channel(2) # y
+            By = self.device_2.get_field()
+            Bx = self.device_x.get_field()
+            return Bx, By, Bz
+
+    def check_field_highZ(self, Bset, ATOL):
+            """Checks the current field value to make sure it is within absolute tolerance of setpoint """
+            # Bx_current = self.device.magnet.getH(2)
+            # By_current = self.device.magnet.getH(1)
+            # Bz_current = self.device.magnet.getH(0)
+            Bz = self.get_field_highZ()
+
+            if np.isclose(Bset, Bz, atol=ATOL):
+                log.info("field is close to the setpoint")
+                return True
+            else:
+                log.info(f" currently Bz= {Bz}")
+                return False
+            
+    def shutdown(self):
+        """
+        Shuts down each of the magnets individually
+        """
+        log.info("Shutting down only the Z magnet")
+        self.device_2.set_channel(1) # z
+        self.device_2.zero_field()
+
+
+        self.device_2.disconnect()
+        try:
+            self.device_x.disconnect()
+        except:
+            print("no device x to disconect")
+
+

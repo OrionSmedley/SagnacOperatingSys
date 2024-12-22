@@ -134,17 +134,20 @@ class APS100:
         return res
 
     def get_field(self):
-        res = self.query_command('IMAG?')
-        try:
-            value = float(res.replace('kG', ''))
-            return value
-        except:
-            return np.NaN
+        value = np.NaN
+        while np.isnan(value):
+            try:
+                res = self.query_command('IMAG?')
+                value = float(res.replace('kG', ''))
+                return value
+            except:
+                value =  np.NaN
+                time.sleep(1)
 
     def set_field(self, field):
         # field in kG
-        if abs(field) > 10:
-            field = np.sign()*10
+        if abs(field) > 50:
+            field = np.sign(field)*50
         
         current_field = self.get_field()
         time.sleep(0.1)
@@ -167,6 +170,4 @@ class APS100:
             return True
     
     def zero_field(self):
-        current_field = self.get_field()
-        if abs(current_field) > 0.001:
-            self.write_command('SWEEP ZERO')
+        self.write_command('SWEEP ZERO')

@@ -87,7 +87,7 @@ try: # Magnet
     sys.path.append(module_dir)
     from sagnac.custom_instruments import vectorMagnetFullUSB
     mag = vectorMagnetFullUSB()
-    mag.connect()
+    # mag.connect()
 
 
     import atto_device.CRYO2100 as cr
@@ -164,25 +164,56 @@ try: # Magnet
     mag.setSafeWaitPhi = lambda phi: setSafe_wait_polar(mag.B_set,phi,mag.theta_set)
     mag.setSafeWaitTheta = lambda theta: setSafe_wait_polar(mag.B_set,mag.phi_set,theta)
 
+except:
+    print("sagnac3.0: no magnet aps100")
 
 
 
 
-    ##########################################################
-    ##### This should work, but doesn't. 
-    ##### It's better practice than the above import
-    # from .drivers.magnet_usbCom import vectorMagnetFullUSB
-    # mag = vectorMagnetFullUSB()
-    # # mag.connect()
 
 
-    # # import atto_device.CRYO2100 as cr
-    # # atto = cr("192.168.1.1")
-    # # atto.connect()
 
+
+try: # Magnet High Z
+
+    import sys
+    module_dir = r"D:\Github\SagnacOperatingSys\VecMagSagnac_control"
+    sys.path.append(module_dir)
+    from sagnac.custom_instruments import vectorMagnetFullUSB_highZ
+    mag_highZ = vectorMagnetFullUSB_highZ()
+    # mag_highZ.connect_highZ()
+
+
+    import atto_device.CRYO2100 as cr
+    atto = cr("192.168.1.1")
+    atto.connect()
+
+    import time
+
+    Tthresh = 4.2
+    ATOL = 1e-3
+    def setSafe_wait_highZ(b):
+        temp = atto.condenser.getTemperature()
+        if temp >Tthresh:
+            # atto.disconnect() 
+            print( f"yikes, resevoir at {temp}C > max {Tthresh}")
+            mag_highZ.shutdown()
+            raise RuntimeError(f"shut down bc resevoir at {temp}C > max {Tthresh}")
+
+        tic = time.time()
+        while not mag_highZ.check_field_highZ(b, ATOL):
+            time.sleep(0.1)
+            mag_highZ.set_field_highZ(b)
+            time.sleep(0.1)
+            print(f"waiting for mag_highZ for {time.time()-tic}")
+
+        mag_highZ.BhighZ_set = b
+    
+    mag_highZ.setSafe_wait_highZ = setSafe_wait_highZ
 
 except:
     print("sagnac3.0: no magnet aps100")
+
 
 
 
