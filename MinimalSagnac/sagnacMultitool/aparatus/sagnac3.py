@@ -111,10 +111,12 @@ try: # Magnet
             raise RuntimeError(f"shut down bc resevoir at {temp}C > max {Tthresh}")
 
         
-        mag.set_field_cartesian(bx,by,bz)
+        
 
         tic = time.time()
         while not mag.check_field_cartesian(bx, by, bz, ATOL):
+            time.sleep(0.1)
+            mag.set_field_cartesian(bx,by,bz)
             time.sleep(0.1)
             print(f"waiting for mag for {time.time()-tic}")
 
@@ -124,11 +126,46 @@ try: # Magnet
 
     # setSafe_wait_cart(0.01,0.02,0.03)
 
+    mag.setSafe_wait_cart = setSafe_wait_cart
     mag.setSafeWaitBx = lambda b: setSafe_wait_cart(b,0,0)
     mag.setSafeWaitBy = lambda b: setSafe_wait_cart(0,b,0)
     mag.setSafeWaitBz = lambda b: setSafe_wait_cart(0,0,b)
 
     ## usage: mag.setSafeWaitBx(0.04)
+
+
+
+
+
+    def setSafe_wait_polar(B,phi, theta):
+        temp = atto.condenser.getTemperature()
+        if temp >Tthresh:
+            # atto.disconnect() 
+            print( f"yikes, resevoir at {temp}C > max {Tthresh}")
+            mag.shutdown()
+            raise RuntimeError(f"shut down bc resevoir at {temp}C > max {Tthresh}")
+
+
+        tic = time.time()
+        while not mag.check_field_polar(B,phi, theta, ATOL):
+            time.sleep(0.1)
+            mag.set_field_polar(B,phi, theta)
+            time.sleep(0.1)
+            print(f"waiting for mag for {time.time()-tic}")
+
+        mag.B_set = B
+        mag.phi_set = phi
+        mag.theta_set = theta
+
+    # setSafe_wait_cart(0.01,0.02,0.03)
+
+    mag.setSafe_wait_polar = setSafe_wait_polar
+    mag.setSafeWaitB = lambda b: setSafe_wait_polar(b,mag.phi_set,mag.theta_set)
+    mag.setSafeWaitPhi = lambda phi: setSafe_wait_polar(mag.B_set,phi,mag.theta_set)
+    mag.setSafeWaitTheta = lambda theta: setSafe_wait_polar(mag.B_set,mag.phi_set,theta)
+
+
+
 
 
     ##########################################################

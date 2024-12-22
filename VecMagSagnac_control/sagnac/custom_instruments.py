@@ -441,16 +441,12 @@ class vectorMagnetFullUSB:
 
     def __init__(self):
         # in this case device = APS100("port")
-
         self.device_x = APS100("COM4")
         self.device_2 = APS100("COM5")
         # if self.device_x.connection and self.device_x.connection.is_open:
         # self.device_x.disconnect()
         # if self.device_2.connection and self.device_2.connection.is_open:
         # self.device_2.disconnect()
-        
-
-
         # device 2 channel 1 is Z
         # device 2 channel 2 is Y
 
@@ -461,7 +457,7 @@ class vectorMagnetFullUSB:
         # TODO: should we reset the current limit of the z magnet or just
         # trust that the checking in this class will always be OK?
 
-        self._field_mag_lim = 1 # set to 1? originally 0.92 unit in T not kG
+        self._field_mag_lim = 10 # set to 1? bootleg version is kG, previous auttodry gui was T
 
         self._B_sign = 1
     
@@ -471,9 +467,9 @@ class vectorMagnetFullUSB:
         if self.device_2.connection and self.device_2.connection.is_open:
             self.device_2.disconnect()
         self.device_x.connect()
-        self.device_x.send_command("REMOTE")
+        self.device_x.write_command("REMOTE")
         self.device_2.connect()
-        self.device_2.send_command("REMOTE")
+        self.device_2.write_command("REMOTE")
     def set_field_polar(self, B, phi, theta):
         """
         Sets the field, accepting polar coordinates.
@@ -554,18 +550,16 @@ class vectorMagnetFullUSB:
         """
         Sets the field using a cartesian basis
         """
-
         if np.sqrt(Bx*Bx + By*By + Bz*Bz) > self._field_mag_lim: #np.sqrt returns positive square root
             log.error("A large field of %g was requested"%np.sqrt(Bx*Bx + By*By + Bz*Bz))
             raise ValueError("Large field requested! Limit is %g"%self._field_mag_lim)
+        
         # self.device.magnet.setHSetPoint3D(Bz, By, Bx)
         self.device_x.set_field(Bx)
         self.device_2.set_channel(1) # z 
         self.device_2.set_field(Bz)
         self.device_2.set_channel(2) # y
         self.device_2.set_field(By)
-
-
 
     def get_field_cartesian(self):
         """

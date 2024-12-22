@@ -38,6 +38,12 @@ class APS100:
                 timeout=self.timeout
             )
             print(f"Connected to APS100 on {self.port}")
+
+            # command = "IMAG?"
+            # for i in range(5):
+            #     time.sleep(0.5)
+            #     print( self.query_command(command))
+
         except serial.SerialException as e:
             raise ConnectionError(f"Failed to connect to APS100 on {self.port}: {e}")
 
@@ -49,33 +55,69 @@ class APS100:
             self.connection.close()
         print("Disconnected from APS100")
 
-    def send_command(self, command):
-        """
-        Send a command to the APS100.
+    # def send_command(self, command):
+    #     """
+    #     Send a command to the APS100.
 
-        Args:
-            command (str): The command string to send (without newline).
+    #     Args:
+    #         command (str): The command string to send (without newline).
 
-        Returns:
-            str: The response from the device.
-        """
+    #     Returns:
+    #         str: The response from the device.
+    #     """
+    #     if not self.connection or not self.connection.is_open:
+    #         raise ConnectionError("Connection to APS100 is not open.")
+
+    #     try:
+    #         # Send command (append newline for termination)
+    #         full_command = command + "\n"
+    #         self.connection.write(full_command.encode('utf-8'))
+    #         # print(f"Sent: {command}")
+
+    #         # Read response
+    #         time.sleep(1)  # Wait briefly for the device to respond
+    #         response = self.connection.read(self.connection.in_waiting or 1)  # Read available data
+    #         res = response.decode('utf-8').strip().split('\n', 1)[-1]
+    #         return res
+
+    #     except Exception as e:
+    #         raise IOError(f"Failed to send command '{command}': {e}")
+
+    def write_command(self, command):
+        """Send a command to the APS100 device."""
         if not self.connection or not self.connection.is_open:
             raise ConnectionError("Connection to APS100 is not open.")
-
         try:
-            # Send command (append newline for termination)
-            full_command = command + "\n"
-            self.connection.write(full_command.encode('utf-8'))
-            # print(f"Sent: {command}")
-
-            # Read response
-            time.sleep(1)  # Wait briefly for the device to respond
-            response = self.connection.read(self.connection.in_waiting or 1)  # Read available data
-            res = response.decode('utf-8').strip().split('\n', 1)[-1]
-            return res
-
+            self.connection.write((command + "\n").encode('utf-8'))
         except Exception as e:
-            raise IOError(f"Failed to send command '{command}': {e}")
+            raise IOError(f"Failed to write command '{command}': {e}")
+
+    def read_response(self, timeout=5.0):
+        """Read the device response with a timeout."""
+        if not self.connection or not self.connection.is_open:
+            raise ConnectionError("Connection to APS100 is not open.")
+        
+        buffer = bytearray()
+        end_time = time.time() + timeout
+        try:
+            while time.time() < end_time:
+                if self.connection.in_waiting:
+                    buffer.extend(self.connection.read(self.connection.in_waiting))
+                    if b'\n' in buffer:
+                        break
+                time.sleep(1)  # Prevent busy-waiting
+            return buffer.decode('utf-8', errors='replace').strip().rsplit('\n', 1)[-1]
+        except Exception as e:
+            raise IOError(f"Failed to read response: {e}")
+
+    def query_command(self, command, timeout=5.0):
+        """Send a command and return the response."""
+        self.write_command(command)
+        time.sleep(0.1)
+        self.read_response(timeout) # duplicate needed to get rid of bad first querry
+        self.write_command(command)
+        time.sleep(0.1)
+        return self.read_response(timeout)
 
     def query_status(self):
         """
@@ -84,17 +126,20 @@ class APS100:
         Returns:
             str: Status information from the device.
         """
-        return self.send_command("STATUS")
+        return self.query_command("STATUS")
 
     def set_channel(self, channel):
-        self.send_command(f'CHAN {int(channel)}')
-        res = self.send_command('CHAN?')
+        self.write_command(f'CHAN {int(channel)}')
+        res = self.query_command('CHAN?')
         return res
 
     def get_field(self):
-        res = self.send_command('IMAG?')
-        value = float(res.replace('kG', ''))
-        return value
+        res = self.query_command('IMAG?')
+        try:
+            value = float(res.replace('kG', ''))
+            return value
+        except:
+            return np.NaN
 
     def set_field(self, field):
         # field in kG
@@ -104,13 +149,13 @@ class APS100:
         current_field = self.get_field()
         time.sleep(0.1)
         if field - current_field > 0.001:
-            self.send_command(f'ULIM {field}')
+            self.write_command(f'ULIM {field}')
             time.sleep(0.1)
-            self.send_command('SWEEP UP')
+            self.write_command('SWEEP UP')
         elif field - current_field < -0.001:
-            self.send_command(f'LLIM {field}')
+            self.write_command(f'LLIM {field}')
             time.sleep(0.1)
-            self.send_command('SWEEP DOWN')
+            self.write_command('SWEEP DOWN')
         else:
             pass
 
@@ -124,4 +169,4 @@ class APS100:
     def zero_field(self):
         current_field = self.get_field()
         if abs(current_field) > 0.001:
-            self.send_command('SWEEP ZERO')
+            self.write_command('SWEEP ZERO')

@@ -2706,7 +2706,7 @@ class sagnacOpticsXportProcedure_usbMagCom(Procedure):
     y_axis = 2
     x_enable = BooleanParameter("Enable x motion", default = True)
     y_enable = BooleanParameter("Enable y motion", default = False)
-
+    r_threshold = FloatParameter("VTI threshold safety", units="K", default=0.5)
     applied_voltage = FloatParameter("Applied Sample Voltage", units="V", default=0)
     current_frequency = FloatParameter("Applied Sample Current frequency", units="kHz", default=1)
     settling = FloatParameter("Settling", units="s", default=0.5)
@@ -2837,96 +2837,82 @@ class sagnacOpticsXportProcedure_usbMagCom(Procedure):
         start_time = time()
 
         for progress_iterator, field in enumerate(field_points):
-            # specify which direction
-            # set cap to 1T
-            # log.info(f"how many iterations: {len(field_points)}")
-            # log.info(f"set voltage to {self.lockin.get_vout(1, 6)}")
-            # if self.voltage_sweep == True:
-            #     self.lockin.set_vout(1,6,field/10*np.sqrt(2))
-            # else: 
-            print("check point 4 (iterating process)")
-            if self.apply_bias_field:
-                Bx = field*np.cos(np.deg2rad(self.sweep_field_azimuth))*np.sin(np.deg2rad(self.sweep_field_polar)) + self.bias_field_x
-                By = field*np.sin(np.deg2rad(self.sweep_field_azimuth))*np.sin(np.deg2rad(self.sweep_field_polar)) + self.bias_field_y
-                Bz = field*np.cos(np.deg2rad(self.sweep_field_polar)) + self.bias_field_z
-                self.magnet.set_field_cartesian(Bx, By, Bz)
-                while not self.magnet.check_field_cartesian(Bx, By, Bz, 2e-3):
-                    sleep(0.5)
-                x,y,z = self.magnet.get_field_cartesian()
-                log.info(f"Field set to {x}, {y}, {z}")
+            if float(self.attocube_device.condenser.getTemperature()) < self.r_threshold:
+                if self.apply_bias_field:
+                    Bx = field*np.cos(np.deg2rad(self.sweep_field_azimuth))*np.sin(np.deg2rad(self.sweep_field_polar)) + self.bias_field_x
+                    By = field*np.sin(np.deg2rad(self.sweep_field_azimuth))*np.sin(np.deg2rad(self.sweep_field_polar)) + self.bias_field_y
+                    Bz = field*np.cos(np.deg2rad(self.sweep_field_polar)) + self.bias_field_z
+                    self.magnet.set_field_cartesian(Bx, By, Bz)
+                    while not self.magnet.check_field_cartesian(Bx, By, Bz, 2e-3):
+                        sleep(0.5)
+                    x,y,z = self.magnet.get_field_cartesian()
+                    log.info(f"Field set to {x}, {y}, {z}")
 
-            elif self.apply_bias_field == False:
-                self.magnet.set_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar)
-                while not self.magnet.check_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar, 2e-3):
-                    sleep(0.5)
-                x,y,z = self.magnet.get_field_cartesian()
-                log.info(f"Field set to {x}, {y}, {z}")
+                elif self.apply_bias_field == False:
+                    self.magnet.set_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar)
+                    while not self.magnet.check_field_polar(field, self.sweep_field_azimuth, self.sweep_field_polar, 2e-3):
+                        sleep(0.5)
+                    x,y,z = self.magnet.get_field_cartesian()
+                    log.info(f"Field set to {x}, {y}, {z}")
 
-            self.emit("progress", int(100*progress_iterator/num_progress))
-            self.lockin.sub(0)
-            self.lockin.sub(1)
-            self.lockin.sub(2)
-            self.lockin.sub(3)
-            self.lockin.sub(4)
-            self.lockin.sub(5)
-            print("checkpoint 5")
-            try:
-                sample_temp = self.attocube_device.sample.getTemperature()
-            except:
-                sample_temp = 0
+                self.emit("progress", int(100*progress_iterator/num_progress))
+                self.lockin.sub(0)
+                self.lockin.sub(1)
+                self.lockin.sub(2)
+                self.lockin.sub(3)
+                self.lockin.sub(4)
+                self.lockin.sub(5)
+                print("checkpoint 5")
+                try:
+                    sample_temp = self.attocube_device.sample.getTemperature()
+                except:
+                    sample_temp = 0
+                    
+                vti_temp = self.attocube_device.vti.getTemperature()
+                reservoir_temp = self.attocube_device.condenser.getTemperature()
+
+                dat_list = []
+                print("checkpoint 6: avgs ", vti_temp, sample_temp, reservoir_temp)
+                for i in range(self.avgs):
+                    self.lockin.sync() # clears buffer since field has changed
+                    sleep(self.settling)
+                    self.lockin.sync() # clears buffer since field has changed
+                    log.info("recording average #%d"%i)
+                    dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
+                    print("checkpoint 7: ", dat_list)
+                dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
+                print("checkpoint 8: ", dat)
+                self.lockin.unsubscribe("*")
+
+                log.info("Recording results")
+                self.emit('results', {
+                    "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, 
+                    "X1": dat[3]['x'],
+                    "Y1": dat[3]['y'],
+                    "X2": dat[2]['x'],
+                    "Y2": dat[2]['y'],
+                    "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y'],
+                    "DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
+                    "DeltaX1_C-M": dat[4]['x'],
+                    "DeltaY1_C-M": dat[4]['y'],
+                    "DeltaX1_C+M": dat[5]['x'],
+                    "DeltaY1_C+M": dat[5]['y'],
+                    "TX1": dat[0]['x'],
+                    "TY1": dat[0]['y'],
+                    "TX2": dat[1]['x'],
+                    "TY2": dat[1]['y'],
+                    "sweep_field": field,
+                    "sample_temp": sample_temp,
+                    "vti_temp": vti_temp,
+                    "reservoir_temp": reservoir_temp,
+                    "elapsed_time": time()-start_time
+                    })
                 
-            vti_temp = self.attocube_device.vti.getTemperature()
-            reservoir_temp = self.attocube_device.condenser.getTemperature()
-
-            dat_list = []
-            print("checkpoint 6: avgs ", vti_temp, sample_temp, reservoir_temp)
-            for i in range(self.avgs):
-                self.lockin.sync() # clears buffer since field has changed
-                sleep(self.settling)
-                self.lockin.sync() # clears buffer since field has changed
-                log.info("recording average #%d"%i)
-                dat_list.append(self.lockin.poll_and_unpack(0.02, 100, [0,1,2,3,4,5], ['x','y'], ratio=False))
-                print("checkpoint 7: ", dat_list)
-            dat = {i : {comp : sum(dat_list[j][i][comp] for j in range(len(dat_list)))/len(dat_list) for comp in dat_list[0][i].keys()} for i in dat_list[0].keys()}
-            print("checkpoint 8: ", dat)
-            self.lockin.unsubscribe("*")
-
-            log.info("Recording results")
-            self.emit('results', {
-                "ThetaK": np.arctan(J2J1*dat[3]['x']/dat[2]['y'])/2, 
-                "X1": dat[3]['x'],
-                "Y1": dat[3]['y'],
-                "X2": dat[2]['x'],
-                "Y2": dat[2]['y'],
-                "DeltaThetaK": J2J1*dat[4]['x']/dat[2]['y'],
-                "DeltaThetaK_DualSideband": J2J1*(dat[4]['x'] + dat[5]['x'])/2/dat[2]['y'],
-                "DeltaX1_C-M": dat[4]['x'],
-                "DeltaY1_C-M": dat[4]['y'],
-                "DeltaX1_C+M": dat[5]['x'],
-                "DeltaY1_C+M": dat[5]['y'],
-                "TX1": dat[0]['x'],
-                "TY1": dat[0]['y'],
-                "TX2": dat[1]['x'],
-                "TY2": dat[1]['y'],
-                "sweep_field": field,
-                "sample_temp": sample_temp,
-                "vti_temp": vti_temp,
-                "reservoir_temp": reservoir_temp,
-                "elapsed_time": time()-start_time
-                })
-            
-            if self.should_stop():
-                log.warning("Caught stop flag in procedure.")
+                if self.should_stop():
+                    log.warning("Caught stop flag in procedure.")
+                    break
+            else:
                 break
-        # current_voltage = self.lockin.get_vout(1, 6) * 10
-        # ramp_down_voltages = np.arange(current_voltage, 0, -0.1)
-        # for v in ramp_down_voltages: 
-        #     v = float(v)
-        #     if np.isclose(0, v, atol=0.001):
-        #         v = 0
-        #     self.lockin.set_vout(1, 6, v/10)
-            # print(i)
-
 
     def shutdown(self):
         log.info("Finished with scans. Shutting down instruments.")
@@ -3326,8 +3312,9 @@ class voltage_sweep_procedure(Procedure):
         start_time = time()
         
         print("check vti safety constraint")
-        while float(self.attocube_device.vti.getTemperature()) < 0.5: # temperature safety constraint
-            for progress_iterator, v in enumerate(voltages):
+       
+        for progress_iterator, v in enumerate(voltages):
+            if float(self.attocube_device.condenser.getTemperature()) < self.r_threshold:
                 # specify which direction
                 # set cap to 1T
                 # log.info(f"how many iterations: {len(field_points)}")
@@ -3411,7 +3398,9 @@ class voltage_sweep_procedure(Procedure):
                 if self.should_stop():
                     log.warning("Caught stop flag in procedure.")
                     break
-        self.shutdown()
+            else: 
+                break
+        # self.shutdown()
 
     def shutdown(self):
         log.info("Finished with scans. Shutting down instruments.")
