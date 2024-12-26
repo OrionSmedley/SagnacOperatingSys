@@ -6,10 +6,13 @@ call conda activate pipPymeasMod
 cd /d "%~dp0"
 
 
-set /p choice= Hit any key to plot
+echo Hit any key to plot
+set /p choice=
 start /b python plotter.py "%~1"
 
-set /p choice= Hit any key to run
+
+echo Hit any key to run
+set /p choice=
 python experimenter.py "%~1"
 
 

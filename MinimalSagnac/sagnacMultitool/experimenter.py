@@ -31,6 +31,7 @@ def set_parameter(non_list_variables, namespace):
         if callable(obj):  # call if callable
             obj(value)
         else:  # assign if not callable (for atributtes)
+            name = name.split('#')[0].strip()
             exec(f"{name} = {value}", namespace)
 
 def perform_measurement(csv_file, namespace, commentChar = ';'):

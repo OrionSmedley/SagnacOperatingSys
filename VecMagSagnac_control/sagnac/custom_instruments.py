@@ -439,7 +439,7 @@ class vectorMagnetFullUSB:
     Uses the usual physics parameterization of the magnetic field.
     """
 
-    def __init__(self, limit = 9):
+    def __init__(self, limit = 9.9):
         # in this case device = APS100("port")
         self.device_x = APS100("COM4")
         self.device_2 = APS100("COM5")

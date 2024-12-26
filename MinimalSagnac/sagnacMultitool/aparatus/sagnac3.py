@@ -127,17 +127,17 @@ try: # Magnet
     # setSafe_wait_cart(0.01,0.02,0.03)
 
     mag.setSafe_wait_cart = setSafe_wait_cart
-    mag.setSafeWaitBx = lambda b: setSafe_wait_cart(b,0,0)
-    mag.setSafeWaitBy = lambda b: setSafe_wait_cart(0,b,0)
-    mag.setSafeWaitBz = lambda b: setSafe_wait_cart(0,0,b)
+    mag.setSafeWaitBx = lambda b: setSafe_wait_cart(b,mag.By_set,mag.Bz_set)
+    mag.setSafeWaitBy = lambda b: setSafe_wait_cart(mag.Bx_set,b,mag.Bz_set)
+    mag.setSafeWaitBz = lambda b: setSafe_wait_cart(mag.Bx_set,mag.By_set,b)
 
     ## usage: mag.setSafeWaitBx(0.04)
 
 
 
 
-
-    def setSafe_wait_polar(B,phi, theta):
+#+Bx is 0deg azimuthal, +By is 90deg azimuthal (90deg polar), -Bx is 180deg azimuthal, -By is 270deg azimuthal, +Bz is 0deg polar
+    def setSafe_wait_polar(B,phi, theta): 
         temp = atto.condenser.getTemperature()
         if temp >Tthresh:
             # atto.disconnect() 
@@ -156,6 +156,8 @@ try: # Magnet
         mag.B_set = B
         mag.phi_set = phi
         mag.theta_set = theta
+
+
 
     # setSafe_wait_cart(0.01,0.02,0.03)
 
