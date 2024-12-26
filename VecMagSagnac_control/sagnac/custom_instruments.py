@@ -1,4 +1,4 @@
-from time import sleep
+from time import sleep, time
 import logging
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -8,8 +8,9 @@ from pymeasure.instruments.validators import truncated_range
 from pymeasure.instruments import Instrument
 import pyvisa
 from .instruments.AMI420 import AMI420
-# from pymeasure.instruments.attocube import APS100
 from sagnac.instruments import APS100
+import atto_device.CRYO2100 as cr
+
 
 def handle_timeout(fail_mode):
     def handle_timeout_decorator(func):
@@ -438,15 +439,12 @@ class vectorMagnetFullUSB:
     Class to control all three axes of the vector magnet simultaneously.
     Uses the usual physics parameterization of the magnetic field.
     """
-
+    Tthresh = 4.2
+    ATOL = 1e-3
     def __init__(self, limit = 9.9):
         # in this case device = APS100("port")
         self.device_x = APS100("COM4")
         self.device_2 = APS100("COM5")
-        # if self.device_x.connection and self.device_x.connection.is_open:
-        # self.device_x.disconnect()
-        # if self.device_2.connection and self.device_2.connection.is_open:
-        # self.device_2.disconnect()
         # device 2 channel 1 is Z
         # device 2 channel 2 is Y
 
@@ -460,6 +458,9 @@ class vectorMagnetFullUSB:
         self._field_mag_lim = limit # set to 1? bootleg version is kG, previous auttodry gui was T
 
         self._B_sign = 1
+
+        atto = cr("192.168.1.1")
+        atto.connect()
     
     def connect(self):
         if self.device_x.connection and self.device_x.connection.is_open:
@@ -477,7 +478,49 @@ class vectorMagnetFullUSB:
             self.device_2.disconnect()
             print( "Bmag vector is larger than 0.9 T! Don't touch anything else! call Kelly")
             raise ValueError("Bmag vector is larger than 0.9 T! Don't touch anything else! call Kelly")
+    
+    def setSafe_wait_cart(self, bx,by,bz):
+        temp = self.atto.condenser.getTemperature()
+        if temp > self.Tthresh:
+            # atto.disconnect() 
+            print( f"yikes, resevoir at {temp}C > max {self.Tthresh}")
+            self.shutdown()
+            raise RuntimeError(f"shut down bc resevoir at {temp}C > max {self.Tthresh}")
 
+        
+        
+
+        tic = time.time()
+        while not self.check_field_cartesian(bx, by, bz, self.ATOL):
+            time.sleep(0.1)
+            self.set_field_cartesian(bx,by,bz)
+            time.sleep(0.1)
+            print(f"waiting for mag for {time.time()-tic}")
+
+        self.Bx_set = bx
+        self.By_set = by
+        self.Bz_set = bz
+
+    def setSafe_wait_polar(self, B,phi, theta): 
+        temp = self.atto.condenser.getTemperature()
+        if temp > self.Tthresh:
+            # atto.disconnect() 
+            print( f"yikes, resevoir at {temp}C > max {self.Tthresh}")
+            self.shutdown()
+            raise RuntimeError(f"shut down bc resevoir at {temp}C > max {self.Tthresh}")
+
+
+        tic = time.time()
+        while not self.check_field_polar(B,phi, theta,self. ATOL):
+            time.sleep(0.1)
+            self.set_field_polar(B,phi, theta)
+            time.sleep(0.1)
+            print(f"waiting for mag for {time.time()-tic}")
+
+        self.B_set = B
+        self.phi_set = phi
+        self.theta_set = theta
+    
     def set_field_polar(self, B, phi, theta):
         """
         Sets the field, accepting polar coordinates.

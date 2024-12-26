@@ -87,49 +87,12 @@ try: # Magnet
     sys.path.append(module_dir)
     from sagnac.custom_instruments import vectorMagnetFullUSB
     mag = vectorMagnetFullUSB()
-    # mag.connect()
-
-
     import atto_device.CRYO2100 as cr
     atto = cr("192.168.1.1")
     atto.connect()
-
-
-
-
-
-    import time
-
-    Tthresh = 4.2
-    ATOL = 1e-3
-    def setSafe_wait_cart(bx,by,bz):
-        temp = atto.condenser.getTemperature()
-        if temp >Tthresh:
-            # atto.disconnect() 
-            print( f"yikes, resevoir at {temp}C > max {Tthresh}")
-            mag.shutdown()
-            raise RuntimeError(f"shut down bc resevoir at {temp}C > max {Tthresh}")
-
-        
-        
-
-        tic = time.time()
-        while not mag.check_field_cartesian(bx, by, bz, ATOL):
-            time.sleep(0.1)
-            mag.set_field_cartesian(bx,by,bz)
-            time.sleep(0.1)
-            print(f"waiting for mag for {time.time()-tic}")
-
-        mag.Bx_set = bx
-        mag.By_set = by
-        mag.Bz_set = bz
-
-    # setSafe_wait_cart(0.01,0.02,0.03)
-
-    mag.setSafe_wait_cart = setSafe_wait_cart
-    mag.setSafeWaitBx = lambda b: setSafe_wait_cart(b,mag.By_set,mag.Bz_set)
-    mag.setSafeWaitBy = lambda b: setSafe_wait_cart(mag.Bx_set,b,mag.Bz_set)
-    mag.setSafeWaitBz = lambda b: setSafe_wait_cart(mag.Bx_set,mag.By_set,b)
+    mag.setSafeWaitBx = lambda b: mag.setSafe_wait_cart(b,mag.By_set,mag.Bz_set)
+    mag.setSafeWaitBy = lambda b: mag.setSafe_wait_cart(mag.Bx_set,b,mag.Bz_set)
+    mag.setSafeWaitBz = lambda b: mag.setSafe_wait_cart(mag.Bx_set,mag.By_set,b)
 
     ## usage: mag.setSafeWaitBx(0.04)
 
@@ -137,34 +100,9 @@ try: # Magnet
 
 
 #+Bx is 0deg azimuthal, +By is 90deg azimuthal (90deg polar), -Bx is 180deg azimuthal, -By is 270deg azimuthal, +Bz is 0deg polar
-    def setSafe_wait_polar(B,phi, theta): 
-        temp = atto.condenser.getTemperature()
-        if temp >Tthresh:
-            # atto.disconnect() 
-            print( f"yikes, resevoir at {temp}C > max {Tthresh}")
-            mag.shutdown()
-            raise RuntimeError(f"shut down bc resevoir at {temp}C > max {Tthresh}")
-
-
-        tic = time.time()
-        while not mag.check_field_polar(B,phi, theta, ATOL):
-            time.sleep(0.1)
-            mag.set_field_polar(B,phi, theta)
-            time.sleep(0.1)
-            print(f"waiting for mag for {time.time()-tic}")
-
-        mag.B_set = B
-        mag.phi_set = phi
-        mag.theta_set = theta
-
-
-
-    # setSafe_wait_cart(0.01,0.02,0.03)
-
-    mag.setSafe_wait_polar = setSafe_wait_polar
-    mag.setSafeWaitB = lambda b: setSafe_wait_polar(b,mag.phi_set,mag.theta_set)
-    mag.setSafeWaitPhi = lambda phi: setSafe_wait_polar(mag.B_set,phi,mag.theta_set)
-    mag.setSafeWaitTheta = lambda theta: setSafe_wait_polar(mag.B_set,mag.phi_set,theta)
+    mag.setSafeWaitB = lambda b: mag.setSafe_wait_polar(b,mag.phi_set,mag.theta_set)
+    mag.setSafeWaitPhi = lambda phi: mag.setSafe_wait_polar(mag.B_set,phi,mag.theta_set)
+    mag.setSafeWaitTheta = lambda theta: mag.setSafe_wait_polar(mag.B_set,mag.phi_set,theta)
 
 except:
     print("sagnac3.0: no magnet aps100")
