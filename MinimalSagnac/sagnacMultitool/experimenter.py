@@ -83,7 +83,11 @@ def run_experiment(variables, csv_file, namespace, demoMode = True):
 if __name__ == "__main__":
     # Get the CSV file path from the first command-line argument
     csv_file = sys.argv[1]
-    
-    # Load and process the CSV file
+
+    print("_________________________________________________")
+    print("Execute CSV's python \n")
     parameters, namespace = load_variables_from_csv(csv_file)
+
+    print("_________________________________________________")
+    print("python parameters -->> experiment \n")
     run_experiment(parameters, csv_file, namespace)
