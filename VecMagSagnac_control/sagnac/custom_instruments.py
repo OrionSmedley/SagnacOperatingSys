@@ -459,9 +459,11 @@ class vectorMagnetFullUSB:
 
         self._B_sign = 1
 
-        atto = cr("192.168.1.1")
-        atto.connect()
-    
+        self.atto = cr("192.168.1.1")
+        self.atto.connect()
+        # self.Bx_set, self.By_set, self.Bz_set = self.get_field_cartesian()
+        # self.B_set, self.phi_set, self.theta_set = self.get_field_polar()
+
     def connect(self):
         if self.device_x.connection and self.device_x.connection.is_open:
             self.device_x.disconnect()
@@ -490,16 +492,27 @@ class vectorMagnetFullUSB:
         
         
 
-        tic = time.time()
+        tic = time()
         while not self.check_field_cartesian(bx, by, bz, self.ATOL):
-            time.sleep(0.1)
+            sleep(0.1)
             self.set_field_cartesian(bx,by,bz)
-            time.sleep(0.1)
-            print(f"waiting for mag for {time.time()-tic}")
+            sleep(0.1)
+            print(f"waiting for mag for {time()-tic}")
 
         self.Bx_set = bx
         self.By_set = by
         self.Bz_set = bz
+        self.B_set, self.phi_set, self.theta_set = self.get_field_polar()
+    
+    def setSafeWaitBx(self, b):
+        self.setSafe_wait_cart(b, self.By_set, self.Bz_set)
+
+    def setSafeWaitBy(self, b):
+        self.setSafe_wait_cart(self.Bx_set, b, self.Bz_set)
+
+    def setSafeWaitBz(self, b):
+        self.setSafe_wait_cart(self.Bx_set, self.By_set, b)
+
 
     def setSafe_wait_polar(self, B,phi, theta): 
         temp = self.atto.condenser.getTemperature()
@@ -510,17 +523,30 @@ class vectorMagnetFullUSB:
             raise RuntimeError(f"shut down bc resevoir at {temp}C > max {self.Tthresh}")
 
 
-        tic = time.time()
+        tic = time()
         while not self.check_field_polar(B,phi, theta,self. ATOL):
-            time.sleep(0.1)
+            sleep(0.1)
             self.set_field_polar(B,phi, theta)
-            time.sleep(0.1)
-            print(f"waiting for mag for {time.time()-tic}")
+            sleep(0.1)
+            print(f"waiting for mag for {time()-tic}")
 
         self.B_set = B
         self.phi_set = phi
         self.theta_set = theta
+        self.Bx_set, self.By_set, self.Bz_set = self.get_field_cartesian()
     
+    
+    def setSafeWaitB(self, b):
+        self.setSafe_wait_polar(b, self.phi_set, self.theta_set)
+
+    def setSafeWaitPhi(self, phi):
+        self.setSafe_wait_polar(self.B_set, phi, self.theta_set)
+
+    def setSafeWaitTheta(self, theta):
+        self.setSafe_wait_polar(self.B_set, self.phi_set, theta)
+
+
+
     def set_field_polar(self, B, phi, theta):
         """
         Sets the field, accepting polar coordinates.

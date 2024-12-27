@@ -90,19 +90,19 @@ try: # Magnet
     import atto_device.CRYO2100 as cr
     atto = cr("192.168.1.1")
     atto.connect()
-    mag.setSafeWaitBx = lambda b: mag.setSafe_wait_cart(b,mag.By_set,mag.Bz_set)
-    mag.setSafeWaitBy = lambda b: mag.setSafe_wait_cart(mag.Bx_set,b,mag.Bz_set)
-    mag.setSafeWaitBz = lambda b: mag.setSafe_wait_cart(mag.Bx_set,mag.By_set,b)
+#     mag.setSafeWaitBx = lambda b: mag.setSafe_wait_cart(b,mag.By_set,mag.Bz_set)
+#     mag.setSafeWaitBy = lambda b: mag.setSafe_wait_cart(mag.Bx_set,b,mag.Bz_set)
+#     mag.setSafeWaitBz = lambda b: mag.setSafe_wait_cart(mag.Bx_set,mag.By_set,b)
 
-    ## usage: mag.setSafeWaitBx(0.04)
-
-
+#     ## usage: mag.setSafeWaitBx(0.04)
 
 
-#+Bx is 0deg azimuthal, +By is 90deg azimuthal (90deg polar), -Bx is 180deg azimuthal, -By is 270deg azimuthal, +Bz is 0deg polar
-    mag.setSafeWaitB = lambda b: mag.setSafe_wait_polar(b,mag.phi_set,mag.theta_set)
-    mag.setSafeWaitPhi = lambda phi: mag.setSafe_wait_polar(mag.B_set,phi,mag.theta_set)
-    mag.setSafeWaitTheta = lambda theta: mag.setSafe_wait_polar(mag.B_set,mag.phi_set,theta)
+
+
+# #+Bx is 0deg azimuthal, +By is 90deg azimuthal (90deg polar), -Bx is 180deg azimuthal, -By is 270deg azimuthal, +Bz is 0deg polar
+#     mag.setSafeWaitB = lambda b: mag.setSafe_wait_polar(b,mag.phi_set,mag.theta_set)
+#     mag.setSafeWaitPhi = lambda phi: mag.setSafe_wait_polar(mag.B_set,phi,mag.theta_set)
+#     mag.setSafeWaitTheta = lambda theta: mag.setSafe_wait_polar(mag.B_set,mag.phi_set,theta)
 
 except:
     print("sagnac3.0: no magnet aps100")
