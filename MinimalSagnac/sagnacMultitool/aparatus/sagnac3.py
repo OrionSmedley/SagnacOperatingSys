@@ -48,6 +48,23 @@ try: # Zurich Instruments
     def dem(demod): return myHF2LI.demods[demod].sample()
     myHF2LI.dem = dem
 
+    def dc(v=None):
+        Vrange = myHF2LI.sigouts[1].range()
+        if v is not None:
+            myHF2LI.sigouts[1].offset(v / Vrange)
+        return myHF2LI.sigouts[1].offset() * Vrange
+
+    def ac(v=None):
+        Vrange = myHF2LI.sigouts[1].range()
+        if v is not None:
+            myHF2LI.sigouts[1].amplitudes[7-1](v / Vrange)
+        return myHF2LI.sigouts[1].amplitudes[7-1]() * Vrange
+    myHF2LI.dc = dc
+    myHF2LI.ac = ac
+
+
+
+
     # def get_vout(self, out_num, osc_num):
     #     return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num))
     # def set_vout(self, out_num, osc_num, x):
@@ -55,18 +72,18 @@ try: # Zurich Instruments
     # myHF2LI.get_vout = get_vout
     # myHF2LI.get_vout = set_vout
 
-    from types import MethodType
+    # from types import MethodType
 
-    # Define the new methods
-    def get_vout(self, out_num, osc_num):
-        return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num))
+    # # Define the new methods
+    # def get_vout(self, out_num, osc_num):
+    #     return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num))
 
-    def set_vout(self, out_num, osc_num, x):
-        self.setDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num), x)
+    # def set_vout(self, out_num, osc_num, x):
+    #     self.setDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num), x)
 
-    # Bind the methods to the instance `myHF2LI`
-    myHF2LI.get_vout = MethodType(get_vout, myHF2LI)
-    myHF2LI.set_vout = MethodType(set_vout, myHF2LI)
+    # # Bind the methods to the instance `myHF2LI`
+    # myHF2LI.get_vout = MethodType(get_vout, myHF2LI)
+    # myHF2LI.set_vout = MethodType(set_vout, myHF2LI)
 
 
 
@@ -170,7 +187,6 @@ except:
 try: # Owon osciloscope
     import vds1022 as owon
     vds = owon.VDS1022(debug=0)
-    vds.set_channel(owon.CH1, range='10v', probe='x1')
     # usage: vds.fetch().ch1.rms()
 except:
     print("sagnac3.0: no owon")
