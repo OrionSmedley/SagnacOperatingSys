@@ -10,6 +10,12 @@ class ANC300:
         self.identity=''
         self.connected=False
 
+        # inacurate guestimates
+        self.posX = 0
+        self.posY = 0
+        self.posZ = 0
+
+
     def connect(self):
         start_time=time.time()
         try:
@@ -81,3 +87,43 @@ class ANC300:
         """
         self.session.write("getv " + str(axis))
         return self.session.read()  
+    
+    def step(self, axis, steps):
+        """ General method to move steps in positive or negative direction.
+        axis: 4 for Z, 5 for Y, 6 for X.
+        steps: Positive for upward movement, negative for downward movement.
+        """
+        if steps > 0:
+            self.stepu(axis, steps)
+        elif steps < 0:
+            self.stepd(axis, abs(steps))
+        else:
+            print("No movement for zero steps.")
+
+        # Update position based on axis
+        if axis == 6:
+            self.posX += steps
+        elif axis == 5:
+            self.posY += steps
+        elif axis == 4:
+            self.posZ += steps
+    
+    def stepx(self, steps):
+        """ Move in X direction. """
+        self.step(6, steps)
+
+    def stepy(self, steps):
+        """ Move in Y direction. """
+        self.step(5, steps)
+
+    def stepz(self, steps):
+        """ Move in Z direction. """
+        self.step(4, steps)
+
+## example of how to step on sagnac 3
+# stepper.stepu(6, 2) #pos X
+# stepper.stepd(6, 2) #neg X
+# stepper.stepu(5, 2) #pos Y
+# stepper.stepd(5, 2) #neg Y
+# stepper.stepd(4,1) #neg Z
+# stepper.stepu(4,1) #pos Z

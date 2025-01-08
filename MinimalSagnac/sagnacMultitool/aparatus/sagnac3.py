@@ -173,6 +173,16 @@ except:
 
 
 
+try: #stepper
+    from .drivers.ANC300 import ANC300
+    stepper = ANC300()
+    stepper.connect()
+except:
+    print( "sagnac3.0: no stepper")
+
+
+
+
 
 try: # Keithly
     from pymeasure.instruments.keithley import Keithley2400
