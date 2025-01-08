@@ -1,97 +1,96 @@
 import pyvisa
 
-# Configure the GPIB address for your device (replace with actual address)
-GPIB_ADDRESS = "GPIB0::2::INSTR"
-
-def initialize_device():
+class LaserDriver:
     """
-    Initializes the connection to the GPIB device.
+    Minimal driver for controlling a laser via GPIB using pyvisa.
+    
+    Example usage:
+        driver = LaserDriver(gpib_address="GPIB0::2::INSTR")
+        print(driver.get_idn())
+        driver.set_ld_current(148)
+        print(driver.get_ld_current())
+        driver.set_temperature(21.5)
+        print(driver.get_temperature())
     """
-    try:
-        rm = pyvisa.ResourceManager()
-        instrument = rm.open_resource(GPIB_ADDRESS)
+    
+    def __init__(self, gpib_address="GPIB0::2::INSTR"):
+        """
+        Initialize the LaserDriver by opening a connection to the specified GPIB address.
+        """
+        self._resource_manager = pyvisa.ResourceManager()
+        self._laser = self._resource_manager.open_resource(gpib_address)
 
-        # Print device information to confirm connection
-        idn = instrument.query("*IDN?")
-        print(f"Connected to: {idn.strip()}")
+    def get_idn(self):
+        """
+        Query and return the instrument identification string.
+        """
+        return self._laser.query("*IDN?").strip()
 
-        return instrument
-    except pyvisa.VisaIOError as e:
-        print(f"Error: Could not connect to device at {GPIB_ADDRESS}: {e}")
-        return None
+    def set_ld_current(self, current):
+        """
+        Set the laser diode current (LDI) to a specified value in mA.
+        :param current: (float) The desired current value, e.g. 148.
+        """
+        self._laser.write(f":LAS:LDI {current}")
 
-def send_command(instrument, command):
-    """
-    Sends a SCPI command to the device.
-    """
-    try:
-        instrument.write(command)
-        print(f"Command sent: {command}")
-    except pyvisa.VisaIOError as e:
-        print(f"Error sending command '{command}': {e}")
+    def get_ld_current(self):
+        """
+        Query and return the current laser diode current (LDI) setting.
+        :return: (str) The current value as a string.
+        """
+        return self._laser.query(":LAS:LDI?").strip()
+    
+    def set_ldv(self, V):
+        """
+        Set the laser diode current (LDv) to a specified value in mA.
+        :param current: (float) The desired current value, e.g. 148.
+        """
+        self._laser.write(f":LAS:LDV {V}")
 
-def query_device(instrument, command):
-    """
-    Queries the device and returns the response.
-    """
-    try:
-        response = instrument.query(command)
-        print(f"Response: {response.strip()}")
-        return response
-    except pyvisa.VisaIOError as e:
-        print(f"Error querying command '{command}': {e}")
-        return None
+    def get_ldv(self):
+        """
+        Query and return the current laser diode current (LDv) setting.
+        :return: (str) The current value as a string.
+        """
+        return self._laser.query(":LAS:LDV?").strip()
 
-def set_laser_current(instrument, current):
-    """
-    Sets the laser current limit using the GPIB command.
-    """
-    try:
-        # Ensure the current limit is in amperes
-        command = f"LAS:LDI {current:.3f}"
-        send_command(instrument, command)
+    def set_temperature(self, temperature):
+        """
+        Set the temperature (TEC:T) to a specified value.
+        :param temperature: (float) The desired temperature value, e.g. 21.5.
+        """
+        self._laser.write(f":TEC:T {temperature}")
 
-        # Verify the current limit was set correctly
-        response = query_device(instrument, "LAS:LDI?")
-        print(f"Laser current limit confirmed: {response.strip()} mA")
-        
-    except Exception as e:
-        print(f"Error setting laser current limit: {e}")
+    def get_temperature(self):
+        """
+        Query and return the current temperature (TEC:T) setting.
+        :return: (str) The current temperature as a string.
+        """
+        return self._laser.query(":TEC:T?").strip()
 
-def get_laser_current(instrument):
-    """
-    Sets the laser current limit using the GPIB command.
-    """
-    try:
-        # Ensure the current limit is in amperes
-        command = f"LAS:LDI?"
-        send_command(instrument, command)
+    def close(self):
+        """
+        Close the connection to the instrument.
+        """
+        self._laser.close()
 
-        # Verify the current limit was set correctly
-        response = query_device(instrument, "LAS:LDI?")
-        print(f"Laser current limit confirmed: {response.strip()} mA")
-        return response
-    except Exception as e:
-        print(f"Error setting laser current limit: {e}")
+    # Properties
+    LDI = property(get_ld_current, set_ld_current)
+    T = property(get_temperature, set_temperature)
+    LDV = property(get_ldv, set_ldv)
 
-# def main():
-#     """
-#     Main function to control the device.
-#     """
-#     # Initialize the device
-#     instrument = initialize_device()
-#     if not instrument:
-#         return
-
-#     # Example SCPI commands
-#     send_command(instrument, "*RST")  # Reset the device
-#     query_device(instrument, "*IDN?")  # Query device identification
-
-#     # Set laser current limit to 168 mA (0.168 A)
-#     set_laser_current(instrument, 10)
-#     get_laser_current(instrument)
-#     # Close the connection
-#     instrument.close()
-
-# if __name__ == "__main__":
-#     main()
+# Example usage:
+if __name__ == "__main__":
+    driver = LaserDriver("GPIB0::2::INSTR")
+    
+    # Check device info
+    print("Instrument ID:", driver.get_idn())
+    
+    # Set and query LD current
+    print("LD Current:", driver.get_ld_current())
+    
+    # Set and query temperature
+    print("Temperature:", driver.get_temperature())
+    
+    # Close the connection
+    driver.close()

@@ -200,3 +200,11 @@ try: # Owon osciloscope
     # usage: vds.fetch().ch1.rms()
 except:
     print("sagnac3.0: no owon")
+
+
+
+try: # Laser controller LDC3900
+    from aparatus.drivers.LDC3900 import LaserDriver
+    laser = LaserDriver()
+except:
+    print("sagnac3.0: no LASER")
