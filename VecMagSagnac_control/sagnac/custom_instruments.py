@@ -489,10 +489,18 @@ class vectorMagnetFullUSB:
             self.shutdown()
             raise RuntimeError(f"shut down bc resevoir at {temp}C > max {self.Tthresh}")
 
-        
-        
-
         tic = time()
+        Bx_init, By_init, Bz_init = self.get_field_cartesian()
+        # print(f"Bz initial: {Bx_init, By_init, Bz_init}")
+        if not np.abs(bz) > np.abs(Bz_init): 
+            # print("entering if")
+            while not self.check_field_cartesian(Bx_init, By_init, bz, 10*self.ATOL):
+                print("waiting for z to ramp down")
+                sleep(0.1)
+                self.set_field_cartesian(Bx_init,By_init,bz)
+                sleep(0.1)
+                print(f"waiting for z to ramp down {time()-tic}")
+
         while not self.check_field_cartesian(bx, by, bz, self.ATOL):
             sleep(0.1)
             self.set_field_cartesian(bx,by,bz)
@@ -524,6 +532,7 @@ class vectorMagnetFullUSB:
 
 
         tic = time()
+        
         while not self.check_field_polar(B,phi, theta,self. ATOL):
             sleep(0.1)
             self.set_field_polar(B,phi, theta)
@@ -635,6 +644,8 @@ class vectorMagnetFullUSB:
         self.device_2.set_field(Bz)
         self.device_2.set_channel(2) # y
         self.device_2.set_field(By)
+
+
 
     def get_field_cartesian(self):
         """
