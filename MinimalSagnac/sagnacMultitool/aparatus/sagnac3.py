@@ -102,8 +102,11 @@ try: # Magnet
     import sys
     module_dir = r"D:\Github\SagnacOperatingSys\VecMagSagnac_control"
     sys.path.append(module_dir)
-    from sagnac.custom_instruments import vectorMagnetFullUSB
-    mag = vectorMagnetFullUSB()
+    # from sagnac.custom_instruments import vectorMagnetFullUSB
+    # mag = vectorMagnetFullUSB()
+    from sagnac.magnet_usb_safe_ramp import Magnet
+    mag = Magnet()
+
     import atto_device.CRYO2100 as cr
     atto = cr("192.168.1.1")
     atto.connect()
