@@ -133,7 +133,7 @@ class Magnet:
         if not np.abs(self.Bz) > np.abs(Bz_init): 
             # print("entering if")
             while not self.check_field_cartesian(Bx_init, By_init, self.Bz, 10*self.ATOL):
-                print("waiting for z to ramp down")
+                # print("waiting for z to ramp down")
                 sleep(0.1)
                 self.set_field_cartesian(Bx_init,By_init,self.Bz)
                 sleep(0.1)
