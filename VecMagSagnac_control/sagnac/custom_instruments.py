@@ -738,7 +738,7 @@ class vectorMagnetFullUSB_highZ:
         self.device_2 = APS100("COM5")
         self._field_difference_cutoff = 0 #1e-5 # 0.1 G
         self._field_mag_lim = limit # bootleg version is kG, previous auttodry gui was T
-        self._B_sign = 1
+        # self._B_sign = 1 #Not sure what this is for. Delete? 2025/01/24 - Orion and Ethan
 
     def connect_highZ(self):
         if self.device_x.connection and self.device_x.connection.is_open:
@@ -755,8 +755,8 @@ class vectorMagnetFullUSB_highZ:
         
         
         
-        if BzCon > 9:
-            if BxCon>0 or ByCon > 0:
+        if np.abs(BzCon) > 9.9:
+            if np.abs(BxCon) >0 or np.abs(ByCon) > 0:
                 self.device_x.disconnect()
                 self.device_2.disconnect()
                 print( "Bmag vector is larger than 0.9 T! Don't touch anything else! call Kelly")
@@ -778,14 +778,15 @@ class vectorMagnetFullUSB_highZ:
 
     def set_field_highZ(self, Bz):
         log.info('Setting Bz to : %g'%(Bz))
-        if Bz > self._field_mag_lim: #np.sqrt returns positive square root
+        if np.abs(Bz) > self._field_mag_lim: #np.sqrt returns positive square root
             log.error("A large field of %g was requested"%Bz)
             raise ValueError("Large field requested! Limit is %g"%self._field_mag_lim)
 
-        if Bz < 0:
-            self._B_sign = -1
-        else:
-            self._B_sign = 1
+        # #Not sure what this is for. Delete? 2025/01/24 - Orion and Ethan
+        # if Bz < 0:
+        #     self._B_sign = -1
+        # else:
+        #     self._B_sign = 1
 
         self.device_2.set_channel(1)
         self.device_2.set_field(Bz)
@@ -815,6 +816,8 @@ class vectorMagnetFullUSB_highZ:
             # By_current = self.device.magnet.getH(1)
             # Bz_current = self.device.magnet.getH(0)
             Bz = self.get_field_highZ()
+
+            print(f" currently Bz= {Bz}") #redundant, if you use the monkypatch for pymeasure
 
             if np.isclose(Bset, Bz, atol=ATOL):
                 log.info("field is close to the setpoint")
