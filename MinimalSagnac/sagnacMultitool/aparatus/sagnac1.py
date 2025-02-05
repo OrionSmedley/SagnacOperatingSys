@@ -59,12 +59,21 @@ import os
 import numpy as np
 import pandas as pd
 from zhinst.toolkit import Session
+import time
 session = Session("localhost", hf2=True)
 myHF2LI = session.connect_device("DEV1004")
 
 # set timeconstants for all channels
-def setTc(Tc): [myHF2LI.demods[demod].timeconstant(Tc) for demod in range(6)]
+def setTc(Tc): 
+    [myHF2LI.demods[demod].timeconstant(Tc) for demod in range(6)]
+    myHF2LI.Tc = Tc
 myHF2LI.setTc = setTc
+
+def waitTc(n): 
+    """Wait for n time constants"""
+    print(f"Waiting for {n}Tc =  ({n*myHF2LI.Tc} s)")
+    time.sleep(n*myHF2LI.Tc)
+myHF2LI.waitTc = waitTc
 
 # get value of a demodulator
 def dem(demod): return myHF2LI.demods[demod].sample()
