@@ -16,7 +16,7 @@ def load_variables_from_csv(csv_file, commentChar = ';'):
     """Loads parameters from the CSV file."""
     # Run CSV code
     with open(csv_file, 'r') as file: # Extract comment by removing the leading ';' and whitespace
-        comment_lines = [line.lstrip(commentChar).strip() for line in file if line.startswith(commentChar)]
+        comment_lines = [line.lstrip(commentChar) for line in file if line.startswith(commentChar)]   #removed .strip() from line.lstrip(commentChar).strip() to keep the indentation
     python_code = "\n".join(comment_lines) # Combine comments into a single block of Python code
     namespace = {'np': np,'pd':pd, "hysteresis":hysteresis,"repeat":repeat,"time":time}  # Modules for the `exec` namespace
     exec(python_code, namespace)  # Execute the combined string in namespace
