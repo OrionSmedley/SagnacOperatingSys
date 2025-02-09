@@ -41,6 +41,7 @@ class Magnet:
     ############### Fancy #################
     def get_B(self):
         """Returns the magnitude of the field."""
+
         return np.sqrt(self.Bx**2 + self.By**2 + self.Bz**2)
 
     def set_B(self, val):
@@ -51,6 +52,7 @@ class Magnet:
             self.Bx *= scale
             self.By *= scale
             self.Bz *= scale
+        
         else:
             raise ValueError("Cannot set B when the field is zero (direction undefined).")
 
