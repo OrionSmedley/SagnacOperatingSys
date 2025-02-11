@@ -188,7 +188,10 @@ except:
 
 
 try: # Keithly
-    from pymeasure.instruments.keithley import Keithley2400
+    import sys
+    module_dir = r"C:\Users\luogroup\AppData\Roaming\Python\Python311\site-packages\pymeasure\instruments"
+    sys.path.append(module_dir)
+    from keithley.keithley2400 import Keithley2400 
     keith1 = Keithley2400("GPIB::26")
     keith2 = Keithley2400("GPIB::24")
 

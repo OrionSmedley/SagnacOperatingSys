@@ -1,0 +1,47 @@
+; from aparatus.sagnac3 import myHF2LI, mag, atto, laser #, keith1, pulse
+; mag.connect()     
+; dem = myHF2LI.dem
+
+; sampNumb = None #declaring variables
+
+
+; import pandas as pd
+; queueT = pd.Timestamp.now()
+
+; J2J1 = 0.543
+queueT, repeat, sampNumb, myHF2LI.ac, myHF2LI.dc, pd.Timestamp.now() #now, time.time, mag.B #net B, mag.phi #phi, mag.theta #theta, mag.Bz, mag.By, mag.Bx, laser.T, laser.LDI, laser.LDV, myHF2LI.sigins[2-1].diff, dem(1-1)['x'] # TX1, dem(1-1)['y'] # TY1, dem(2-1)['x'] # TX2, dem(2-1)['y'] # TY2, dem(3-1)['y'] # Y2, dem(3-1)['x'] # X2,  dem(4-1)['x'] # X1, dem(4-1)['y'] # Y1,  np.arctan(J2J1 * dem(4-1)['x'] / dem(3-1)['y']) / 2 # ThetaK,   atto.sample.getTemperature() #Tsamp, atto.vti.getTemperature() #Tvti, atto.condenser.getTemperature() #Tres,  J2J1 * dem(4)['x'] / dem(2)['y'] # DeltaThetaK, J2J1 * (dem(4)['x'] + dem(5)['x']) / 2 / dem(2)['y'] # DeltaThetaK_DualSideband, dem(4)['x'] # DeltaX1_C-M, dem(4)['y'] # DeltaY1_C-M, dem(5)['x'] # DeltaX1_C+M, dem(5)['y'] # DeltaY1_C+M, myHF2LI.sigins[2-1].ac #acCoupled, purpose                 ;  np.nan #vds.fetch().ch1.rms #owonRMS,
+
+
+; purpose = "Ethan writes a current pulse scan"
+
+;# Useful
+; SamplePeriod = N
+
+; parameters = {
+;   "myHF2LI.sigins[2-1].ac": 1, # ac coupling good.
+;   "myHF2LI.setTc": Tc, # in seconds
+
+;   "sampNumb": np.arange(SamplePeriod),
+
+;   "mag.Bx #initial" : [Bx], # Field in kG # Saturates the magnet
+;   "mag.By #initial" : [By],
+;   "mag.Bz #initial" : [Bz],
+;   "mag.setSafe_wait #initial" : "RunTheThing Srsly",
+;   "time.sleep #initial": 1, # in seconds
+
+;   "mag.Bx #relaxed" : [0], # Field in kG # Relaxes external field
+;   "mag.By #relaxed" : ,
+;   "mag.Bz #relaxed" : ,
+;   "mag.setSafe_wait #relaxed" : "RunTheThing Srsly",
+;   "time.sleep #relaxed": 1, # in seconds
+
+;   "myHF2LI.ac #stopscan": [0],
+
+;   "pulse.current" []: , # in Amps
+;   "pulse.send_pulse": [], # in seconds
+
+;   "myHF2LI.ac #startscan": , # in Volts
+;   "time.sleep #measurement": [4*Tc]
+
+; }
+
