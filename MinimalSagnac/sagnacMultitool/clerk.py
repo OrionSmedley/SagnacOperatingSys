@@ -15,19 +15,19 @@ subSample = None  # doesn't do anything, just a convenient dummy variable for us
 queueT = pd.Timestamp.now() # doesn't do anything, just a convenient dummy variable for use in experimenter.py
 purpose = None # doesn't do anything, just a convenient dummy variable for use in experimenter.py
 
-def sweep(i):
+def counter(numSweeps):
     """
-    Keeps track of the sweep direction.
+    Counts how many time it has run, modulo numSweeps.
 
     Usage in your experiment csv file:
     parameters = { 
-      'sweep': [-1],
-      'something": hysteresis(np.linspace(0, 1, 10))
+      'sweep': [4], #number of sweep items to track
+      'something": hysteresis(np.linspace(0, 1, 10), bipolar=True)
       }
 
     """
-    sweep.up *= i
-sweep.up = -1
+    counter.cnt = (counter.cnt +1) % numSweeps
+counter.cnt = 0
 
 
 def hysteresis(arr, bipolar=False):
