@@ -27,7 +27,7 @@ def counter(numSweeps):
 
     """
     counter.cnt = (counter.cnt +1) % numSweeps
-counter.cnt = 0
+counter.cnt = -1
 
 
 def hysteresis(arr, bipolar=False):
