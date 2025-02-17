@@ -10,10 +10,10 @@ import numpy as np
 import pandas as pd
 import time
 
-repeat = None  # doesn't do anything, just a convenient dummy variable for use in experimenter.py
-subSample = None  # doesn't do anything, just a convenient dummy variable for use in experimenter.py
+# repeat = None  # doesn't do anything, just a convenient dummy variable for use in experimenter.py
+# subSample = None  # doesn't do anything, just a convenient dummy variable for use in experimenter.py
+# purpose = None # doesn't do anything, just a convenient dummy variable for use in experimenter.py
 queueT = pd.Timestamp.now() # doesn't do anything, just a convenient dummy variable for use in experimenter.py
-purpose = None # doesn't do anything, just a convenient dummy variable for use in experimenter.py
 
 def counter(numSweeps):
     """
