@@ -3,6 +3,20 @@ import sys
 import pandas as pd
 from itertools import product
 
+def print_nicely(obj, n=3):
+    """Prints a nested object nicely. Written By GPT"""
+    import pprint, builtins
+    if isinstance(obj, str): return builtins.print(obj)
+    def _p(o):
+        if isinstance(o, np.ndarray): return _p(o.tolist())
+        if isinstance(o, (list, tuple)):
+            o = [_p(x) for x in o]
+            return o if len(o) <= 2*n+3 else o[:n] + ['...'] + o[-n:]
+        if isinstance(o, dict): return {k: _p(v) for k, v in o.items()}
+        return o
+    pprint.pp(_p(obj), sort_dicts=False)
+# print = print_nicely
+
 def load_variables_from_csv(csv_file, commentChar = ';'):
     """Loads parameters from the CSV file."""
     # Run CSV code
@@ -55,7 +69,8 @@ def cartesian_product(dicts): # cartesian product for dictionaries
     return (dict(zip(dicts, x)) for x in product(*dicts.values()))
 
 def run_experiment(variables, csv_file, namespace, demoMode = True):
-    if demoMode: print(f"Running experiment with variables: {variables}") 
+    print("Running experiment with variables:")
+    print_nicely(variables)
     # Step 1: set top level params, and remove them from the variables dict
     variables = setNpop_topLevel(variables,namespace)
     # Step 2
