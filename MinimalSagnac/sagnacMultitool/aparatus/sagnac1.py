@@ -172,13 +172,15 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01):
 
     m.set_frontend(1, coupling='AC', impedance='1MOhm', attenuation='-20dB')
     # m.set_frontend(2, coupling='AC', impedance='1MOhm', attenuation='-20dB')
+    m.set_output(1, "0dB")
+    m.set_output(2, "14dB")
 
 ## wave generator
     wg.generate_waveform(channel=1, type="Sine",
                          frequency=f_eom, amplitude=0.65, 
                          offset=0, phase=0)   
     wg.generate_waveform(channel=2, type="Sine",
-                         frequency=f_i, amplitude=1.5, 
+                         frequency=f_i, amplitude=2, 
                          offset=0, phase=0)  
 
 
@@ -194,7 +196,7 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01):
 
 ## Sideband
     sideband.set_demodulation('Internal', frequency=f_eom-f_i, phase=0)
-    sideband.set_gain(70,70)
+    sideband.set_gain(110,110)
 
 ## All Lockins
     for instru in [har2, har1, sideband]:
@@ -215,7 +217,7 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01):
 ## Exporting Data:
     def sample(self):
         tic = time.time()
-        self.df = pd.DataFrame(self.get_data())
+        self.df = pd.DataFrame(self.get_data(wait_complete=True))
         toc = time.time()
         print(f"{self.__class__.__name__} ({id(self)}): runtime {tic - toc}")
     har2.sample = MethodType(sample, har2)
