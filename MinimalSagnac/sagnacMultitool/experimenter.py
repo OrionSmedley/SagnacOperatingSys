@@ -32,12 +32,12 @@ def set_parameter(non_list_variables, namespace):
     """Set parameters dynamically, supporting method calls and attribute assignment."""
     for name, value in non_list_variables.items():
         print(f"\tSetting {name} to {value}")
-        obj = eval(name, namespace) # Get object from namespace
-        if callable(obj):  # call if callable
-            obj(value)
-        else:  # assign if not callable (for atributtes)
-            name = name.split('#')[0].strip()
-            exec(f"{name} = {value}", namespace)
+        name = name.split('#')[0].strip() # Remove comments from the name
+        obj = eval(name, namespace) # dummy proof: errors if user doesn't define name
+        try: # Try to call the value if it's callable
+            exec(f"({name})({value})", namespace)
+        except:  # Try to assign the value directly
+            exec(f"{name} = {value}", namespace) 
 
 def perform_measurement(csv_file, namespace, commentChar = ';'):
     """Performs the measurement by evaluating the headers."""
