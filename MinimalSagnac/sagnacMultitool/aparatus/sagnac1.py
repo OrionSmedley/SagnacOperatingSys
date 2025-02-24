@@ -54,30 +54,32 @@ magnet.load_calibration_params(calib_file)
 
 
 
-#imports for Zurich Instruments
-import os
-import numpy as np
-import pandas as pd
-from zhinst.toolkit import Session
-import time
-session = Session("localhost", hf2=True)
-myHF2LI = session.connect_device("DEV1004")
+try: #imports for Zurich Instruments
+    import os
+    import numpy as np
+    import pandas as pd
+    from zhinst.toolkit import Session
+    import time
+    session = Session("localhost", hf2=True)
+    myHF2LI = session.connect_device("DEV1004")
 
-# set timeconstants for all channels
-def setTc(Tc): 
-    [myHF2LI.demods[demod].timeconstant(Tc) for demod in range(6)]
-    myHF2LI.Tc = Tc
-myHF2LI.setTc = setTc
+    # set timeconstants for all channels
+    def setTc(Tc): 
+        [myHF2LI.demods[demod].timeconstant(Tc) for demod in range(6)]
+        myHF2LI.Tc = Tc
+    myHF2LI.setTc = setTc
 
-def waitTc(n): 
-    """Wait for n time constants"""
-    print(f"Waiting for {n}Tc =  ({n*myHF2LI.Tc} s)")
-    time.sleep(n*myHF2LI.Tc)
-myHF2LI.waitTc = waitTc
+    def waitTc(n): 
+        """Wait for n time constants"""
+        print(f"Waiting for {n}Tc =  ({n*myHF2LI.Tc} s)")
+        time.sleep(n*myHF2LI.Tc)
+    myHF2LI.waitTc = waitTc
 
-# get value of a demodulator
-def dem(demod): return myHF2LI.demods[demod].sample()
-myHF2LI.dem = dem
+    # get value of a demodulator
+    def dem(demod): return myHF2LI.demods[demod].sample()
+    myHF2LI.dem = dem
+except:
+    print("Sagnac1.0: Zurich Instruments not found")
 
 
 
@@ -98,7 +100,7 @@ def singleLockin():
     import time
     from moku.instruments import LockInAmp
 
-    i = LockInAmp('[fe80::32e2:83ff:fea0:7141%2]', force_connect=True)
+    i = LockInAmp('[fe80::7269:79ff:feb0:dda%41]', force_connect=True)
     i.set_frontend(1, coupling='AC', impedance='1MOhm',
                     attenuation='-20dB')
     i.set_frontend(2, coupling='AC', impedance='1MOhm',
@@ -134,7 +136,7 @@ def singleLockin():
 
 
 from types import MethodType
-def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01):
+def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01, address = "[fe80::32e2:83ff:fea0:7141]"):
     """ returns a multiinstrument object
     f_eom is the frequency of the EOM, 
     f_i is the frequency of the current for sideband
@@ -148,7 +150,7 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01):
     from moku.instruments import MultiInstrument
     from moku.instruments import WaveformGenerator, LockInAmp
 
-    m = MultiInstrument('[fe80::5871:e09a:a71e:c8cf%8]', platform_id=4, force_connect=True)
+    m = MultiInstrument(address, platform_id=4, force_connect=True)
     wg = m.set_instrument(1, WaveformGenerator)
     har2 = m.set_instrument(2, LockInAmp)
     har1 = m.set_instrument(3, LockInAmp)
@@ -206,8 +208,9 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01):
         instru.set_monitor(1, 'MainOutput')
         instru.set_monitor(2, 'AuxOutput')
         # for get_data, not for data streaming
-        instru.set_trigger(mode='Auto', type='Edge', source='ProbeA', level=0)
-        instru.set_timebase(-1e-6, 1e-6)
+        # instru.set_trigger(mode='Auto', type='Edge', source='ProbeA', level=0)
+        # instru.set_timebase(-1e-6, 1e-6)
+        instru.enable_rollmode(roll=True)
 
         instru.set_acquisition_mode(mode="Precision")
 
@@ -217,7 +220,7 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01):
 ## Exporting Data:
     def sample(self):
         tic = time.time()
-        self.df = pd.DataFrame(self.get_data(wait_complete=True))
+        self.df = pd.DataFrame(self.get_data()) #removed wait_complete=True
         toc = time.time()
         print(f"{self.__class__.__name__} ({id(self)}): runtime {tic - toc}")
     har2.sample = MethodType(sample, har2)
