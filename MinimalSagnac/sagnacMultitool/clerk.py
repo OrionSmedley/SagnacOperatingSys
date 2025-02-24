@@ -58,7 +58,11 @@ def hysteresis(arr, bipolar=False):
     if bipolar: return [arr, reversed_arr, -arr, -reversed_arr]
     return [arr, reversed_arr]
 
+def field_to_db(field_quantity):
+    return 20 * np.log10(field_quantity)
 
+def db_to_field(db):
+    return 10 ** (db / 20)
 
 # ## The following functions have been removed from experimenter.py and placed here for convenience ##
 # ## heleper fuctions usable from csv file ##
