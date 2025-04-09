@@ -1,0 +1,886 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>351</width>
+    <height>875</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QGridLayout" name="save_params">
+     <item row="0" column="0" colspan="2">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Save Directory</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <widget class="QLineEdit" name="save_dir">
+       <property name="text">
+        <string>G:\junk</string>
+       </property>
+       <property name="placeholderText">
+        <string>C:\Users\</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="sample_name">
+       <property name="text">
+        <string>test</string>
+       </property>
+       <property name="placeholderText">
+        <string>test</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_12">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Sample Name</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line_3">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="lockin_params">
+     <item row="2" column="0">
+      <widget class="QComboBox" name="sensitivity">
+       <property name="editable">
+        <bool>false</bool>
+       </property>
+       <property name="currentIndex">
+        <number>8</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>0 V</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2 nV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5 nV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>10 nV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>20 nV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>50 nV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>100 nV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>200 nV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>500 nV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1 μV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2 μV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5 μV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>10 μV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>20 μV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>50 μV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>100 μV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>200 μV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>500 μV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1 mV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2 mV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5 mV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>10 mV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>20 mV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>50 mV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>100 mV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>200 mV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>500 mV</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1 V</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Time Constant</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Sensitivity</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="time_constant">
+       <property name="currentText" stdset="0">
+        <string>50 ms</string>
+       </property>
+       <property name="currentIndex">
+        <number>10</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>10 μs</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>20 μs</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>40 μs</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>80 μs</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>160 μs</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>320 μs</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>640 μs</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5 ms</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>10 ms</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>20 ms</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>50 ms</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>100 ms</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>200 ms</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>500 ms</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1 s</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2 s</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5 s</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>10 s</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>20 s</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>50 s</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>100 s</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>200 s</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>500 s</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1 ks</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2 ks</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5 ks</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>10 ks</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>20 ks</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>50 ks</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="0" column="0" colspan="2">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Lockin Parameters</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="initial_params">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_14">
+       <property name="text">
+        <string>Initial Field Strength</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>Field Strength Step</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_19">
+       <property name="text">
+        <string>Final Field Strength</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_15">
+       <property name="text">
+        <string>Delay</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QDoubleSpinBox" name="delay">
+       <property name="suffix">
+        <string> ms</string>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <double>10000.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>150.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QDoubleSpinBox" name="field_start">
+       <property name="suffix">
+        <string> T</string>
+       </property>
+       <property name="decimals">
+        <number>5</number>
+       </property>
+       <property name="minimum">
+        <double>-0.270000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>0.270000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.000010000000000</double>
+       </property>
+       <property name="value">
+        <double>0.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QDoubleSpinBox" name="field_end">
+       <property name="suffix">
+        <string> T</string>
+       </property>
+       <property name="decimals">
+        <number>5</number>
+       </property>
+       <property name="minimum">
+        <double>-0.270000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>0.270000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.000010000000000</double>
+       </property>
+       <property name="value">
+        <double>0.200000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QDoubleSpinBox" name="field_step">
+       <property name="suffix">
+        <string> T</string>
+       </property>
+       <property name="decimals">
+        <number>5</number>
+       </property>
+       <property name="minimum">
+        <double>0.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>0.270000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.000010000000000</double>
+       </property>
+       <property name="value">
+        <double>0.000500000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="field_swap">
+     <property name="text">
+      <string>Do Hysteresis</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line_4">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="use_bias">
+     <property name="text">
+      <string>Enable DC Bias</string>
+     </property>
+     <property name="tristate">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_4">
+     <item row="1" column="1">
+      <widget class="QDoubleSpinBox" name="polar_field">
+       <property name="suffix">
+        <string> deg</string>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <double>90.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Applied Voltage</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>(Initial) Azimuthal Angle</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QDoubleSpinBox" name="azimuth_start">
+       <property name="suffix">
+        <string> deg</string>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <double>360.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.500000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>Polar Field Angle</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QDoubleSpinBox" name="applied_voltage">
+       <property name="suffix">
+        <string> mV</string>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <double>5000.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.100000000000000</double>
+       </property>
+       <property name="value">
+        <double>10.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_21">
+       <property name="text">
+        <string>(Initial) DC Bias</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QDoubleSpinBox" name="bias_start">
+       <property name="suffix">
+        <string> uA</string>
+       </property>
+       <property name="decimals">
+        <number>4</number>
+       </property>
+       <property name="maximum">
+        <double>10000.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line_6">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_3">
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_13">
+       <property name="text">
+        <string>Wheatstone R1</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_16">
+       <property name="text">
+        <string>Wheatstone R3</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QDoubleSpinBox" name="wheatstone_R1">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="suffix">
+        <string> Ohm</string>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <double>9999.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>1886.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QDoubleSpinBox" name="wheatstone_R3">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="suffix">
+        <string> Ohm</string>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <double>9999.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>1936.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>Wheatstone R2</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QDoubleSpinBox" name="wheatstone_R2">
+       <property name="suffix">
+        <string> Ohm</string>
+       </property>
+       <property name="decimals">
+        <number>2</number>
+       </property>
+       <property name="maximum">
+        <double>99999.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.010000000000000</double>
+       </property>
+       <property name="value">
+        <double>100.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTabWidget" name="tabs">
+     <property name="currentIndex">
+      <number>1</number>
+     </property>
+     <widget class="QWidget" name="tab">
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <attribute name="title">
+       <string>Azimuth Sweep</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Final Azimuthal Angle</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="azimuth_end">
+           <property name="suffix">
+            <string> deg</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Azimuth Step</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QDoubleSpinBox" name="azimuth_step">
+           <property name="suffix">
+            <string> deg</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="2">
+          <widget class="QCheckBox" name="do_azimuth_sweep">
+           <property name="text">
+            <string>Do Azimuth Sweep</string>
+           </property>
+           <property name="tristate">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Bias Sweep</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0" colspan="2">
+          <widget class="QCheckBox" name="do_bias_sweep">
+           <property name="text">
+            <string>Do Bias Sweep</string>
+           </property>
+           <property name="tristate">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_18">
+           <property name="text">
+            <string>Final DC Bias</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="bias_end">
+           <property name="suffix">
+            <string> uA</string>
+           </property>
+           <property name="decimals">
+            <number>4</number>
+           </property>
+           <property name="maximum">
+            <double>10000.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_20">
+           <property name="text">
+            <string>Bias Step</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QDoubleSpinBox" name="bias_step">
+           <property name="suffix">
+            <string> uA</string>
+           </property>
+           <property name="decimals">
+            <number>4</number>
+           </property>
+           <property name="maximum">
+            <double>10000.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="Line" name="line_5">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label_17">
+       <property name="text">
+        <string>Notification Email Address:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="notify_email"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="notify_at_end">
+     <property name="text">
+      <string>Only Notify When Completely Finished</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

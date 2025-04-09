@@ -1,11 +1,46 @@
-# patch the old packages calling visa
-# this is a hack to make the old packages work with pyvisa
+import logging
 
-#############################################################################################################################
-import pyvisa
+import PyQt5.QtCore
+import PyQt5.QtWidgets
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
-# Simulate the `visa` module as an alias for `pyvisa`
 import sys
+import os
+from datetime import datetime
+from itertools import product
+import textwrap
+import socket
+import numpy as np
+
+
+# from PyQt5 import QtWidgets, QtGui
+
+# # Monkey patch QtGui to point to QtWidgets
+# QtGui.QWidget = QtWidgets.QWidget
+# QtGui.QApplication = QtWidgets.QApplication
+# QtGui.QMainWindow = QtWidgets.QMainWindow
+# QtGui.QTreeWidgetItem = QtWidgets.QTreeWidgetItem
+# QtGui.QTreeWidget = QtWidgets.QTreeWidget
+# QtGui.QLineEdit = QtWidgets.QLineEdit
+# QtGui.QDoubleSpinBox = QtWidgets.QDoubleSpinBox
+# QtGui.QSpinBox = QtWidgets.QSpinBox
+# QtGui.QCheckBox = QtWidgets.QCheckBox
+# QtGui.QComboBox = QtWidgets.QComboBox
+# QtGui.QFrame = QtWidgets.QFrame
+
+
+# # # Add more as needed...
+
+# # from PyQt5 import QtWidgets, QtGui
+
+# # # Dynamically map all attributes from QtGui to QtWidgets
+# # for attr in dir(QtWidgets):
+# #     if hasattr(QtGui, attr):
+# #         setattr(QtGui, attr, getattr(QtWidgets, attr))
+
+
+
 #############################################################################################################################
 
 from PyQt5 import QtWidgets, QtGui
@@ -18,6 +53,11 @@ for attr in dir(QtWidgets):
 
 
 #############################################################################################################################
+import pyvisa
+
+# Simulate the `visa` module as an alias for `pyvisa`
+import sys
+
 # Create a fake 'visa' module, which is essentially an alias for pyvisa
 sys.modules['visa'] = pyvisa
 
@@ -26,6 +66,27 @@ for attr in dir(pyvisa):
     setattr(sys.modules['visa'], attr, getattr(pyvisa, attr))
 
 #############################################################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

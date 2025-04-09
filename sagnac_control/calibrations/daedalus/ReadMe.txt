@@ -6,3 +6,12 @@ C:\Users\Ralph Group\Documents\Github\SagnacOperatingSys\sagnac_control\calibrat
 so that we could run the calibration
 
 C:\Users\Ralph Group\Documents\Github\SagnacOperatingSys\sagnac_control\calibrations\calibrationCheckGUI.py
+
+
+
+
+
+After that copied over 
+C:\Users\Ralph Group\Desktop\old git scavenged\daedalus_control\
+- dadalus 
+- custom_inputs
