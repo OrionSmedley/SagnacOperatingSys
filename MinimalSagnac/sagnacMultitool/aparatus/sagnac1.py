@@ -182,7 +182,7 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01, address = "[fe
                          frequency=f_eom, amplitude=0.65, 
                          offset=0, phase=0)   
     wg.generate_waveform(channel=2, type="Sine",
-                         frequency=f_i, amplitude=2, 
+                         frequency=f_i, amplitude=0.01, 
                          offset=0, phase=0)  
 
 
@@ -209,7 +209,7 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01, address = "[fe
         instru.set_monitor(2, 'AuxOutput')
         # for get_data, not for data streaming
         # instru.set_trigger(mode='Auto', type='Edge', source='ProbeA', level=0)
-        # instru.set_timebase(-1e-6, 1e-6)
+        instru.set_timebase(-5, 5)
         instru.enable_rollmode(roll=True)
 
         instru.set_acquisition_mode(mode="Precision")
@@ -232,6 +232,7 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01, address = "[fe
             instru.sample()
     m.sample = MethodType(sample_all, m)
 
+## Set Time Constant
     def setTc(self, Tc):
         fc = 1/(2*np.pi*Tc) # corner frequency
         m.Tc = Tc
@@ -245,6 +246,13 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01, address = "[fe
         print(f"Waiting for {n}Tc =  ({n*self.Tc} s)")
         time.sleep(n*self.Tc)
     m.waitTc = MethodType(waitTc, m)
+
+## Set Vpeak                                                   ### Fix this if you start changing freuenices or other arguments to generate_waveform in the csv
+    def setVpp(self, v):
+        self.generate_waveform(channel=2, type="Sine",
+                         frequency=f_i, amplitude=v, 
+                         offset=0, phase=0)  
+    wg.setVpp = MethodType(setVpp, wg)
 
     return m, wg, har2, har1, sideband
 
