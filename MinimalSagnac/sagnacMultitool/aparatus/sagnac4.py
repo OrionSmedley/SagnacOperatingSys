@@ -161,7 +161,7 @@ except:
 
 
 
-try: # Keithly
+try: # Keithley
     import sys
     module_dir = r"C:\Users\luogroup\AppData\Roaming\Python\Python311\site-packages\pymeasure\instruments"
     sys.path.append(module_dir)

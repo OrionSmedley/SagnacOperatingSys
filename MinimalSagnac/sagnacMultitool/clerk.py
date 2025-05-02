@@ -15,6 +15,23 @@ subSample = None  # doesn't do anything, just a convenient dummy variable for us
 queueT = pd.Timestamp.now() # doesn't do anything, just a convenient dummy variable for use in experimenter.py
 purpose = None # doesn't do anything, just a convenient dummy variable for use in experimenter.py
 
+class Indices:
+    def __init__(self):
+        pass
+    
+    def get_index(self):
+        return self.index
+        
+    def set_index(self, index):
+        self.index = index
+
+        
+    index = property(get_index, set_index)
+
+index = Indices()
+order = Indices()
+repeat = Indices()
+
 def sweep(i):
     """
     Keeps track of the sweep direction.

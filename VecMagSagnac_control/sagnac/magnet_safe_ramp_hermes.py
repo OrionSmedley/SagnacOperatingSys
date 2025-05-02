@@ -8,8 +8,7 @@ from pymeasure.instruments.validators import truncated_range
 from pymeasure.instruments import Instrument
 import pyvisa
 
-from aparatus.drivers import TM620TempMonitor
-TM620 = TM620TempMonitor.TM620()
+from aparatus.sagnac4 import TM620
 
 class MagPowSup:
     
@@ -431,7 +430,7 @@ class Magnet_highZ:
         
         self.device_z.set_field(Bz)
         
-    def setSafe_wait(self, junk = 0):
+    def setSafe_wait_highZ(self, Bzset):
         # print("1")
         tic = time()
         # print("2")
@@ -442,23 +441,23 @@ class Magnet_highZ:
         # print("4")
         # print(f"Mag safe 1 is {mag_safe}")
         if mag_safe != None:
-            if not np.abs(self.Bz) > np.abs(Bz_init): 
+            if not np.abs(Bzset) > np.abs(Bz_init): 
                 # print("entering if")
-                while not self.check_field_highZ(self.Bz, 10*self.ATOL):
+                while not self.check_field_highZ(Bzset, 10*self.ATOL):
                     print("waiting for z to ramp down")
                     mag_safe = self.check_temps()
                     # print(f"Mag safe 3 is {mag_safe}")
                     sleep(0.1)
                     if mag_safe == True:
-                        self.set_field_highZ(self.Bz)
+                        self.set_field_highZ(Bzset)
                         sleep(0.1)
                         print(f"waiting for z to ramp down {time()-tic}")
-            while not self.check_field_highZ(self.Bz, self.ATOL):
+            while not self.check_field_highZ(Bzset, self.ATOL):
                 mag_safe = self.check_temps()
                 # print(f"Mag safe 4 is {mag_safe}")
                 sleep(0.1)
                 if mag_safe == True:
-                    self.set_field_highZ(self.Bz)
+                    self.set_field_highZ(Bzset)
                     sleep(0.1)
                     print(f"waiting for mag for {time()-tic}")
 
