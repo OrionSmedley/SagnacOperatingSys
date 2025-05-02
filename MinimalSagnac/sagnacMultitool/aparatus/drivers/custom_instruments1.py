@@ -360,6 +360,7 @@ class daedalusProjField:
         self.set_vector_field(B, phi, theta)
 
     def get_cart_vector_field(self):
+        '''computes field from stored python values'''
         B = self.field
         phi_deg = self.phi
         theta_deg = self.theta

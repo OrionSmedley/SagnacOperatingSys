@@ -10,10 +10,10 @@ import numpy as np
 import pandas as pd
 import time
 
-repeat = None  # doesn't do anything, just a convenient dummy variable for use in experimenter.py
-subSample = None  # doesn't do anything, just a convenient dummy variable for use in experimenter.py
+# repeat = None  # doesn't do anything, just a convenient dummy variable for use in experimenter.py
+# subSample = None  # doesn't do anything, just a convenient dummy variable for use in experimenter.py
+# purpose = None # doesn't do anything, just a convenient dummy variable for use in experimenter.py
 queueT = pd.Timestamp.now() # doesn't do anything, just a convenient dummy variable for use in experimenter.py
-purpose = None # doesn't do anything, just a convenient dummy variable for use in experimenter.py
 
 class Indices:
     def __init__(self):
@@ -33,18 +33,19 @@ order = Indices()
 repeat = Indices()
 
 def sweep(i):
+def counter(numSweeps):
     """
-    Keeps track of the sweep direction.
+    Counts how many time it has run, modulo numSweeps.
 
     Usage in your experiment csv file:
     parameters = { 
-      'sweep': [-1],
-      'something": hysteresis(np.linspace(0, 1, 10))
+      'sweep': [4], #number of sweep items to track
+      'something": hysteresis(np.linspace(0, 1, 10), bipolar=True)
       }
 
     """
-    sweep.up *= i
-sweep.up = -1
+    counter.cnt = (counter.cnt +1) % numSweeps
+counter.cnt = -1
 
 
 def hysteresis(arr, bipolar=False):
@@ -75,7 +76,11 @@ def hysteresis(arr, bipolar=False):
     if bipolar: return [arr, reversed_arr, -arr, -reversed_arr]
     return [arr, reversed_arr]
 
+def field_to_db(field_quantity):
+    return 20 * np.log10(field_quantity)
 
+def db_to_field(db):
+    return 10 ** (db / 20)
 
 # ## The following functions have been removed from experimenter.py and placed here for convenience ##
 # ## heleper fuctions usable from csv file ##

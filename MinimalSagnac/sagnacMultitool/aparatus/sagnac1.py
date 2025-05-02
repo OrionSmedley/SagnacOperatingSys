@@ -54,30 +54,32 @@ magnet.load_calibration_params(calib_file)
 
 
 
-#imports for Zurich Instruments
-import os
-import numpy as np
-import pandas as pd
-from zhinst.toolkit import Session
-import time
-session = Session("localhost", hf2=True)
-myHF2LI = session.connect_device("DEV1004")
+try: #imports for Zurich Instruments
+    import os
+    import numpy as np
+    import pandas as pd
+    from zhinst.toolkit import Session
+    import time
+    session = Session("localhost", hf2=True)
+    myHF2LI = session.connect_device("DEV1004")
 
-# set timeconstants for all channels
-def setTc(Tc): 
-    [myHF2LI.demods[demod].timeconstant(Tc) for demod in range(6)]
-    myHF2LI.Tc = Tc
-myHF2LI.setTc = setTc
+    # set timeconstants for all channels
+    def setTc(Tc): 
+        [myHF2LI.demods[demod].timeconstant(Tc) for demod in range(6)]
+        myHF2LI.Tc = Tc
+    myHF2LI.setTc = setTc
 
-def waitTc(n): 
-    """Wait for n time constants"""
-    print(f"Waiting for {n}Tc =  ({n*myHF2LI.Tc} s)")
-    time.sleep(n*myHF2LI.Tc)
-myHF2LI.waitTc = waitTc
+    def waitTc(n): 
+        """Wait for n time constants"""
+        print(f"Waiting for {n}Tc =  ({n*myHF2LI.Tc} s)")
+        time.sleep(n*myHF2LI.Tc)
+    myHF2LI.waitTc = waitTc
 
-# get value of a demodulator
-def dem(demod): return myHF2LI.demods[demod].sample()
-myHF2LI.dem = dem
+    # get value of a demodulator
+    def dem(demod): return myHF2LI.demods[demod].sample()
+    myHF2LI.dem = dem
+except:
+    print("Sagnac1.0: Zurich Instruments not found")
 
 
 
@@ -98,7 +100,7 @@ def singleLockin():
     import time
     from moku.instruments import LockInAmp
 
-    i = LockInAmp('[fe80::32e2:83ff:fea0:7141%2]', force_connect=True)
+    i = LockInAmp('[fe80::7269:79ff:feb0:dda%41]', force_connect=True)
     i.set_frontend(1, coupling='AC', impedance='1MOhm',
                     attenuation='-20dB')
     i.set_frontend(2, coupling='AC', impedance='1MOhm',
@@ -134,7 +136,7 @@ def singleLockin():
 
 
 from types import MethodType
-def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01):
+def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01, address = "[fe80::32e2:83ff:fea0:7141]"):
     """ returns a multiinstrument object
     f_eom is the frequency of the EOM, 
     f_i is the frequency of the current for sideband
@@ -148,7 +150,7 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01):
     from moku.instruments import MultiInstrument
     from moku.instruments import WaveformGenerator, LockInAmp
 
-    m = MultiInstrument('[fe80::32e2:83ff:fea0:7141%2]', platform_id=4, force_connect=True)
+    m = MultiInstrument(address, platform_id=4, force_connect=True)
     wg = m.set_instrument(1, WaveformGenerator)
     har2 = m.set_instrument(2, LockInAmp)
     har1 = m.set_instrument(3, LockInAmp)
@@ -172,86 +174,70 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01):
 
     m.set_frontend(1, coupling='AC', impedance='1MOhm', attenuation='-20dB')
     # m.set_frontend(2, coupling='AC', impedance='1MOhm', attenuation='-20dB')
+    m.set_output(1, "0dB")
+    m.set_output(2, "14dB")
 
 ## wave generator
     wg.generate_waveform(channel=1, type="Sine",
                          frequency=f_eom, amplitude=0.65, 
                          offset=0, phase=0)   
     wg.generate_waveform(channel=2, type="Sine",
-                         frequency=f_i, amplitude=1.5, 
+                         frequency=f_i, amplitude=0.01, 
                          offset=0, phase=0)  
 
 
 ## Harmonic 2
     har2.set_demodulation('Internal', frequency=f_eom*2, phase=0)
-    har2.set_filter(fc, slope='Slope6dB')  # Tc = 10ms
     har2.set_gain(0,0)
-    har2.set_outputs('X',"Y")
 
-    # har2.set_monitor(1, 'Demod')
-    # har2.set_monitor(2, 'Input1')
-    har2.set_monitor(1, 'MainOutput')
-    har2.set_monitor(2, 'AuxOutput')
-
-    # for get_data, not for data streaming
-    har2.set_trigger(type='Edge', source='ProbeA', level=0)
-    har2.set_timebase(-1e-6, 1e-6)
 
 ## Harmonic 1
     har1.set_demodulation('Internal', frequency=f_eom, phase=0)
-    har1.set_filter(fc, slope='Slope6dB')  # Tc = 10ms
     har1.set_gain(70,70)
-    har1.set_outputs('X',"Y")
 
-    # har1.set_monitor(1, 'Demod')
-    # har1.set_monitor(2, 'Input1')
-    har1.set_monitor(1, 'MainOutput')
-    har1.set_monitor(2, 'AuxOutput')
-
-    # for get_data, not for data streaming
-    har1.set_trigger(type='Edge', source='ProbeA', level=0)
-    har1.set_timebase(-1e-6, 1e-6)
 
 ## Sideband
     sideband.set_demodulation('Internal', frequency=f_eom-f_i, phase=0)
-    sideband.set_filter(fc, slope='Slope6dB')  # Tc = 10ms
-    sideband.set_gain(70,70)
-    sideband.set_outputs('X',"Y")
+    sideband.set_gain(110,110)
 
-    # sideband.set_monitor(1, 'Demod')
-    # sideband.set_monitor(2, 'Input1')
-    sideband.set_monitor(1, 'MainOutput')
-    sideband.set_monitor(2, 'AuxOutput')
+## All Lockins
+    for instru in [har2, har1, sideband]:
 
-    # for get_data, not for data streaming
-    sideband.set_trigger(type='Edge', source='ProbeA', level=0)
-    sideband.set_timebase(-1e-6, 1e-6)
+        instru.set_filter(fc, slope='Slope6dB')  # Tc = 10ms
+        instru.set_outputs('X',"Y")
+        instru.set_monitor(1, 'MainOutput')
+        instru.set_monitor(2, 'AuxOutput')
+        # for get_data, not for data streaming
+        # instru.set_trigger(mode='Auto', type='Edge', source='ProbeA', level=0)
+        instru.set_timebase(-5, 5)
+        instru.enable_rollmode(roll=True)
 
-## Finalizing and Exporting Data:
+        instru.set_acquisition_mode(mode="Precision")
 
     m.sync()
 
+
+## Exporting Data:
     def sample(self):
-        # Save the data to a DataFrame attribute
-        self.df = pd.DataFrame(self.get_data())
-        return True
+        tic = time.time()
+        self.df = pd.DataFrame(self.get_data()) #removed wait_complete=True
+        toc = time.time()
+        print(f"{self.__class__.__name__} ({id(self)}): runtime {tic - toc}")
     har2.sample = MethodType(sample, har2)
     har1.sample = MethodType(sample, har1)
     sideband.sample = MethodType(sample, sideband)
 
     def sample_all(self):
-        har2.sample()      # Now har2.df is available
-        har1.sample()      # Now har1.df is available
-        sideband.sample()  # Now sideband.df is available
-        return True
+        for instru in [har2, har1, sideband]:
+            instru.sample()
     m.sample = MethodType(sample_all, m)
 
+## Set Time Constant
     def setTc(self, Tc):
         fc = 1/(2*np.pi*Tc) # corner frequency
         m.Tc = Tc
         for instru in [har2, har1, sideband]:
             instru.set_filter(fc)
-        return True
     m.setTc = MethodType(setTc, m)
     m.setTc(Tc)
 
@@ -260,6 +246,13 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01):
         print(f"Waiting for {n}Tc =  ({n*self.Tc} s)")
         time.sleep(n*self.Tc)
     m.waitTc = MethodType(waitTc, m)
+
+## Set Vpeak                                                   ### Fix this if you start changing freuenices or other arguments to generate_waveform in the csv
+    def setVpp(self, v):
+        self.generate_waveform(channel=2, type="Sine",
+                         frequency=f_i, amplitude=v, 
+                         offset=0, phase=0)  
+    wg.setVpp = MethodType(setVpp, wg)
 
     return m, wg, har2, har1, sideband
 
