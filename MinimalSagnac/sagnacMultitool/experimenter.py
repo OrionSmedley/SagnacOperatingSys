@@ -99,7 +99,6 @@ if __name__ == "__main__":
     run_experiment(parameters, csv_file, namespace)
     
     print("_________________________________________________")
-    print("Wrapping up and going home :) \n")
-    # wrapUp(parameters, csv_file, namespace)
-    exec("wrapUp()", namespace)
+    print(f";#Scan finished at {pd.Timestamp.now().isoformat()}\n")
     with open(csv_file, 'a') as f: f.write(f";#Scan finished at {pd.Timestamp.now().isoformat()}\n")
+    exec("wrapUp()", namespace)
