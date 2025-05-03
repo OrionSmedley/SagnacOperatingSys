@@ -253,7 +253,7 @@ class Magnet:
         
         # self.device.magnet.setHSetPoint3D(Bz, By, Bx)
         self.device_z.set_field(Bz)
-        self.device_.set_channel(1) # x 
+        self.device_2.set_channel(1) # x 
         self.device_2.set_field(Bx)
         self.device_2.set_channel(2) # y
         self.device_2.set_field(By)
