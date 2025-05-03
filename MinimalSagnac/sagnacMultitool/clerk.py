@@ -15,19 +15,39 @@ import time
 # purpose = None # doesn't do anything, just a convenient dummy variable for use in experimenter.py
 queueT = pd.Timestamp.now() # doesn't do anything, just a convenient dummy variable for use in experimenter.py
 
-def counter(numSweeps):
-    """
-    Counts how many time it has run, modulo numSweeps.
+class Counter:
+    def __init__(self):
+        # start at –1 so the first call gives you “0”
+        self.cnt = -1
 
-    Usage in your experiment csv file:
-    parameters = { 
-      'sweep': [4], #number of sweep items to track
-      'something": hysteresis(np.linspace(0, 1, 10), bipolar=True)
-      }
+    def __call__(self, numSweeps):
+        """
+        Counts how many times it has run, modulo numSweeps.
+        Usage in your experiment csv file:
+          parameters = {
+            'sweep': [4],  # number of sweep items to track
+            'something': hysteresis(np.linspace(0,1,10), bipolar=True),
+          }
+        Then in your code you’d do:
+          sweep_counter(numSweeps)
+        """
+        self.cnt = (self.cnt + 1) % numSweeps
+        return self.cnt
 
-    """
-    counter.cnt = (counter.cnt +1) % numSweeps
-counter.cnt = -1
+
+# def counter(numSweeps):
+#     """
+#     Counts how many time it has run, modulo numSweeps.
+
+#     Usage in your experiment csv file:
+#     parameters = { 
+#       'sweep': [4], #number of sweep items to track
+#       'something": hysteresis(np.linspace(0, 1, 10), bipolar=True)
+#       }
+
+#     """
+#     counter.cnt = (counter.cnt +1) % numSweeps
+# counter.cnt = -1
 
 
 def hysteresis(arr, bipolar=False):
