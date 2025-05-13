@@ -1,0 +1,10 @@
+; from aparatus.sagnac3 import keith 
+; parameters = {}
+
+; parameters = {
+;    "repeat": np.arange(3),
+;    "keith.source_current": np.linspace(-5e6,5e-6,30),
+;    "time.sleep" : [0.1]
+; }
+
+repeat, time.time, keith.source_current, keith.voltage[0]

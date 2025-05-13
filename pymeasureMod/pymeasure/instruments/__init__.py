@@ -46,3 +46,4 @@ from . import tektronix
 from . import yokogawa
 from . import ametek
 from . import zurich
+from . import attocube

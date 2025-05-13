@@ -14,7 +14,7 @@ from pymeasure.experiment import IntegerParameter, FloatParameter, BooleanParame
 
 
 
-from scanning import ANC150
+# from scanning import ANC150
 #from pymeasure.instruments.signalrecovery import DSP7265
 from pymeasure.instruments.keithley import Keithley2400, Keithley2182A
 from pymeasure.instruments.zurich import HF2LI

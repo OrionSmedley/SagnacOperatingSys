@@ -1,0 +1,9 @@
+; from aparatus.sagnac3 import vds, hf2li
+; parameters = {}
+
+; parameters = {
+;    "repeat": np.arange(1e5),
+;    "time.sleep" : [0.1]
+; }
+
+repeat, time.time, dev.fetch().ch1.rms(), 

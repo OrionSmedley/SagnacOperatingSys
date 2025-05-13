@@ -12,7 +12,7 @@ from pymeasure.experiment import Results, unique_filename
 from pymeasure.experiment import Procedure
 from pymeasure.experiment import IntegerParameter, FloatParameter, BooleanParameter, Parameter
 from ..custom_instruments import vectorMagnetBase, vectorMagnetX, vectorMagnetY, vectorMagnetZ, vectorMagnetFull
-from scanning import ANC150, ANC300
+# from scanning import ANC150, ANC300
 #from pymeasure.instruments.signalrecovery import DSP7265
 from pymeasure.instruments.keithley import Keithley2400, Keithley2182A
 from pymeasure.instruments.zurich import HF2LI
