@@ -37,19 +37,21 @@ logging.basicConfig(level=logging.WARNING,  # Log only WARNING or above by defau
 
 
 
-# MAGNET CONTROL
-from .drivers.custom_instruments1 import daedalusProjField
-from pymeasure.adapters import DAQmxAdapter
+try: # MAGNET CONTROL
+    from .drivers.custom_instruments1 import daedalusProjField
+    from pymeasure.adapters import DAQmxAdapter
 
-calib_file = 'C:\\Users\\Ralph Group\\Documents\\Github\\SagnacOperatingSys\\sagnac_control\\calibrations\\sagnac'
+    calib_file = 'C:\\Users\\Ralph Group\\Documents\\Github\\SagnacOperatingSys\\sagnac_control\\calibrations\\sagnac'
 
-magnet = daedalusProjField(DAQmxAdapter('Dev1', ['ao0', 'ai1']),"GPIB::10")
-magnet.load_calibration_params(calib_file)
+    magnet = daedalusProjField(DAQmxAdapter('Dev1', ['ao0', 'ai1']),"GPIB::10")
+    magnet.load_calibration_params(calib_file)
 
-# magnet.set_vector_field(
-#     B=0,
-#     phi=0, 
-#     theta=0)
+    # magnet.set_vector_field(
+    #     B=0,
+    #     phi=0, 
+    #     theta=0)
+except:
+    print("Sagnac2.0: Magnet not found")
 
 
 
@@ -79,17 +81,19 @@ try: #imports for Zurich Instruments
     def dem(demod): return myHF2LI.demods[demod].sample()
     myHF2LI.dem = dem
 except:
-    print("Sagnac1.0: Zurich Instruments not found")
+    print("Sagnac2.0: Zurich Instruments not found")
 
 
 
 
+try: # Delay Stage Control
+    from pymeasure.instruments.newport import ESP300
+    from pymeasure.adapters import DAQmxAdapter
 
-from pymeasure.instruments.newport import ESP300
-from pymeasure.adapters import DAQmxAdapter
 
-
-delayStage = ESP300(11)
+    delayStage = ESP300(11)
+except:
+    print("Sagnac2.0: Delay stage not found")
 
 
 
@@ -136,7 +140,7 @@ def singleLockin():
 
 
 from types import MethodType
-def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01, address = "[fe80::32e2:83ff:fea0:7141]"):
+def SidebandDemod(f_eom = 19.8e6, f_i = 3.27320e3, Tc = 0.01, address = "[fe80::32e2:83ff:fea0:7141]"):
     """ returns a multiinstrument object
     f_eom is the frequency of the EOM, 
     f_i is the frequency of the current for sideband
@@ -174,12 +178,12 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01, address = "[fe
 
     m.set_frontend(1, coupling='AC', impedance='1MOhm', attenuation='-20dB')
     # m.set_frontend(2, coupling='AC', impedance='1MOhm', attenuation='-20dB')
-    m.set_output(1, "0dB")
+    m.set_output(1, "14dB")
     m.set_output(2, "14dB")
 
 ## wave generator
     wg.generate_waveform(channel=1, type="Sine",
-                         frequency=f_eom, amplitude=0.65, 
+                         frequency=f_eom, amplitude=2, 
                          offset=0, phase=0)   
     wg.generate_waveform(channel=2, type="Sine",
                          frequency=f_i, amplitude=0.01, 
@@ -188,12 +192,12 @@ def SidebandDemod(f_eom = 3.347620e6, f_i = 3.27320e3, Tc = 0.01, address = "[fe
 
 ## Harmonic 2
     har2.set_demodulation('Internal', frequency=f_eom*2, phase=0)
-    har2.set_gain(0,0)
+    har2.set_gain(35,35)
 
 
 ## Harmonic 1
     har1.set_demodulation('Internal', frequency=f_eom, phase=0)
-    har1.set_gain(70,70)
+    har1.set_gain(60,60)
 
 
 ## Sideband

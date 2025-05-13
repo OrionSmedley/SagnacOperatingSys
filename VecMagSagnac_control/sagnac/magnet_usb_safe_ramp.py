@@ -13,7 +13,7 @@ import atto_device.CRYO2100 as cr
 
 class Magnet:
     ATOL = 1e-3
-    Tthresh = 4.2
+    Tthresh = 4.4
     def __init__(self):
         self.device_x = APS100("COM4")
         self.device_2 = APS100("COM5")
@@ -26,7 +26,7 @@ class Magnet:
 
     
 
-        self._field_mag_lim = 9.9 # set to 1? bootleg version is kG, previous auttodry gui was T
+        self._field_mag_lim = 9.5 # set to 1? bootleg version is kG, previous auttodry gui was T
 
         self._B_sign = 1
 
@@ -118,9 +118,7 @@ class Magnet:
             raise ValueError("Bmag vector is larger than 0.9 T! Don't touch anything else! call Kelly")
         
         self.Bx, self.By, self.Bz = self.get_field_cartesian()
-
-
-
+        
     def setSafe_wait(self, junk = 0):
         temp = self.atto.condenser.getTemperature()
         if temp > self.Tthresh:
