@@ -13,7 +13,7 @@ from pymeasure.instruments.keithley import Keithley6221
 from pymeasure.experiment import Procedure
 from pymeasure.experiment import IntegerParameter, FloatParameter, BooleanParameter, Parameter
 from pymeasure.adapters import DAQmxAdapter
-from scanning import ANC150, ANC300
+# from scanning import ANC150, ANC300
 from time import sleep, time
 import numpy as np
 

@@ -2,6 +2,8 @@ import logging
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
+from zhinst.ziPython import ziDAQServer
+
 import pyvisa as pv
 
 from pymeasure.instruments.newport import ESP300
@@ -13,6 +15,8 @@ except:
     pass
 import numpy as np
 from time import sleep
+import time
+import serial
 
 # this function is to be used as a decorator, basically just wrapping whatever
 # function it decorates in a try/except statement to catch timeout errors
@@ -446,3 +450,281 @@ class senis3AxHallProbe:
     def measure_field(self, device):
         volts = self.read_voltage(device)
         return self.volt2tesla*volts
+
+class APS100:
+    """
+    Instrument class for the Attocube APS100 magnet power supply.
+    Manages USB communication and provides methods to send commands and receive responses.
+    """
+
+    def __init__(self, port, baudrate=9600, timeout=2):
+        """
+        Initialize the APS100 connection.
+
+        Args:
+            port (str): The USB port (e.g., COM3, /dev/ttyUSB0).
+            baudrate (int): Communication baud rate (default: 9600).
+            timeout (float): Timeout for read operations in seconds (default: 2).
+        """
+        # if self.connection and self.connection.is_open:
+        #     self.disconnect()
+        self.port = port
+        self.baudrate = baudrate
+        self.timeout = timeout
+        self.connection = None
+
+    def connect(self):
+        """
+        Open the serial connection to the APS100.
+        """
+        if self.connection and self.connection.is_open:
+            print(f"connection is already open on {self.port}")
+            self.disconnect()
+        try:
+            self.connection = serial.Serial(
+                port=self.port,
+                baudrate=self.baudrate,
+                timeout=self.timeout
+            )
+            print(f"Connected to APS100 on {self.port}")
+        except serial.SerialException as e:
+            raise ConnectionError(f"Failed to connect to APS100 on {self.port}: {e}")
+
+    def disconnect(self):
+        """
+        Close the serial connection.
+        """
+        if self.connection:
+            self.connection.close()
+        print("Disconnected from APS100")
+
+    def send_command(self, command):
+        """
+        Send a command to the APS100.
+
+        Args:
+            command (str): The command string to send (without newline).
+
+        Returns:
+            str: The response from the device.
+        """
+        if not self.connection or not self.connection.is_open:
+            raise ConnectionError("Connection to APS100 is not open.")
+
+        try:
+            # Send command (append newline for termination)
+            full_command = command + "\n"
+            self.connection.write(full_command.encode('utf-8'))
+            # print(f"Sent: {command}")
+
+            # Read response
+            time.sleep(1)  # Wait briefly for the device to respond
+            response = self.connection.read(self.connection.in_waiting or 1)  # Read available data
+            res = response.decode('utf-8').strip().split('\n', 1)[-1]
+            return res
+
+        except Exception as e:
+            raise IOError(f"Failed to send command '{command}': {e}")
+
+    def query_status(self):
+        """
+        Query the status of the APS100.
+
+        Returns:
+            str: Status information from the device.
+        """
+        return self.send_command("STATUS")
+
+    def set_channel(self, channel):
+        self.send_command(f'CHAN {int(channel)}')
+        res = self.send_command('CHAN?')
+        return res
+
+    def get_field(self):
+        res = self.send_command('IMAG?')
+        value = float(res.replace('kG', ''))
+        return value
+
+    def set_field(self, field):
+        # field in kG
+        if abs(field) > 10:
+            field = np.sign()*10
+        
+        current_field = self.get_field()
+        time.sleep(0.1)
+        if field > current_field:
+            self.send_command(f'ULIM {field}')
+            time.sleep(0.1)
+            self.send_command('SWEEP UP')
+        elif field < current_field:
+            self.send_command(f'LLIM {field}')
+            time.sleep(0.1)
+            self.send_command('SWEEP DOWN')
+        else:
+            pass
+
+    def check_field(self, set_field, tol = 0.001):
+        current_field = self.get_field()
+        if abs(set_field - current_field) > tol:
+            return False
+        else:
+            return True
+    
+    def zero_field(self):
+        self.send_command('SWEEP ZERO')
+
+class HF2LI(ziDAQServer):
+    """This is the class for the Zurich HF2LI lockin amplifier"""
+    def __init__(self, port, API_level, dev_num):
+        super().__init__('localhost', port, API_level)
+        self.dev = '/dev' + str(dev_num) + '/'
+        self.dev_num = dev_num
+
+    # Signal Inputs; Our model has 2; 0-indexed
+    def get_range(self, sig):
+        return self.getDouble(self.dev + 'sigins/' + str(sig) + '/range')
+    def set_range(self, sig, x):
+        self.setDouble(self.dev + 'sigins/' + str(sig) + '/range', x)
+
+    def get_ac_coupling(self, sig):
+        return self.getInt(self.dev + 'sigins/' + str(sig) + '/ac')
+    def set_ac_coupling(self, sig, x):
+        self.setInt(self.dev + 'sigins/' + str(sig) + '/ac', int(x))
+
+    def get_imp50(self, sig):
+        return self.getInt(self.dev + 'sigins/' + str(sig) + '/imp50')
+    def set_imp50(self, sig, x):
+        self.setInt(self.dev + 'sigins/' + str(sig) + '/imp50', int(x))
+
+    def get_differential_mode(self, sig):
+        return self.getInt(self.dev + 'sigins/' + str(sig) + '/diff')
+    def set_differential_mode(self, sig, x):
+        self.setInt(self.dev + 'sigins/'+ str(sig) + '/diff', int(x))
+
+    # Oscillators; Our model has 6; 0-indexed
+    def get_osc_freq(self, osc_num):
+        return self.getDouble(self.dev + 'oscs/' + str(osc_num) + '/freq')
+    def set_osc_freq(self, osc_num, x):
+        self.setDouble(self.dev + 'oscs/'+ str(osc_num) + '/freq', x)
+
+    # Demodulators
+    def get_osc_select(self, demod_num):
+        return self.getInt(self.dev + 'demods/' + str(demod_num) + '/oscselect')
+    def set_osc_select(self, demod_num, osc_num):
+        self.setInt(self.dev + 'demods/'+ str(demod_num) + '/oscselect', int(osc_num))
+
+    def get_harmonic(self, demod_num):
+        return self.getDouble(self.dev + 'demods/' + str(demod_num) + '/harmonic')
+    def set_harmonic(self, demod_num, x):
+        self.setDouble(self.dev + 'demods/'+ str(demod_num) + '/harmonic', int(x))
+
+    def get_phase(self, demod_num):
+        return self.getDouble(self.dev + 'demods/' + str(demod_num) + '/phaseshift')
+    def set_phase(self, demod_num, x):
+        self.setDouble(self.dev + 'demods/'+ str(demod_num) + '/phaseshift', x)
+
+    def get_input(self, demod_num):
+        return self.getInt(self.dev + 'demods/' + str(demod_num) + '/adcselect')
+    def set_input(self, demod_num, x):
+        self.setInt(self.dev + 'demods/'+ str(demod_num) + '/adcselect', x)
+
+    def get_filter_order(self, demod_num):
+        return self.getInt(self.dev + 'demods/' + str(demod_num) + '/order')
+    def set_filter_order(self, demod_num, x):
+        self.setInt(self.dev + 'demods/'+ str(demod_num) + '/order', x)
+
+    def get_tc(self, demod_num):
+        return self.getDouble(self.dev + 'demods/' + str(demod_num) + '/timeconstant')
+    def set_tc(self, demod_num, x):
+        self.setDouble(self.dev + 'demods/'+ str(demod_num) + '/timeconstant', x)
+
+    def get_sinc(self, demod_num):
+        return self.getInt(self.dev + 'demods/' + str(demod_num) + '/sinc')
+    def set_sinc(self, demod_num, x):
+        self.setInt(self.dev + 'demods/'+ str(demod_num) + '/sinc', x)
+
+    def get_enable_demod(self, demod_num):
+        return self.getInt(self.dev + 'demods/' + str(demod_num) + '/enable')
+    def set_enable_demod(self, demod_num, x):
+        self.setInt(self.dev + 'demods/'+ str(demod_num) + '/enable', x)
+
+    def get_xferRate(self, demod_num):
+        return self.getDouble(self.dev + 'demods/' + str(demod_num) + '/rate')
+    def set_xferRate(self, demod_num, x):
+        self.setDouble(self.dev + 'demods/'+ str(demod_num) + '/rate', x)
+
+    # Output Amplitudes; a linear comb of up to 8 Sine outputs
+    def get_vout(self, out_num, osc_num):
+        return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num))
+    def set_vout(self, out_num, osc_num, x):
+        self.setDouble(self.dev + 'sigouts/'+ str(out_num) + '/amplitudes/' + str(osc_num), x)
+
+    def get_enable_output(self, out_num, osc_num):
+        return self.getInt(self.dev + 'sigouts/' + str(out_num) + '/enables/' + str(osc_num))
+    def set_enable_output(self, out_num, osc_num, x):
+        self.setInt(self.dev + 'sigouts/'+ str(out_num) + '/enables/' + str(osc_num), x)
+
+    # Signal outputs
+    def get_sigon(self, out_num):
+        return self.getInt(self.dev + 'sigouts/' + str(out_num) + '/on')
+    def set_sigon(self, out_num, x):
+        self.setInt(self.dev + 'sigouts/'+ str(out_num) + '/on', x)
+
+    def get_sigadd(self, out_num):
+        return self.getInt(self.dev + 'sigouts/' + str(out_num) + '/add')
+    def set_sigadd(self, out_num, x):
+        self.setInt(self.dev + 'sigouts/'+ str(out_num) + '/add', x)
+
+    def get_outrange(self, out_num):
+        return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/range')
+    def set_outrange(self, out_num, x):
+        self.setDouble(self.dev + 'sigouts/'+ str(out_num) + '/range', x)
+
+    def get_offset(self, out_num):
+        return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/offset')
+    def set_offset(self, out_num, x):
+        self.setDouble(self.dev + 'sigouts/'+ str(out_num) + '/offset', x)
+
+
+    # Data Collection
+    def sample(self, demod_num):
+        return self.getSample(self.dev + 'demods/' + str(demod_num) + '/sample')
+
+    def sub(self, demod_num):
+        self.subscribe(self.dev + 'demods/' + str(demod_num) + '/sample')
+
+    def poll_and_unpack(self, poll_time, poll_timeout, demod_nums, data_keys, ratio=True, average = True):
+        if not isinstance(demod_nums, list):
+            demod_nums = [demod_nums]
+        if not isinstance(data_keys, list):
+            data_keys = [data_keys]
+        dat = self.poll(poll_time,poll_timeout)['dev' + str(self.dev_num)]['demods']
+        return_dict = {d:{} for d in demod_nums}
+        for d in demod_nums:
+            for k in data_keys:
+                while True:
+                    try:
+                        if average:
+                            return_dict[d][k] = float(np.mean(dat[str(d)]['sample'][k]))
+                        else:
+                            return_dict[d][k] = dat[str(d)]['sample'][k]
+                    except:
+                        sleep(poll_time)
+                        dat = self.poll(poll_time,poll_timeout)['dev' + str(self.dev_num)]['demods']
+                    else:
+                        break
+        if ratio and average:
+            return_dict['ratio'] = float(np.mean(dat['0']['sample']['x']/dat['1']['sample']['y']))
+        if ratio and not average:
+            return_dict['ratio'] = dat['0']['sample']['x']/dat['1']['sample']['y']
+        return return_dict
+
+
+
+    def shutdown(self):
+        log.info("Shutting down Zurich Lock-in")
+        self.set_sigon(0,0)
+        self.set_sigon(1,0)
+        log.info("Done shutting down Lock-in")
+        # self.isShutdown = True
+

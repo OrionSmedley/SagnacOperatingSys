@@ -3,6 +3,7 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 import pyvisa as pv
+from ..aps100 import APS100
 
 from pymeasure.instruments.newport import ESP300
 from pymeasure.instruments import Instrument
@@ -125,6 +126,7 @@ class daedalusProjField:
             self._set_volts(now)
             sleep(self._delay)
         self._set_volts(volts)
+        self.wait_for_operation()
 
     def getVolts(self):
         # create task and set up channel
@@ -144,6 +146,7 @@ class daedalusProjField:
         # phi = modular_range_bidirectional(phi,[-170.,170.])
         self.set_vector_field(self._field, phi, self._theta)
         self._phi = phi
+        self.wait_for_operation()
 
     @handle_timeout("getting phi")
     def getPhi(self):
@@ -156,6 +159,7 @@ class daedalusProjField:
         theta = modular_range_bidirectional(theta,[-180.,180.])
         self.set_vector_field(self._field, self._phi, theta)
         self._theta = theta
+        self.wait_for_operation()
 
     def getTheta(self):
         return self._theta
@@ -165,6 +169,7 @@ class daedalusProjField:
     def setField(self, field):
         self.set_vector_field(field, self._phi, self._theta)
         self._field = field
+        self.wait_for_operation()
 
     def getField(self):
         return self._field # Can maybe make this better by inverting calibrations but w/e
@@ -262,6 +267,7 @@ class daedalusProjField:
         """ Ensures the magnet is set to zero field """
         log.info("Shutting down %s." % self.name)
         self.set_vector_field(0.,0.,0.)
+        self.wait_for_operation()
 
     def base_voltage_calibration(self, B):
         """Determines voltage needed to achieve B, assuming magnet is centered"""
@@ -324,7 +330,7 @@ class daedalusProjField:
             self.set_volts = truncated_range(self.set_volts,self._voltagelims)
             log.warning('Magnet voltage overload! Magnet voltage being set to %g'%self.set_volts)
         self.volts = self.set_volts
-
+        self.wait_for_operation()
 
         self._field = B
     
@@ -353,7 +359,6 @@ class daedalusProjField:
         for err in self.errors:
             log.warning('%s'%err)
         self.set_vector_field(B, phi, theta)
-
 
     def get_cart_vector_field(self):
         B = self.field
@@ -388,6 +393,12 @@ class daedalusProjField:
     @property
     def Bz(self):
         return self.get_cart_vector_field()[2]
+
+    def wait_for_operation(self):
+        while self.in_motion:
+            sleep(0.1)
+        for err in self.errors:
+            log.warning('%s'%err)
     
 
     
@@ -486,3 +497,217 @@ class senis3AxHallProbe:
     def measure_field(self, device):
         volts = self.read_voltage(device)
         return self.volt2tesla*volts
+
+class vectorMagnetFullUSB:
+    """
+    Class to control all three axes of the vector magnet simultaneously.
+    Uses the usual physics parameterization of the magnetic field.
+    """
+
+    def __init__(self):
+        # in this case device = APS100("port")
+
+        self.device_x = APS100("COM4")
+        self.device_2 = APS100("COM5")
+        # if self.device_x.connection and self.device_x.connection.is_open:
+        # self.device_x.disconnect()
+        # if self.device_2.connection and self.device_2.connection.is_open:
+        # self.device_2.disconnect()
+        
+
+
+        # device 2 channel 1 is Z
+        # device 2 channel 2 is Y
+
+        # limit such that below this field change the magnet does not actually change field,
+        # to limit commands sent to the magnet
+        self._field_difference_cutoff = 0 #1e-5 # 0.1 G
+
+        # TODO: should we reset the current limit of the z magnet or just
+        # trust that the checking in this class will always be OK?
+
+        self._field_mag_lim = 1 # set to 1? originally 0.92 unit in T not kG
+
+        self._B_sign = 1
+    
+    def connect(self):
+        if self.device_x.connection and self.device_x.connection.is_open:
+            self.device_x.disconnect()
+        if self.device_2.connection and self.device_2.connection.is_open:
+            self.device_2.disconnect()
+        self.device_x.connect()
+        self.device_x.send_command("REMOTE")
+        self.device_2.connect()
+        self.device_2.send_command("REMOTE")
+    def set_field_polar(self, B, phi, theta):
+        """
+        Sets the field, accepting polar coordinates.
+        """
+        
+        log.info('Setting to B, Phi, Theta: %g %g %g'%(B,phi,theta))
+        
+        phi = phi*np.pi/180
+        theta = theta*np.pi/180
+
+        Bx = np.round(B*np.cos(phi)*np.sin(theta), 5)
+        By = np.round(B*np.sin(phi)*np.sin(theta), 5)
+        Bz = np.round(B*np.cos(theta), 5)
+        log.info(f"setting to Bx, By, Bz: {Bx}, {By}, {Bz}")
+
+        if np.sqrt(Bx*Bx + By*By + Bz*Bz) > self._field_mag_lim: #np.sqrt returns positive square root
+            log.error("A large field of %g was requested"%np.sqrt(Bx*Bx + By*By + Bz*Bz))
+            raise ValueError("Large field requested! Limit is %g"%self._field_mag_lim)
+
+        if B < 0:
+            self._B_sign = -1
+        else:
+            self._B_sign = 1
+        # self.device.magnet.setHSetPoint3D(Bz, By, Bx)
+
+        self.device_2.set_channel(2) # y
+        self.device_2.set_field(By)
+        self.device_x.set_field(Bx)
+        self.device_2.set_channel(1) # z 
+        self.device_2.set_field(Bz)
+
+    def get_field_polar(self):
+        """
+        Returns the field in polar coordinates in the standard Physics parameterization
+        in the order (B, phi, theta)
+        """
+        self.device_2.set_channel(1) # z
+        Bz = self.device_2.get_field()
+        self.device_2.set_channel(2) # y
+        By = self.device_2.get_field()
+        Bx = self.device_x.get_field()
+
+        B = self._B_sign * np.sqrt(Bx**2 + By**2 + Bz**2)
+        ang_sign_offset = 0 if self._B_sign > 0 else 180
+        phi = (np.arctan2(self._B_sign*By, self._B_sign*Bx)*180/np.pi + ang_sign_offset) % 360
+        theta = (np.arctan2(np.sqrt(Bx**2 + By**2), self._B_sign*Bz)*180/np.pi+ ang_sign_offset) % 360
+
+        return B, phi, theta
+
+
+    def check_field_polar(self, B, phi, theta, ATOL):
+        """Checks the current field value to make sure it is within absolute tolerance of setpoint"""
+        phi = phi*np.pi/180
+        theta = theta*np.pi/180
+
+        Bx_set = np.round(B*np.cos(phi)*np.sin(theta), 5)
+        By_set = np.round(B*np.sin(phi)*np.sin(theta), 5)
+        Bz_set = np.round(B*np.cos(theta), 5)
+
+        # Bz_current, By_current, Bx_current = self.device_z.get_field(), self.device_y.get_field(), self.device_x.get_field()
+        self.device_2.set_channel(1) # z
+        Bz_current = self.device_2.get_field()
+        self.device_2.set_channel(2) # y
+        By_current = self.device_2.get_field()
+        Bx_current = self.device_x.get_field()
+
+        if np.isclose(Bx_set,Bx_current, atol=ATOL) and np.isclose(By_set,By_current,atol=ATOL) and np.isclose(Bz_set, Bz_current, atol=ATOL):
+            log.info("Field is close to the setpoint")
+            log.info(f"magnet finally at Bx, By, Bz: {Bx_current}, {By_current}, {Bz_current}")
+            return True
+        else:
+            log.info("field is not close to the setpoint")
+            log.info(f"magnet still at Bx, By, Bz: {Bx_current}, {By_current}, {Bz_current}")
+            log.info(f"Try again setting to Bx, By, Bz: {Bx_set}, {By_set}, {Bz_set}")
+            return False
+
+    def set_field_cartesian(self, Bx, By, Bz):
+        """
+        Sets the field using a cartesian basis
+        """
+
+        if np.sqrt(Bx*Bx + By*By + Bz*Bz) > self._field_mag_lim: #np.sqrt returns positive square root
+            log.error("A large field of %g was requested"%np.sqrt(Bx*Bx + By*By + Bz*Bz))
+            raise ValueError("Large field requested! Limit is %g"%self._field_mag_lim)
+        # self.device.magnet.setHSetPoint3D(Bz, By, Bx)
+        self.device_x.set_field(Bx)
+        self.device_2.set_channel(1) # z 
+        self.device_2.set_field(Bz)
+        self.device_2.set_channel(2) # y
+        self.device_2.set_field(By)
+
+
+
+    def get_field_cartesian(self):
+        """
+        Returns the cartesian parameterization of the field in the order X, Y, Z.
+        """
+        # Bz, By, Bx = self.device.magnet.getH(0), self.device.magnet.getH(1), self.device.magnet.getH(2)
+        self.device_2.set_channel(1) # z
+        Bz = self.device_2.get_field()
+        self.device_2.set_channel(2) # y
+        By = self.device_2.get_field()
+        Bx = self.device_x.get_field()
+        return Bx, By, Bz
+
+    def check_field_cartesian(self, Bx_set, By_set, Bz_set, ATOL):
+        """Checks the current field value to make sure it is within absolute tolerance of setpoint """
+        # Bx_current = self.device.magnet.getH(2)
+        # By_current = self.device.magnet.getH(1)
+        # Bz_current = self.device.magnet.getH(0)
+        self.device_2.set_channel(1) # z
+        Bz_current = self.device_2.get_field()
+        self.device_2.set_channel(2) # y
+        By_current = self.device_2.get_field()
+        Bx_current = self.device_x.get_field()
+
+        if np.isclose(Bx_set,Bx_current, atol=ATOL) and np.isclose(By_set,By_current,atol=ATOL) and np.isclose(Bz_set, Bz_current, atol=ATOL):
+            # log.info("Field is not close to the setpoint")
+            log.info("field is close to the setpoint")
+            return True
+        else:
+            log.info(f"{Bx_current}, {By_current}, {Bz_current}")
+            return False
+
+    def is_ramping(self):
+        # what is getFieldControl?--x
+        # return self.device.magnet.getFieldControl(0)
+        return 
+
+    def is_holding(self):
+        # return self.magnet_x.is_holding() or self.magnet_y.is_holding() or self.magnet_z.is_holding()
+        return
+    
+    def is_zeroing(self):
+        # return self.magnet_x.is_zeroing() or self.magnet_y.is_zeroing() or self.magnet_z.is_zeroing()
+        return
+    def is_quenched(self):
+        # return self.magnet_x.is_quenched() or self.magnet_y.is_quenched() or self.magnet_z.is_quenched()
+        return
+    def is_paused(self):
+        # return self.magnet_x.is_paused() or self.magnet_y.is_paused() or self.magnet_z.is_paused()
+        return
+    def shutdown(self):
+        """
+        Shuts down each of the magnets individually
+        """
+        log.info("Shutting down all of the magnets")
+        self.device_x.zero_field()
+        self.device_2.set_channel(1) # z
+        self.device_2.zero_field()
+
+
+        self.device_2.set_channel(2) # y
+        self.device_2.zero_field()
+
+        self.device_x.disconnect()
+        self.device_2.disconnect()
+
+    def set_magnet_field(self, magnet, setPoint):
+        # magnet is 0, 1, 2, Bz, By, Bx
+        # field strength
+        # I wrote this for self.z_magnet.field = self.saturating_field in heterodyneProcedure
+        # self.device.magnet.setHSetPoint(magnet, setPoint)
+        if magnet == 0:
+            self.device_2.set_channel(1)
+            self.device_2.set_field(setPoint)
+        elif magnet == 1:
+            # self.device_y.set_field(setPoint)
+            self.device_2.set_channel(2)
+            self.device_2.set_field(setPoint)
+        elif magnet == 2:
+            self.device_x.set_field(setPoint)
