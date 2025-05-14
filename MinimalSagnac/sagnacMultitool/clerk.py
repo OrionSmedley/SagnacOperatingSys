@@ -78,6 +78,17 @@ def hysteresis(arr, bipolar=False):
     if bipolar: return [arr, reversed_arr, -arr, -reversed_arr]
     return [arr, reversed_arr]
 
+def onesweepscanners(ysteps,xsteps,yrange,xrange):
+    xarr = np.array(np.linspace(xrange[0],xrange[1],xsteps))
+    yarr = np.array(np.linspace(yrange[0],yrange[1],ysteps))
+    pts = []
+    for i, y in enumerate(yarr):
+        # snake pattern: reverse every other row
+        xs = xarr[::-1] if (i % 2) else xarr
+        for x in xs:
+            pts.append((x, y))
+    return pts, len(pts)
+
 def field_to_db(field_quantity):
     return 20 * np.log10(field_quantity)
 

@@ -86,6 +86,43 @@ try: # Zurich Instruments
     # pyHF2LI(8005, 1, 18338)
 except:
     print("sagnac4.0: no Zurich")
+    
+try: # Zurich Aux Scanners
+
+    #Scanner position property (can write and read scanner positions)
+    #Uses myHF2LI.auxouts to set and record values as seen below.
+
+    ### ATTENTION: THIS CLASS DOES NOT HAVE ANY INDICAITON OF CONNECTION TO THE SCANNING MODULE
+    ### PLEASE CHECK THE POWER SUPPLIES ARE CORRECTLY CONNECTED TO MODULE BEFORE USING
+
+    class scanners:
+        def __init__(self):
+            self.x, self.y, self.z = 0, 0, 0
+            
+        ### Sets and stores value for the x, y, z positions for the scans ###
+        # aux[1-1] is the output for x
+        # aux[2-1] is the output for y
+        # aux[3-1] is the output for z
+
+        def get_x(self): return myHF2LI.auxouts[1-1].value()
+        
+        def get_y(self): return myHF2LI.auxouts[2-1].value()
+        
+        def get_z(self): return myHF2LI.auxouts[3-1].value()
+        
+        def set_x(self,voltage): myHF2LI.auxouts[1-1].offset(voltage)
+
+        def set_y(self,voltage): myHF2LI.auxouts[2-1].offset(voltage)
+
+        def set_z(self,voltage): myHF2LI.auxouts[3-1].offset(voltage)
+
+        x = property(get_x, set_x)
+        y = property(get_y, set_y)
+        z = property(get_z, set_z)
+
+    scanner = scanners()
+except:
+    print("sagnac3.0: no scanners")
 
 try: #TM-620
     
