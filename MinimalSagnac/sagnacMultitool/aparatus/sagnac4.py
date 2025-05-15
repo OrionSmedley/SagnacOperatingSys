@@ -97,6 +97,8 @@ try: # Zurich Aux Scanners
 
     class scanners:
         def __init__(self):
+            for i in range(4):
+                myHF2LI.auxouts[i].outputselect(-1)
             self.x, self.y, self.z = 0, 0, 0
             
         ### Sets and stores value for the x, y, z positions for the scans ###
@@ -110,11 +112,44 @@ try: # Zurich Aux Scanners
         
         def get_z(self): return myHF2LI.auxouts[3-1].value()
         
-        def set_x(self,voltage): myHF2LI.auxouts[1-1].offset(voltage)
+        def set_x(self,voltage):
+            if voltage > 3 or voltage < 0:
+                print("Please set voltage to be within range of [0,3] volts")
+            else:
+                v_init = self.x
+                if v_init > voltage:
+                    ramp = np.array(np.arange(v_init-0.005, voltage, -0.005))
+                else:
+                    ramp = np.array(np.arange(v_init+0.005, voltage, 0.005))    
+                for i in range(int(len(ramp))):
+                    myHF2LI.auxouts[1-1].offset(ramp[i])
+                myHF2LI.auxouts[1-1].offset(voltage)
 
-        def set_y(self,voltage): myHF2LI.auxouts[2-1].offset(voltage)
+        def set_y(self,voltage): 
+            if voltage > 3 or voltage < 0:
+                print("Please set voltage to be within range of [0,3] volts")
+            else:
+                v_init = self.y
+                if v_init > voltage:
+                    ramp = np.array(np.arange(v_init-0.005, voltage, -0.005))
+                else:
+                    ramp = np.array(np.arange(v_init+0.005, voltage, 0.005))    
+                for i in range(int(len(ramp))):
+                    myHF2LI.auxouts[2-1].offset(ramp[i])
+                myHF2LI.auxouts[2-1].offset(voltage)
 
-        def set_z(self,voltage): myHF2LI.auxouts[3-1].offset(voltage)
+        def set_z(self,voltage): 
+            if voltage > 3 or voltage < 0:
+                print("Please set voltage to be within range of [0,3] volts")
+            else:
+                v_init = self.z
+                if v_init > voltage:
+                    ramp = np.array(np.arange(v_init-0.005, voltage, -0.005))
+                else:
+                    ramp = np.array(np.arange(v_init+0.005, voltage, 0.005))    
+                for i in range(int(len(ramp))):
+                    myHF2LI.auxouts[3-1].offset(ramp[i])
+                myHF2LI.auxouts[3-1].offset(voltage)
 
         x = property(get_x, set_x)
         y = property(get_y, set_y)
@@ -122,7 +157,7 @@ try: # Zurich Aux Scanners
 
     scanner = scanners()
 except:
-    print("sagnac3.0: no scanners")
+    print("sagnac4.0: no scanners")
 
 try: #TM-620
     

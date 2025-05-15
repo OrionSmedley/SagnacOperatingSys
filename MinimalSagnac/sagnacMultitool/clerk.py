@@ -89,6 +89,22 @@ def onesweepscanners(ysteps,xsteps,yrange,xrange):
             pts.append((x, y))
     return pts, len(pts)
 
+def fieldsweepscanners(fields,ysteps,xsteps,yrange,xrange):
+    fields = np.array(fields)
+    xarr = np.array(np.linspace(xrange[0],xrange[1],xsteps))
+    yarr = np.array(np.linspace(yrange[0],yrange[1],ysteps))
+    trio = []
+    for j, field in enumerate(fields):
+        pts = []
+        for i, y in enumerate(yarr):
+            # snake pattern: reverse every other row
+            xs = xarr[::-1] if (i % 2) else xarr
+            for x in xs:
+                pts.append((x, y))
+        if (j % 2): pts = pts[::-1]
+        trio.extend((field, x, y) for x, y in pts)
+    return trio, len(trio)
+
 def field_to_db(field_quantity):
     return 20 * np.log10(field_quantity)
 
@@ -101,3 +117,4 @@ def db_to_field(db):
 # def hysteresis(npArray):
 #     return np.concatenate([npArray, npArray[::-1]])
 # ## heleper fuctions usable from csv file ##
+
