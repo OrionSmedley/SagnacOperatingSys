@@ -84,6 +84,11 @@ def field_to_db(field_quantity):
 def db_to_field(db):
     return 10 ** (db / 20)
 
+def waitUntil(condition):
+    while not eval(condition):
+        time.sleep(0.5)
+
+    
 # ## The following functions have been removed from experimenter.py and placed here for convenience ##
 # ## heleper fuctions usable from csv file ##
 # repeat =0 #doesn't do anything, just a convienient dummy variable
