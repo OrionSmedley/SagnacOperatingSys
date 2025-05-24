@@ -85,8 +85,9 @@ def db_to_field(db):
     return 10 ** (db / 20)
 
 def waitUntil(condition):
-    while not eval(condition):
+    while not condition():
         time.sleep(0.5)
+        # print( "condition is ", condition())
 
     
 # ## The following functions have been removed from experimenter.py and placed here for convenience ##
