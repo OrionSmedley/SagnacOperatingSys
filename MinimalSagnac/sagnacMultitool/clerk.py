@@ -84,7 +84,7 @@ def field_to_db(field_quantity):
 def db_to_field(db):
     return 10 ** (db / 20)
 
-def waitUntil(condition:function)->None:
+def waitUntil(condition):
     """
     Wait until the condition is true
     condition must be a function!
