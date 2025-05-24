@@ -84,7 +84,17 @@ def field_to_db(field_quantity):
 def db_to_field(db):
     return 10 ** (db / 20)
 
-def waitUntil(condition):
+def waitUntil(condition:function)->None:
+    """
+    Wait until the condition is true
+    condition must be a function!
+    example usage: 
+        waitUntil(lambda: not magnet.in_motion)
+    in a csv:
+        parameters = {
+        waitUntil: ["lambda: not magnet.in_motion"]
+        }
+    """
     while not condition():
         time.sleep(0.5)
         # print( "condition is ", condition())
