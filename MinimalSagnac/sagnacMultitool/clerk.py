@@ -111,10 +111,25 @@ def field_to_db(field_quantity):
 def db_to_field(db):
     return 10 ** (db / 20)
 
+def waitUntil(condition):
+    """
+    Wait until the condition is true
+    condition must be a function!
+    example usage: 
+        waitUntil(lambda: not magnet.in_motion)
+    in a csv:
+        parameters = {
+        waitUntil: ["lambda: not magnet.in_motion"]
+        }
+    """
+    while not condition():
+        time.sleep(0.5)
+        # print( "condition is ", condition())
+
+    
 # ## The following functions have been removed from experimenter.py and placed here for convenience ##
 # ## heleper fuctions usable from csv file ##
 # repeat =0 #doesn't do anything, just a convienient dummy variable
 # def hysteresis(npArray):
 #     return np.concatenate([npArray, npArray[::-1]])
 # ## heleper fuctions usable from csv file ##
-
