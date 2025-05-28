@@ -34,6 +34,7 @@ class ANC300:
             self.identity = 'none'
             self.connected = False    
 
+        # test ANC300
         # self.status = 'connected'
         # self.identity = b'Mock ANC300'
         # self.connected = True
@@ -72,30 +73,19 @@ class ANC300:
 
     def get_f(self, axis):
         """ Set the frequency on axis <AID> to <FRQ>. 
-        """        
+        """
         axis_bytes = str(axis).encode('utf-8')
-        self.session.write(b"getf " + axis_bytes + b"\n")
-
-        for _ in range(10):  # Try up to 5 lines
-            response = self.session.read_until(b"\n", timeout=2).decode("utf-8").strip()
-            # print(f"READ: {response}") #test
-            if response.startswith("frequency"):
-                value = float(response.split("=")[1].split()[0])
-                return value
- 
-   
+        self.session.write(b"getf " + axis_bytes)
+        received = self.session.read_until(b"OK", 2 )
+        return axis_bytes
     
     def get_v(self, axis):
         """ Returns the voltage
         """
         axis_bytes = str(axis).encode('utf-8')
-        self.session.write(b"getv " + axis_bytes + b"\n")
-        for _ in range(10):
-            response = self.session.read_until(b"\n", timeout=2).decode("utf-8").strip()
-            # print(f"READ: {response}") #test
-            if response.startswith("voltage"):
-                value = float(response.split("=")[1].split()[0])
-                return value
+        self.session.write("getv " + str(axis))
+        return self.session.read()    
+        return axis_bytes
    
 
     def set_frequency(self, axis, frq):
@@ -105,8 +95,8 @@ class ANC300:
         self.go(b"setf " + axis_bytes + b" " + frq_bytes)
         print(frq)
         print(axis)
-        # print(frq_bytes)
-        # print(axis_bytes) #test
+        print(frq_bytes)
+        print(axis_bytes)
 
     def set_amplitude(self, axis, vol):
         """ Set amplitude (step voltage) for the specified axis. """
@@ -115,8 +105,8 @@ class ANC300:
         self.go(b"setv " + axis_bytes + b" " + vol_bytes)
         print(vol)
         print(axis)
-        # print(vol_bytes) #test
-        # print(axis_bytes)
+        print(vol_bytes)
+        print(axis_bytes)
 
         
     
@@ -192,16 +182,12 @@ class ANC300:
         
         # Step 2: Send getc command
         # IF ANYONE WANTS AN EXPLAINATION IT IS BECAUSE THE RESPONSE IS CHECKING THE ENTIRE READ UNTIL IT FINE THE "DO NOT CHANGE THIS" IF IT DOESN'T FIND IT OUTPUTS ALL OF IT WHICH WE WANT
-        # DO NOT TRY TO CHANGE UNLESS U KNOW HOW TO GET A SPECIFIC READOUT
+        #DO NOT TRY TO CHANGE UNLESS U KNOW HOW TO GET A SPECIFIC READOUT
         response = self.session.read_until(b"DO NOT CHANGE THIS", .1).decode('utf-8')
-        #print(response)
         # print("6")
         # Step 3: Extract numeric capacitance value
         return(response)
-        
-        # fake_values = 125
-        # return fake_values
-        # return axis_bytes
+
 
 
 ## example of how to step on sagnac 3
