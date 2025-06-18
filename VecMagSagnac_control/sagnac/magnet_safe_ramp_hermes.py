@@ -4,6 +4,7 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 import numpy as np
+import pandas as pd
 from pymeasure.instruments.validators import truncated_range
 from pymeasure.instruments import Instrument
 import pyvisa
@@ -38,6 +39,7 @@ class MagPowSup:
         return res
 
     def get_field(self):
+        # print("checking field")
         value = np.nan
         while np.isnan(value):
             try:
@@ -51,20 +53,19 @@ class MagPowSup:
     def pause_field(self):
         response = self.query('SWEEP?')
         # print(f"Response is {response}")
-        while response != 'Pause':
-            self.write('SWEEP PAUSE')
-            sleep(0.05)
-            response = self.query('SWEEP?')
-            print(f"Mag ramp now set to {response}")    
+        if response != 'Standby':
+            while response != 'Pause':
+                self.write('SWEEP PAUSE')
+                sleep(0.05)
+                response = self.query('SWEEP?')
+                print(f"Mag ramp now set to {response}")    
         
     def temp_check(self, Tthresh):
         Tmag = TM620.Tmag
         if Tmag > float(Tthresh):
-            print(f"Woah magnet temp is higher than {Tthresh}. Pausing ramp to cool down.")
-            while Tmag > (Tthresh):
-                sleep(2)
-                print(f"Waiting for magnet to cool from {Tmag} to {(Tthresh)}")
-                return False
+            sleep(2)
+            print(f"Waiting for magnet to cool from {Tmag} to {(Tthresh)}")
+            return False
         else:
             return True        
             
@@ -115,7 +116,7 @@ class Magnet:
         
         
         self._Toverheat = 4.4
-        self._Tcooling = (self._Toverheat - 0.25)
+        self._Tcooling = (self._Toverheat - 0.3)
         self._Tflag = (self._Toverheat - 0.1)
         self._flag = 1
 
@@ -200,6 +201,9 @@ class Magnet:
         
         Bx, By, Bz = self.get_field_cartesian()
         
+        self.quench_check()
+        self.voltage_check()
+        
         print("Connecting. The field is", np.sqrt(Bx*Bx + By*By + Bz*Bz))
         if np.sqrt(Bx*Bx + By*By + Bz*Bz) > self._field_mag_lim:
             self.device_z.disconnect()
@@ -208,6 +212,40 @@ class Magnet:
             raise ValueError("Bmag vector is larger than 0.95 T! Don't touch anything else! call Kelly")
         
         self.Bx, self.By, self.Bz = self.get_field_cartesian()
+
+    def voltage_check(self):
+        zvolt = self.device_z.query("VOUT?")
+        print(zvolt)
+
+        self.device_2.set_channel(1) # x
+        xvolt = self.device_2.query("VOUT?")
+        print(xvolt)
+        
+        self.device_2.set_channel(2) # y
+        yvolt = self.device_2.query("VOUT?")
+        print(yvolt)
+        
+    def quench_check(self):
+        zquench = self.device_z.query("*STB?")
+        binary_form = format(ord(zquench), '08b')
+        # print(binary_form[-3])
+        if (binary_form[-3] == '1') :
+            print("Quench in Z")
+            
+        self.device_2.set_channel(1) # x
+        xquench = self.device_2.query("*STB?")
+        binary_form = format(ord(xquench), '08b')
+        # print(binary_form[-3])
+        if (binary_form[-3] == '1') :
+            print("Quench in X")
+        
+        self.device_2.set_channel(2) # y
+        yquench = self.device_2.query("*STB?")
+        binary_form = format(ord(yquench), '08b')
+        # print(binary_form[-3])
+        if (binary_form[-3] == '1') :
+            print("Quench in Y")
+        
         
     def setSafe_wait(self, junk = 0):
         # print("1")
@@ -218,7 +256,7 @@ class Magnet:
         # print(f"Bz initial: {Bx_init, By_init, Bz_init}")
         mag_safe = self.check_temps()
         # print("4")
-        # print(f"Mag safe 1 is {mag_safe}")
+        # print(f"Mag safe is: {mag_safe}")
         if mag_safe != None:
             if not np.abs(self.Bz) > np.abs(Bz_init): 
                 # print("entering if")
@@ -292,8 +330,33 @@ class Magnet:
             return True
         else:
             # print(f"{Bx_current}, {By_current}, {Bz_current}")
-            print("I don't think the field is close enough")
+            # print("I don't think the field is close enough")
             return False
+
+    def pause_all(self):
+        
+        self.device_2.set_channel(1) # x check
+        self.device_2.pause_field()
+        self.device_z.pause_field()
+        self.device_2.set_channel(2) # y check
+        self.device_2.pause_field()        
+        
+        check1 = self.device_z.is_ramping()
+        print(f"Check1 is {check1}")
+        if check1 != "Pause" or check1 != "Standby":
+            self.device_z.pause_field()
+        
+        self.device_2.set_channel(1) # x check
+        check2 = self.device_2.is_ramping()
+        print(f"Check2 is {check2}")
+        if check2 == "Pause" or check2 != "Standby":
+            self.device_2.pause_field()
+            
+        self.device_2.set_channel(2) # y check
+        check3 = self.device_2.is_ramping()
+        print(f"Check3 is {check3}")
+        if check3 != "Pause" or check3 != "Standby":
+            self.device_2.pause_field()
         
     def check_temps(self):
         """Checks the Magnet Thermometer Temperature to know if the ramp rate needs to be paused"""
@@ -308,55 +371,81 @@ class Magnet:
         # print(f"bigcheck 1 is {bigcheck}")
             
         if bigcheck != False:
-            secondcheck = self.device_z.temp_check((self._Tflag))        
-            if secondcheck == False or self._flag == 2:
+            secondcheck = self.device_z.temp_check((self._Tflag))
+            cooldowncountdown = time()        
+            if secondcheck == False or self._flag == 2: 
                 self._flag = 2
                 print(f"Overheat flag is up")
                 while self._flag != 1:
-                    # print(f"Threshold is {self._Tcooling}")
-                    print(f"Flag is up")
-                    zcheck = self.device_z.temp_check(self._Tcooling)
-                    
-                    # print(f"Zcheck 1 is {zcheck}")
-                    
-                    if zcheck == True:
-                        self._flag = 1
-                        print(f"FLAG IS NOW RESET")
-                        return True
-                    
-                    else:
-                        check1 = self.device_z.is_ramping()
-                        # print(f"Check1 is {check1}")
-                        if check1 != "Pause" or check1 != "Standby":
-                            self.device_z.pause_field()
-                        
-                        self.device_2.set_channel(1) # x check
-                        check2 = self.device_2.is_ramping()
-                        # print(f"Check2 is {check2}")
-                        if check2 == "Pause" or check2 != "Standby":
-                            self.device_2.pause_field()
-                            
-                        self.device_2.set_channel(2) # y check
-                        check3 = self.device_2.is_ramping()
-                        # print(f"Check3 is {check3}")
-                        if check3 != "Pause" or check3 != "Standby":
-                            self.device_2.pause_field()
-
+                    if (time() - cooldowncountdown) < 1800:
+                        # print(f"Threshold is {self._Tcooling}")
+                        # print(f"Flag is up")
                         zcheck = self.device_z.temp_check(self._Tcooling)
                         
-                        return False
+                        # print(f"Zcheck 1 is {zcheck}")
+                        
+                        if zcheck == True:
+                            self._flag = 1
+                            print(f"FLAG IS NOW RESET")
+                            return True
+                        
+                        else:
+                            check1 = self.device_z.is_ramping()
+                            print(f"Check1 is {check1}")
+                            if check1 != "Pause" or check1 != "Standby":
+                                self.device_z.pause_field()
+                            
+                            self.device_2.set_channel(1) # x check
+                            check2 = self.device_2.is_ramping()
+                            print(f"Check2 is {check2}")
+                            if check2 == "Pause" or check2 != "Standby":
+                                self.device_2.pause_field()
+                                
+                            self.device_2.set_channel(2) # y check
+                            check3 = self.device_2.is_ramping()
+                            print(f"Check3 is {check3}")
+                            if check3 != "Pause" or check3 != "Standby":
+                                self.device_2.pause_field()
+
+                            zcheck = self.device_z.temp_check(self._Tcooling)
+
+                    else:
+                        timeout = pd.Timestamp.now()
+                        print(f"Magnet unable to cool down. Ramping down all magnets and ending the scan. {timeout}")
+                        self.shutdown()
+                    
             elif secondcheck == True:
                 if self._flag == 1:
                     return True 
                 
-        else: 
+        else:
+            timeout = pd.Timestamp.now() 
             if shield > 55:
-                print("Shield is too hot, stop this, call Ethan ASAP before ramping magnet or Kelly")
+                print(f"Shield is too hot, stop this, call Ethan ASAP before ramping magnet or Kelly {timeout}")
+                self.shutdown()
             else:
-                print("Magnet is too hot, stop this, call Ethan ASAP before ramping magnet or Kelly")
+                print(f"Magnet is too hot, stop this, call Ethan ASAP before ramping magnet or Kelly {timeout}")
+                self.shutdown()
                 
             return None
+        
+    def shutdown(self):
+        self.device_2.set_channel(1) # x
+        self.device_2.zero_field()
+        
+        self.device_z.zero_field()
+        self.device_2.set_channel(2) # y
+        self.device_2.zero_field()
 
+        try:
+            self.device_z.disconnect()
+            self.device_2.disconnect()
+            raise ValueError("System was unable to cool down, system has disconnected.")
+        except:
+            print("No device z to disconect")
+            print("No device 2 to disconect")
+            raise ValueError("System was unable to cool down, system has disconnected.")
+            
 
 class Magnet_highZ:
     
@@ -374,8 +463,8 @@ class Magnet_highZ:
         self._B_sign = 1 
         
         self._Toverheat = 4.4
-        self._Tcooling = (self._Toverheat - 0.25)
-        self._Tflag = (self._Toverheat - 0.12)
+        self._Tcooling = (self._Toverheat - 0.3)
+        self._Tflag = (self._Toverheat - 0.1)
         self._flag = 1
 
 
@@ -397,6 +486,9 @@ class Magnet_highZ:
         print("Connecting. The field is", np.sqrt(Bx*Bx + By*By + Bz*Bz))
         
         self.Bx, self.By, self.Bz = self.get_field_cartesian()
+
+        self.quench_check()
+        self.voltage_check()
         
         if np.abs(Bz) > 9.9:
             if np.abs(Bx) > 0 or np.abs(By) > 0:
@@ -417,6 +509,32 @@ class Magnet_highZ:
 
         print("disconnecting from x and y for safety")
         self.device_2.disconnect()
+        
+    def voltage_check(self):
+        zvolt = self.device_z.query("VOUT?")
+        print(zvolt)
+
+        
+    def quench_check(self):
+        zquench = self.device_z.query("*STB?")
+        binary_form = format(ord(zquench), '08b')
+        # print(binary_form[-3])
+        if (binary_form[-3] == '1') :
+            print("Quench in Z")
+            
+        self.device_2.set_channel(1) # x
+        xquench = self.device_2.query("*STB?")
+        binary_form = format(ord(xquench), '08b')
+        # print(binary_form[-3])
+        if (binary_form[-3] == '1') :
+            print("Quench in X")
+        
+        self.device_2.set_channel(2) # y
+        yquench = self.device_2.query("*STB?")
+        binary_form = format(ord(yquench), '08b')
+        # print(binary_form[-3])
+        if (binary_form[-3] == '1') :
+            print("Quench in Y")
         
     def get_Bz(self):
         """Returns the magnitude of the field."""
@@ -493,6 +611,17 @@ class Magnet_highZ:
                 log.info(f"Currently Bz = {Bz}")
                 return False
             
+    def pause_all(self):
+        
+        self.device_z.pause_field()                           
+        check1 = self.device_z.is_ramping()
+        print(check1)
+        if check1 != "Pause" or check1 != "Standby":
+            while check1 != 'Pause' or check1 != 'Standby':
+                self.device_z.pause_field()
+            print("Ramping Paused")
+    
+                
     def check_temps(self):
         """Checks the Magnet Thermometer Temperature to know if the ramp rate needs to be paused"""
         bigcheck = self.device_z.temp_check(self._Toverheat)
@@ -506,40 +635,45 @@ class Magnet_highZ:
         # print(f"bigcheck 1 is {bigcheck}")
             
         if bigcheck != False:
-            secondcheck = self.device_z.temp_check((self._Tflag))        
+            secondcheck = self.device_z.temp_check((self._Tflag))
+            cooldowncountdown = time()          
             if secondcheck == False or self._flag == 2:
                 self._flag = 2
                 print(f"Overheat flag is up")
                 while self._flag != 1:
-                    # print(f"Threshold is {self._Tcooling}")
-                    print(f"Flag is up")
-                    zcheck = self.device_z.temp_check(self._Tcooling)
-                    
-                    # print(f"Zcheck 1 is {zcheck}")
-                    
-                    if zcheck == True:
-                        self._flag = 1
-                        print(f"FLAG IS NOW RESET")
-                        return True
-                    
-                    else:
-                        check1 = self.device_z.is_ramping()
-                        # print(f"Check1 is {check1}")
-                        if check1 != "Pause" or check1 != "Standby":
-                            self.device_z.pause_field()
-
+                    if (time() - cooldowncountdown) < 1800:
+                        # print(f"Threshold is {self._Tcooling}")
+                        print(f"Flag is up")
                         zcheck = self.device_z.temp_check(self._Tcooling)
                         
-                        return False
+                        # print(f"Zcheck 1 is {zcheck}")
+                        
+                        if zcheck == True:
+                            self._flag = 1
+                            print(f"FLAG IS NOW RESET")
+                            return True
+                        
+                        else:
+                            print("Pausing ramping")
+                            self.pause_all()
+                            zcheck = self.device_z.temp_check(self._Tcooling)
+
+                else:
+                    timeout = pd.Timestamp.now()
+                    print(f"Magnet unable to cool down. Ramping down all magnets and ending the scan. {timeout}")
+                    self.shutdown()
             elif secondcheck == True:
                 if self._flag == 1:
                     return True 
                 
         else: 
+            timeout = pd.Timestamp.now()
             if shield > 55:
-                print("Shield is too hot, stop this, call Ethan ASAP before ramping magnet or Kelly")
+                print(f"Shield is too hot, stop this, call Ethan ASAP before ramping magnet or Kelly {timeout}")
+                self.shutdown()
             else:
-                print("Magnet is too hot, stop this, call Ethan ASAP before ramping magnet or Kelly")
+                print(f"Magnet is too hot, stop this, call Ethan ASAP before ramping magnet or Kelly {timeout}")
+                self.shutdown()
                 
             return None
             
@@ -547,10 +681,11 @@ class Magnet_highZ:
         """
         Shuts down each of the magnets individually
         """
-        log.info("Shutting down only the Z magnet")
         self.device_z.zero_field()
         
         try:
             self.device_z.disconnect()
+            raise ValueError("System was unable to cool down, system has disconnected.")
         except:
             print("No device z to disconect")
+            raise ValueError("System was unable to cool down, system has disconnected.")

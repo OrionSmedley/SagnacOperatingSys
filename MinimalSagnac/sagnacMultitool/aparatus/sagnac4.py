@@ -239,10 +239,10 @@ try: # Keithley
     sys.path.append(module_dir)
     from keithley.keithley2400 import Keithley2400 
     keith1 = Keithley2400("GPIB::26")
-#     keith2 = Keithley2400("GPIB::24")
+    keith2 = Keithley2400("GPIB::24")
 
 except:
-    print( "sagnac4.0: no keith")
+    print("sagnac4.0: no keith")
 
 
 

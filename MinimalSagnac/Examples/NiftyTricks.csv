@@ -1,0 +1,101 @@
+c1.cnt,repeat,a,b,c,index
+;from clerk import hysteresis, Counter, np
+
+;repeat, a, b, c, index = None, None, None, None, None
+
+;c1 = Counter()
+
+;arr = ["a", "b", "c"]
+;c1.cnt = -1
+
+;parameters = {
+;   "c1 #forwards backwards": [1e11],
+;   "a" : [[1,2,3,4] , [4,3,2,1]],
+;   "b": ["arr[int(c1.cnt)]"]
+;}
+
+
+;alist, blist = [1,2,3], ["a","b","c"]
+
+;parameters = {
+;"a,b" : "(1,2)"
+;}
+
+-1,,1,2,,
+;#Scan finished at 2025-05-22T17:27:45.063832
+
+;bad list = [dont do this]
+
+;parameters = {
+;"a,b" : ["(1,2)", "(3,4)"]
+;}
+
+-1,,1,2,,
+-1,,3,4,,
+;#Scan finished at 2025-05-22T17:30:18.078538
+
+
+snake = [
+    "(x, y)"
+    for y in range(ny)
+    for x in (range(nx) if y % 2 == 0 else range(nx-1, -1, -1))
+]
+
+;"a,b": ["(x, y)"
+    for y in pd.arange(...)
+    for x in (pd.arange(nx) if pd.index % 2 == 0 else range(nx-1, -1, -1))
+]
+
+
+
+for all methods in Zurich
+    method = if repeat%4: method 
+
+for all methods in Zurich.aux
+    method = Nan
+
+parameters;
+
+sdafasdfjsadfkjl;adsf;ljk,
+asdljk;fdasljk;sdafasdfjsadfkjl
+;# for method in [list of bad methods]
+; #    method =attribut( Nan)
+
+
+inpurt zurich as ...
+
+
+
+
+
+
+
+
+
+
+
+
+badlist = [asdf,asdf,aef,qwer,z,we,qe]
+badlist2 = [asdf,asdf]
+badlist3 = [asdf,asdf]
+
+parameters =  ...
+
+adsf,adsf,sadf,ads,qt,t,wr,r,from
+
+
+for thing in badlist:
+    thing = nan
+
+parameters = ...
+
+nan, nan, nan, 
+
+
+
+parameters = ...
+adsf,adsf,sadf,ads,qt,t,wr,r,from
+
+
+
+
