@@ -64,7 +64,7 @@ class MagPowSup:
         Tmag = TM620.Tmag
         if Tmag > float(Tthresh):
             sleep(2)
-            print(f"Waiting for magnet to cool from {Tmag} to {(Tthresh)}")
+            print(f"Waiting for magnet to cool from {Tmag} to {np.round(Tthresh,3)}")
             return False
         else:
             return True        
@@ -72,16 +72,22 @@ class MagPowSup:
     def set_field(self, field):
         current_field = self.get_field()
         sleep(0.1)
-        if field - current_field > 0.001:
-            self.write(f'ULIM {field}')
-            sleep(0.1)
-            self.write('SWEEP UP')
-        elif field - current_field < -0.001:
-            self.write(f'LLIM {field}')
-            sleep(0.1)
-            self.write('SWEEP DOWN')
+        if field == 0:
+            if self.is_ramping() == 'Standby':
+                pass
+            else:
+                self.zero_field()
         else:
-            pass
+            if field - current_field > 0.001:
+                self.write(f'ULIM {field}')
+                sleep(0.1)
+                self.write('SWEEP UP')
+            elif field - current_field < -0.001:
+                self.write(f'LLIM {field}')
+                sleep(0.1)
+                self.write('SWEEP DOWN')
+            else:
+                pass
 
     def check_field(self, set_field, tol = 0.001):
         current_field = self.get_field()
@@ -342,19 +348,19 @@ class Magnet:
         self.device_2.pause_field()        
         
         check1 = self.device_z.is_ramping()
-        print(f"Check1 is {check1}")
+        # print(f"Check1 is {check1}")
         if check1 != "Pause" or check1 != "Standby":
             self.device_z.pause_field()
         
         self.device_2.set_channel(1) # x check
         check2 = self.device_2.is_ramping()
-        print(f"Check2 is {check2}")
+        # print(f"Check2 is {check2}")
         if check2 == "Pause" or check2 != "Standby":
             self.device_2.pause_field()
             
         self.device_2.set_channel(2) # y check
         check3 = self.device_2.is_ramping()
-        print(f"Check3 is {check3}")
+        # print(f"Check3 is {check3}")
         if check3 != "Pause" or check3 != "Standby":
             self.device_2.pause_field()
         
@@ -386,26 +392,27 @@ class Magnet:
                         
                         if zcheck == True:
                             self._flag = 1
-                            print(f"FLAG IS NOW RESET")
+                            print(f"FLAG IS NOW RESET after {time() - cooldowncountdown}")
                             return True
                         
                         else:
-                            check1 = self.device_z.is_ramping()
-                            print(f"Check1 is {check1}")
-                            if check1 != "Pause" or check1 != "Standby":
-                                self.device_z.pause_field()
+                            self.pause_all()
+                            # check1 = self.device_z.is_ramping()
+                            # print(f"Check1 is {check1}")
+                            # if check1 != "Pause" or check1 != "Standby":
+                            #     self.device_z.pause_field()
                             
-                            self.device_2.set_channel(1) # x check
-                            check2 = self.device_2.is_ramping()
-                            print(f"Check2 is {check2}")
-                            if check2 == "Pause" or check2 != "Standby":
-                                self.device_2.pause_field()
+                            # self.device_2.set_channel(1) # x check
+                            # check2 = self.device_2.is_ramping()
+                            # print(f"Check2 is {check2}")
+                            # if check2 == "Pause" or check2 != "Standby":
+                            #     self.device_2.pause_field()
                                 
-                            self.device_2.set_channel(2) # y check
-                            check3 = self.device_2.is_ramping()
-                            print(f"Check3 is {check3}")
-                            if check3 != "Pause" or check3 != "Standby":
-                                self.device_2.pause_field()
+                            # self.device_2.set_channel(2) # y check
+                            # check3 = self.device_2.is_ramping()
+                            # print(f"Check3 is {check3}")
+                            # if check3 != "Pause" or check3 != "Standby":
+                            #     self.device_2.pause_field()
 
                             zcheck = self.device_z.temp_check(self._Tcooling)
 
@@ -440,10 +447,12 @@ class Magnet:
         try:
             self.device_z.disconnect()
             self.device_2.disconnect()
+            log.error("System was unable to cool down, system has disconnected.")
             raise ValueError("System was unable to cool down, system has disconnected.")
         except:
             print("No device z to disconect")
             print("No device 2 to disconect")
+            log.error("System was unable to cool down, system has disconnected.")
             raise ValueError("System was unable to cool down, system has disconnected.")
             
 
@@ -685,7 +694,9 @@ class Magnet_highZ:
         
         try:
             self.device_z.disconnect()
+            log.error("System was unable to cool down, system has disconnected.")
             raise ValueError("System was unable to cool down, system has disconnected.")
         except:
             print("No device z to disconect")
+            log.error("System was unable to cool down, system has disconnected.")
             raise ValueError("System was unable to cool down, system has disconnected.")

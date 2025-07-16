@@ -90,12 +90,12 @@ class Lakeshore336:
                                 toggle = int(toggle.strip())
                                 print(f"Sample Heater Range set to {toggle}")
                                 time.sleep(5)
-                                temp = np.round(self.get_Sample_temp(),2)
+                                temp = np.round(self.get_sample_temp(),2)
                             print(f"Waiting for Sample to cool from {temp}K to {setpoint}K")
                     if temp < temperature + 10 :
                         toggle = self.instrument.query("RANGE? 1")
-                        if toggle != '2':
-                            self.instrument.write(f"RANGE 1, 2")
+                        if toggle != '3':
+                            self.instrument.write(f"RANGE 1, 3")
                             toggle = self.instrument.query("RANGE? 1")
                             toggle = int(toggle.strip())
                             print(f"Sample Heater Range set to {toggle}")
@@ -122,7 +122,7 @@ class Lakeshore336:
                         if temp < temperature + 10 :
                             toggle = self.instrument.query("RANGE? 1")
                             if toggle != '3':
-                                self.instrument.write(f"RANGE 1, 2")
+                                self.instrument.write(f"RANGE 1, 3")
                                 toggle = self.instrument.query("RANGE? 1")
                                 toggle = int(toggle.strip())
                                 print(f"Sample Heater Range set to {toggle}")
