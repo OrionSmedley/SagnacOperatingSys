@@ -191,12 +191,12 @@ def SidebandDemod(f_eom = 19.8e6, f_i = 3.27320e3, Tc = 0.01, address = "[fe80::
 
 
 ## Harmonic 2
-    har2.set_demodulation('Internal', frequency=f_eom*2, phase=0)
+    har2.set_demodulation('Internal', frequency=f_eom*2, phase=234.270)
     har2.set_gain(35,35)
 
 
 ## Harmonic 1
-    har1.set_demodulation('Internal', frequency=f_eom, phase=0)
+    har1.set_demodulation('Internal', frequency=f_eom, phase=117.135)
     har1.set_gain(60,60)
 
 
