@@ -13,7 +13,10 @@ except ImportError:
 class MyApp(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
+
+        #used for testing on kyle's laptop modifiable to whoever wants
         # uic.loadUi("c:/Users/05kyl/Downloads/SagnacOperatingSys/SagnacOperatingSys/MinimalSagnac/Drivers for cryostat.ui", self)
+        
         uic.loadUi("D:/Github/SagnacOperatingSys/MinimalSagnac/Drivers for cryostat.ui", self)
 
         #used for ANC300 conenction for amp and frequency
@@ -78,6 +81,9 @@ class MyApp(QtWidgets.QDialog):
         self.pressed_keys.discard(event.key())
 
     def handle_movement(self):
+
+        #THIS CODE GOES STRAIGHT TO THE ANC300 CODE DOES NOT INCLUDE THESE FUNCT move_z, move_y, move_x
+
         if not self.continous_check.isChecked():
             return
         
@@ -89,21 +95,27 @@ class MyApp(QtWidgets.QDialog):
 
         if QtCore.Qt.Key_W in self.pressed_keys:
             self.stepper.stepy(step_size)    # Move +Y
+            print("done with pressed btn +y")
 
         if QtCore.Qt.Key_S in self.pressed_keys:
             self.stepper.stepy(-step_size)   # Move -Y
+            print("done with pressed btn +y")
 
         if QtCore.Qt.Key_A in self.pressed_keys:
             self.stepper.stepx(-step_size)   # Move -X
+            print("done with pressed btn -x")
 
         if QtCore.Qt.Key_D in self.pressed_keys:
             self.stepper.stepx(step_size)    # Move +X
+            print("done with pressed btn +x")
         
         if QtCore.Qt.Key_Z in self.pressed_keys:
             self.stepper.stepz(step_size)  # Move Z
+            print("done with pressed btn +z")
 
         if QtCore.Qt.Key_X in self.pressed_keys:
             self.stepper.stepz(-step_size)   # Move -Z
+            print("done with pressed btn -z")
 
         
 

@@ -130,6 +130,8 @@ def waitUntil(condition):
 # ## The following functions have been removed from experimenter.py and placed here for convenience ##
 # ## heleper fuctions usable from csv file ##
 # repeat =0 #doesn't do anything, just a convienient dummy variable
-# def hysteresis(npArray):
-#     return np.concatenate([npArray, npArray[::-1]])
+
 # ## heleper fuctions usable from csv file ##
+
+def simplehysteresis(npArray):
+    return np.concatenate([npArray, npArray[::-1]])

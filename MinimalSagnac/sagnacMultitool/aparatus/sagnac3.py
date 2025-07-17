@@ -121,7 +121,7 @@ try: # Zurich Aux Scanners
         def get_z(self): return myHF2LI.auxouts[3-1].value()
         
         def set_x(self,voltage):
-            if voltage > 3 or voltage < 0:
+            if voltage > 4 or voltage < 0:
                 print("Please set voltage to be within range of [0,3] volts")
             else:
                 v_init = self.x
@@ -134,7 +134,7 @@ try: # Zurich Aux Scanners
                 myHF2LI.auxouts[1-1].offset(voltage)
 
         def set_y(self,voltage): 
-            if voltage > 3 or voltage < 0:
+            if voltage > 4 or voltage < 0:
                 print("Please set voltage to be within range of [0,3] volts")
             else:
                 v_init = self.y
@@ -147,7 +147,7 @@ try: # Zurich Aux Scanners
                 myHF2LI.auxouts[2-1].offset(voltage)
 
         def set_z(self,voltage): 
-            if voltage > 3 or voltage < 0:
+            if voltage > 4 or voltage < 0:
                 print("Please set voltage to be within range of [0,3] volts")
             else:
                 v_init = self.z

@@ -1,5 +1,6 @@
 import telnetlib, time, socket
 import time
+import random as rand
 
 class ANC300:
     def __init__(self):
@@ -142,14 +143,24 @@ class ANC300:
     
     def stepx(self, steps):
         """ Move in X direction. """
+        # print(f"here you go i'm moving in x in this many steps {steps}")
+        # if rand(10000) < 2:
+        #     print("kyle was here easter egg")
         self.step(6, steps)
+        
 
     def stepy(self, steps):
         """ Move in Y direction. """
+        # print(f"here you go i'm moving in y in this many steps {steps}")
+        # if rand(10000) < 2:
+        #     print("kyle was here easter egg")
         self.step(5, steps)
 
     def stepz(self, steps):
         """ Move in Z direction. """
+        # print(f"here you go i'm moving in z in this many steps {steps}")
+        # if rand(10000) < 2:
+        #     print("kyle was here easter egg")
         self.step(4, steps)
 
     def ground(self):
