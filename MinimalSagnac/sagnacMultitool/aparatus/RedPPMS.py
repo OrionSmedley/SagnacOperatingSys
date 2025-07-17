@@ -14,13 +14,15 @@ import matplotlib.cm as cm
 from glob import glob
 import os
 import sys
+
+sys.path.append(r'C:\Users\jeral\anaconda3\Lib\site-packages\labdrivers\quantumdesign')
 import labdrivers.quantumdesign.qdinstrument as qd
 
 
 ppms = qd.QdInstrument('PPMS','192.168.0.100')
 
 nanovoltmeter = Keithley2182A("GPIB::9")
-currentsource = Keithley2400("GPIB::24")
+sourcemeter = Keithley2400("GPIB::24")
 
 # voltmeter = Keithley2000("GPIB::14")
 # currentsource2 = Keithley2400("GPIB::18")
