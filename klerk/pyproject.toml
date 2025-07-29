@@ -1,0 +1,18 @@
+[build-system]
+requires    = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name             = "klerk"
+version          = "0.1.0"
+description      = "Minimal helper for paper writing and Plotly exports"
+requires-python  = ">=3.7"
+dependencies     = [
+  "numpy",
+  "pandas",
+  "plotly",
+  "kaleido"
+]
+
+[tool.setuptools]
+py-modules = ["klerk"]
