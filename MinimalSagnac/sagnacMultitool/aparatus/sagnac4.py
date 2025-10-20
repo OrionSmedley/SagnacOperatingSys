@@ -47,20 +47,35 @@ try: # Zurich Instruments
     # get value of a demodulator
     def dem(demod): return myHF2LI.demods[demod].sample()
     myHF2LI.dem = dem
+    
+    def dc1(v=None):
+        Vrange = myHF2LI.sigouts[0].range()
+        if v is not None:
+            myHF2LI.sigouts[0].offset(v / Vrange)
+        return myHF2LI.sigouts[1].offset() * Vrange
+    def ac1(v=None):
+        Vrange = myHF2LI.sigouts[0].range()
+        if v is not None:
+            myHF2LI.sigouts[0].amplitudes[8-1](v / Vrange)
+        return myHF2LI.sigouts[0].amplitudes[8-1]() * Vrange
+    myHF2LI.dc1 = dc1
+    myHF2LI.ac1 = ac1
 
-    def dc(v=None):
+    def dc2(v=None):
         Vrange = myHF2LI.sigouts[1].range()
         if v is not None:
             myHF2LI.sigouts[1].offset(v / Vrange)
         return myHF2LI.sigouts[1].offset() * Vrange
 
-    def ac(v=None):
+    def ac2(v=None):
         Vrange = myHF2LI.sigouts[1].range()
         if v is not None:
             myHF2LI.sigouts[1].amplitudes[7-1](v / Vrange)
         return myHF2LI.sigouts[1].amplitudes[7-1]() * Vrange
-    myHF2LI.dc = dc
-    myHF2LI.ac = ac
+    myHF2LI.dc2 = dc2
+    myHF2LI.ac2 = ac2
+    
+
 
     # def get_vout(self, out_num, osc_num):
     #     return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num))
@@ -190,9 +205,13 @@ try: # Magnet
     import sys
     module_dir = r"D:\SagnacOperatingSys\VecMagSagnac_control"
     sys.path.append(module_dir)
-    from sagnac.magnet_safe_ramp_hermes import Magnet
+    from sagnac.magnet_safe_ramp_hermes_v2 import Magnet
 
-    mag = Magnet()
+    mag = Magnet(x_axis_tilt = 90, y_axis_tilt= 90, phi_offset=0.0)
+# #     x_axis_tilt is defined in the lab frame as the polar angle (in deg) from the z-axis into the positive x direction, defined here with defaults to __ deg
+# #     y_axis_tilt " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " into the positive y direction, defined here with defaults to __ deg
+# #     phi_offset is used to rotate the xy-plane about the new sample frame z-axis, can be set later
+    
 # #     mag.setSafeWaitBx = lambda b: mag.setSafe_wait_cart(b,mag.By_set,mag.Bz_set)
 # #     mag.setSafeWaitBy = lambda b: mag.setSafe_wait_cart(mag.Bx_set,b,mag.Bz_set)
 # #     mag.setSafeWaitBz = lambda b: mag.setSafe_wait_cart(mag.Bx_set,mag.By_set,b)
@@ -213,7 +232,7 @@ try: # Magnet High Z
     import sys
     module_dir = r"D:\SagnacOperatingSys\VecMagSagnac_control"
     sys.path.append(module_dir)
-    from sagnac.magnet_safe_ramp_hermes import Magnet_highZ
+    from sagnac.magnet_safe_ramp_hermes_v2 import Magnet_highZ
 
     maghighZ = Magnet_highZ()
 
@@ -238,8 +257,9 @@ try: # Keithley
     module_dir = r"C:\Users\luogroup\AppData\Roaming\Python\Python311\site-packages\pymeasure\instruments"
     sys.path.append(module_dir)
     from keithley.keithley2400 import Keithley2400 
-    keith1 = Keithley2400("GPIB::26")
-    keith2 = Keithley2400("GPIB::24")
+    keith24 = Keithley2400("GPIB::24")
+    keith25 = Keithley2400("GPIB::25")    
+    keith26 = Keithley2400("GPIB::26")
 
 except:
     print("sagnac4.0: no keith")

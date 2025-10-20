@@ -1,0 +1,182 @@
+;//
+;Here is the format used for measurement .csv files broken down to explain the intended use behind each of the sections within a .csv file
+;When a .csv document is in a VSCode work space with an appropriate tasks.json file, the comments made here following ';' 
+;The .csv is run like normal python code through experimenter.py as a cartesian product of all possible variables within the list of parameters (param). 
+;The cartesian product is run as a tensor product of all possible permutations  
+;The appropriate syntax for functions and param can be observed below.
+;To run a .csv through experimenter.py, make sure to save your code ("ctrl" + "s") and press "ctrl" + "alt" + "s" to open the menu to run the code. Click run experimenter.py (or press enter if pinned) and the scan will begin running.
+;To track progress of a scan, the VSCode terminal is used as a log for machine activity.
+;A blank .csv can be made in your VSCode workspace where you have you device images and appropriate tasks.json file. All data will be saved there while scans are running.
+;Do not ever delete data after a scan starts. Shown below is when you can stop a scan and made edits and restart a measurement with new parameters.
+;If you make an edit while taking data, the procedure will not change but the data will no longer automatically populate.
+;To resume the data filling into the file, simply press "ctrl" + "s" and you will be prompted to compare to an alternate saved version. 
+;Simply scroll down to the data that has been taken since the edit made and bring over to the new document version. Then click the check mark and the data should auto-populate again.
+;//
+
+;//
+;To stop a measurement process, kill the terminal by clicking the small trash can icon in the top right corner.
+;IMPORTANT NOTE: WHEN RUNNING THE MAGNET, IT IS ESSENTIAL THAT THE MAGNET RAMPING IS PAUSED. ONLY KILL THE SCAN WHEN THE MAGNET HAS REACHED A SET POINT OR IF THE MAGNET HAS PAUSED TO COOL DOWN
+;//
+
+
+queueT,purpose,a #a,b,c,d,e,f,g; 
+
+;//
+;above are the functions and variables that experimenter.py will evaluate when taking a measurement 
+;these are also the column names for dataframes used in analysis 
+;please refer to relevant measurement examples for appropriate column names 
+;the use of '#' after a variable name is intended to allow you to rename columns through the use of the rename_columns() function
+;//
+
+;from aparatus.sagnac4 import "fake_hysteresis_creator"     #import machine class instances from the appropriate meta-driver document hysteresis
+;from clerk import hysteresis, simplehysteresis, np; import time    # here, you can import any other required functions and libraries required for your scan  
+;import pandas as pd
+
+;a,b,c,d,e,f,g = None, None, None, None, None, None, None #for any variables used in the function, initialize them here as type None
+
+;queueT = pd.Timestamp.now() #a variable that records the time that the scan was queued as an additional filtering tool
+
+;def wrapUp(): # experimenter will call this function at the completion of the cartesian product to bring the system to a safer state. ###THIS WILL BE NEEDED IN EVERY .CSV FILE
+;    mag.Bx = 0
+;    mag.By = 0
+;    mag.Bz = 0
+;    mag.setSafe_wait()
+;    print("Cartesian Product Completed")
+
+;def fake_function(var1): # define any other functions required for your scan that are not present elsewhere
+;    code = "#RunTheThing Srsly"
+
+;purpose = "Kyle and Ethan do a README csv" #this is recorded as a string that specifies the purpose of the scan, please include temperature, type of scan, and any other relevant information for your own processing
+
+;//
+;Below are the elements that go into the cartesian product, experimenter.py will attempt to run the given param intially as functions with specified input, if not the param will be set as a type (float, int, boolean, string, etc.)
+;If you want to input a string, you must use double quotations (i.e. "'a'" will return a as a string). If you use single quotes, experimenter will attempt to evaluate the input ("a" will return whatever the value of 'a' is set to)
+;experimenter will proceed through the following param like the output below
+;The order that experimenter will repeat settings is as follows:
+;//
+
+;parameters = { 
+;"a #first" : 300, #any function or variable can be set multiple times in one param list as long as a comment follows the param. without '#', the original param with be overwritten and will only be set once since experimenter will treat it like a python variable
+;"a #second" : 1,
+
+;"fake_function #first" : [100],
+;"b" : [np.arange(100)],
+;"c" : ["'RunTheThing'"], 
+;"d" : [1,2,3],
+;"fake_function #second" : [90], 
+
+;"e" : [[1,2,3]],
+
+;"f" : [[[2*"d"]]]
+;"g" : [[["'a'", "'b'", "'c'"]]]
+;}  #outputs will be as follows for above param. Please leave TWO BLANK LINES below the param bracket to all proper storing of measured data
+
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,1,1,2,a
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,1,1,2,b
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,1,1,2,c
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,1,2,2,a
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,1,2,2,b
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,1,2,2,c
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,1,3,2,a
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,1,3,2,b
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,1,3,2,c
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,2,1,4,a
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,2,1,4,b
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,2,1,4,c
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,2,2,4,a
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,2,2,4,b
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,2,2,4,c
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,2,3,4,a
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,2,3,4,b
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,2,3,4,c
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,3,1,6,a
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,3,1,6,b
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,3,1,6,c
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,3,2,6,a
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,3,2,6,b
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,3,2,6,c
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,3,3,6,a
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,3,3,6,b
+queueT,Kyle and Ethan do a README csv,1,0,RunTheThing,3,3,6,c
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,1,1,2,a
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,1,1,2,b
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,1,1,2,c
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,1,2,2,a
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,1,2,2,b
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,1,2,2,c
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,1,3,2,a
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,1,3,2,b
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,1,3,2,c
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,2,1,4,a
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,2,1,4,b
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,2,1,4,c
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,2,2,4,a
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,2,2,4,b
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,2,2,4,c
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,2,3,4,a
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,2,3,4,b
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,2,3,4,c
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,3,1,6,a
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,3,1,6,b
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,3,1,6,c
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,3,2,6,a
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,3,2,6,b
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,3,2,6,c
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,3,3,6,a
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,3,3,6,b
+queueT,Kyle and Ethan do a README csv,1,1,RunTheThing,3,3,6,c
+....
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,1,1,2,a
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,1,1,2,b
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,1,1,2,c
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,1,2,2,a
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,1,2,2,b
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,1,2,2,c
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,1,3,2,a
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,1,3,2,b
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,1,3,2,c
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,2,1,4,a
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,2,1,4,b
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,2,1,4,c
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,2,2,4,a
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,2,2,4,b
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,2,2,4,c
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,2,3,4,a
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,2,3,4,b
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,2,3,4,c
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,3,1,6,a
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,3,1,6,b
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,3,1,6,c
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,3,2,6,a
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,3,2,6,b
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,3,2,6,c
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,3,3,6,a
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,3,3,6,b
+queueT,Kyle and Ethan do a README csv,1,99,RunTheThing,3,3,6,c
+;#Scan finished at (whenever scan finished)
+
+;//
+;To run any additional scans, simply add an additional set of parameters with a new purpose like below. This will overwrite the original set of params set above and will only run the last list.
+;//
+
+;purpose = "Kyle and Ethan do a README csv part 2"
+
+;parameters = { 
+;"a #first" : 300, 
+;"a #second" : 1,
+
+;"fake_function #first" : [100],
+;"b" : [np.arange(100)],
+;"c" : ["'RunTheThing'"], 
+;"d" : [1,2,3],
+;"fake_function #second" : [90], 
+
+;"e" : [[1,2,3]],
+
+;"f" : [[[2*"d"]]]
+;"g" : [[["'a'", "'b'", "'c'"]]]
+;}  
+
+
+
+; add something about where its saved and when its done

@@ -64,6 +64,73 @@ class Lakeshore336:
         #             time.sleep(5)
         #             temp = np.round(self.get_sample_temp(),2)
         #             print(f"Waiting for Sample to go from {temp}K to {setpoint}K")
+        elif temperature <= 15:
+            setpoint = self.instrument.query(f"SETP? 1")
+            setpoint = float(setpoint.strip())
+            temp = np.round(self.get_sample_temp(),2)
+            if temperature != temp:
+                if setpoint != float(temperature):
+                    while setpoint != float(temperature):
+                        self.instrument.write(f"SETP 1, {temperature}")
+                        setpoint = self.instrument.query(f"SETP? 1")
+                        setpoint = float(setpoint.strip())
+                    print(f"Sample Heater Limit Set to {setpoint} K")
+                
+                temp = self.get_sample_temp()
+                while temp != setpoint:
+                    if temp > temperature:
+                        if (temp -  temperature) > 10:
+                            toggle = self.instrument.query("RANGE? 1")
+                            if toggle == '0':
+                                time.sleep(5)
+                                temp = np.round(self.get_sample_temp(),2)
+                            elif toggle != '0':
+                                self.instrument.write(f"RANGE 1, 0")
+                                toggle = self.instrument.query("RANGE? 1")
+                                toggle = int(toggle.strip())
+                                print(f"Sample Heater Range set to {toggle}")
+                                time.sleep(5)
+                                temp = np.round(self.get_sample_temp(),2)
+                            print(f"Waiting for Sample to cool from {temp}K to {setpoint}K")
+                    if temp < temperature + 10 :
+                        toggle = self.instrument.query("RANGE? 1")
+                        if toggle != '1':
+                            self.instrument.write(f"RANGE 1, 1")
+                            toggle = self.instrument.query("RANGE? 1")
+                            toggle = int(toggle.strip())
+                            print(f"Sample Heater Range set to {toggle}")
+                        time.sleep(5)
+                        temp = np.round(self.get_sample_temp(),2)
+                        print(f"Waiting for Sample to go from {temp}K to {setpoint}K")
+                else:
+                    temp = self.get_sample_temp()
+                    while temp != setpoint:
+                        if temp > temperature:
+                            if (temp -  temperature) > 10:
+                                toggle = self.instrument.query("RANGE? 1")
+                                if toggle == '0':
+                                    time.sleep(5)
+                                    temp = np.round(self.get_sample_temp(),2)
+                                elif toggle != '0':
+                                    self.instrument.write(f"RANGE 1, 0")
+                                    toggle = self.instrument.query("RANGE? 1")
+                                    toggle = int(toggle.strip())
+                                    print(f"Sample Heater Range set to {toggle}")
+                                    time.sleep(5)
+                                    temp = np.round(self.get_sample_temp(),2)
+                                print(f"Waiting for Sample to cool from {temp}K to {setpoint}K")
+                        if temp < temperature + 10 :
+                            toggle = self.instrument.query("RANGE? 1")
+                            if toggle != '1':
+                                self.instrument.write(f"RANGE 1, 1")
+                                toggle = self.instrument.query("RANGE? 1")
+                                toggle = int(toggle.strip())
+                                print(f"Sample Heater Range set to {toggle}")
+                            time.sleep(5)
+                            temp = np.round(self.get_sample_temp(),2)
+                            print(f"Waiting for Sample to go from {temp}K to {setpoint}K")       
+            elif setpoint == float(temperature) and temperature == temp:
+                print(f"Sample Heater already set to {temperature}")
         else:
             setpoint = self.instrument.query(f"SETP? 1")
             setpoint = float(setpoint.strip())

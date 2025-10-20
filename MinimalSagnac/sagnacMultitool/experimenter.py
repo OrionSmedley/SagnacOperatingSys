@@ -31,7 +31,7 @@ def load_variables_from_csv(csv_file, commentChar = ';'):
 def set_parameter(non_list_variables, namespace):
     """Set parameters dynamically, supporting method calls and attribute assignment."""
     for name, value in non_list_variables.items():
-        print(f"\tSetting {name} to {value}")
+        print(f"\tSetting {name} to {value}") #test print
         name = name.split('#')[0].strip() # Remove comments from the name
         obj = eval(name, namespace) # dummy proof: errors if user doesn't define name
         try: # Try to call the value if it's callable

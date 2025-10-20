@@ -11,3 +11,4 @@
 ; }
 
 inst.frequency, inst.temperature #angry, inst.get_voltage #cool, yoink + random() #yoink
+
