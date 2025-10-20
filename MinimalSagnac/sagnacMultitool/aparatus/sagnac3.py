@@ -108,7 +108,14 @@ try: # Zurich Aux Scanners
             for i in range(4):
                 myHF2LI.auxouts[i].outputselect(-1)
             self.x, self.y, self.z = 0, 0, 0
-            
+
+            import sys
+            module_dir = r"D:\Github\SagnacOperatingSys\VecMagSagnac_control"
+            sys.path.append(module_dir)
+            import atto_device.CRYO2100 as cr
+            atto = cr("192.168.1.1")
+            atto.connect()
+                    
         ### Sets and stores value for the x, y, z positions for the scans ###
         # aux[1-1] is the output for x
         # aux[2-1] is the output for y
@@ -121,43 +128,85 @@ try: # Zurich Aux Scanners
         def get_z(self): return myHF2LI.auxouts[3-1].value()
         
         def set_x(self,voltage):
-            if voltage > 4 or voltage < 0:
-                print("Please set voltage to be within range of [0,3] volts")
-            else:
-                v_init = self.x
-                if v_init > voltage:
-                    ramp = np.array(np.arange(v_init-0.005, voltage, -0.005))
+            tsamp = atto.sample.getTemperature()
+            if tsamp > 4:
+                if voltage > 4 or voltage < 0:
+                    print("Please set voltage to be within range of [0,4] volts")  
                 else:
-                    ramp = np.array(np.arange(v_init+0.005, voltage, 0.005))    
-                for i in range(int(len(ramp))):
-                    myHF2LI.auxouts[1-1].offset(ramp[i])
-                myHF2LI.auxouts[1-1].offset(voltage)
+                    v_init = self.x
+                    if v_init > voltage:
+                        ramp = np.array(np.arange(v_init-0.005, voltage, -0.005))
+                    else:
+                        ramp = np.array(np.arange(v_init+0.005, voltage, 0.005))    
+                    for i in range(int(len(ramp))):
+                        myHF2LI.auxouts[1-1].offset(ramp[i])
+                    myHF2LI.auxouts[1-1].offset(voltage)          
+            elif tsamp <= 4:
+                if voltage > 5 or voltage < 0:
+                    print("Please set voltage to be within range of [0,10] volts")
+                else:
+                    v_init = self.x
+                    if v_init > voltage:
+                        ramp = np.array(np.arange(v_init-0.005, voltage, -0.005))
+                    else:
+                        ramp = np.array(np.arange(v_init+0.005, voltage, 0.005))    
+                    for i in range(int(len(ramp))):
+                        myHF2LI.auxouts[1-1].offset(ramp[i])
+                    myHF2LI.auxouts[1-1].offset(voltage)
 
-        def set_y(self,voltage): 
-            if voltage > 4 or voltage < 0:
-                print("Please set voltage to be within range of [0,3] volts")
-            else:
-                v_init = self.y
-                if v_init > voltage:
-                    ramp = np.array(np.arange(v_init-0.005, voltage, -0.005))
+        def set_y(self,voltage):
+            tsamp = atto.sample.getTemperature() 
+            if tsamp > 4:
+                if voltage > 4 or voltage < 0:
+                    print("Please set voltage to be within range of [0,4] volts")  
                 else:
-                    ramp = np.array(np.arange(v_init+0.005, voltage, 0.005))    
-                for i in range(int(len(ramp))):
-                    myHF2LI.auxouts[2-1].offset(ramp[i])
-                myHF2LI.auxouts[2-1].offset(voltage)
+                    v_init = self.y
+                    if v_init > voltage:
+                        ramp = np.array(np.arange(v_init-0.005, voltage, -0.005))
+                    else:
+                        ramp = np.array(np.arange(v_init+0.005, voltage, 0.005))    
+                    for i in range(int(len(ramp))):
+                        myHF2LI.auxouts[2-1].offset(ramp[i])
+                    myHF2LI.auxouts[2-1].offset(voltage)          
+            elif tsamp <= 4:
+                if voltage > 5 or voltage < 0:
+                    print("Please set voltage to be within range of [0,10] volts")
+                else:
+                    v_init = self.y
+                    if v_init > voltage:
+                        ramp = np.array(np.arange(v_init-0.005, voltage, -0.005))
+                    else:
+                        ramp = np.array(np.arange(v_init+0.005, voltage, 0.005))    
+                    for i in range(int(len(ramp))):
+                        myHF2LI.auxouts[2-1].offset(ramp[i])
+                    myHF2LI.auxouts[2-1].offset(voltage)
 
         def set_z(self,voltage): 
-            if voltage > 4 or voltage < 0:
-                print("Please set voltage to be within range of [0,3] volts")
-            else:
-                v_init = self.z
-                if v_init > voltage:
-                    ramp = np.array(np.arange(v_init-0.005, voltage, -0.005))
+            tsamp = atto.sample.getTemperature()
+            if tsamp > 4:
+                if voltage > 4 or voltage < 0:
+                    print("Please set voltage to be within range of [0,4] volts")    
                 else:
-                    ramp = np.array(np.arange(v_init+0.005, voltage, 0.005))    
-                for i in range(int(len(ramp))):
-                    myHF2LI.auxouts[3-1].offset(ramp[i])
-                myHF2LI.auxouts[3-1].offset(voltage)
+                    v_init = self.z
+                    if v_init > voltage:
+                        ramp = np.array(np.arange(v_init-0.005, voltage, -0.005))
+                    else:
+                        ramp = np.array(np.arange(v_init+0.005, voltage, 0.005))    
+                    for i in range(int(len(ramp))):
+                        myHF2LI.auxouts[3-1].offset(ramp[i])
+                    myHF2LI.auxouts[3-1].offset(voltage)
+            elif tsamp <= 4:
+                if voltage > 5 or voltage < 0:
+                    print("Please set voltage to be within range of [0,10] volts")
+                else:
+                    v_init = self.z
+                    if v_init > voltage:
+                        ramp = np.array(np.arange(v_init-0.005, voltage, -0.005))
+                    else:
+                        ramp = np.array(np.arange(v_init+0.005, voltage, 0.005))    
+                    for i in range(int(len(ramp))):
+                        myHF2LI.auxouts[3-1].offset(ramp[i])
+                    myHF2LI.auxouts[3-1].offset(voltage)
 
         x = property(get_x, set_x)
         y = property(get_y, set_y)
@@ -173,8 +222,12 @@ try: # Magnet
     sys.path.append(module_dir)
     # from sagnac.custom_instruments import vectorMagnetFullUSB
     # mag = vectorMagnetFullUSB()
-    from sagnac.magnet_usb_safe_ramp import Magnet
-    mag = Magnet()
+    from sagnac.magnet_usb_safe_ramp_v2 import Magnet
+
+    mag = Magnet(x_axis_tilt = 91.4, y_axis_tilt= 89.3, phi_offset=0.0)
+# #     x_axis_tilt is defined in the lab frame as the polar angle (in deg) from the z-axis into the positive x direction, defined here with defaults to 91.4 deg
+# #     y_axis_tilt " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " into the positive y direction, defined here with defaults to 89.3 deg
+# #     phi_offset is used to rotate the xy-plane about the new sample frame z-axis, can be set later
 
     import atto_device.CRYO2100 as cr
     atto = cr("192.168.1.1")
@@ -256,13 +309,13 @@ except:
 
 
 
-try: # Keithly
+try: # Keithley
     import sys
     module_dir = r"C:\Users\luogroup\AppData\Roaming\Python\Python311\site-packages\pymeasure\instruments"
     sys.path.append(module_dir)
     from keithley.keithley2400 import Keithley2400 
-    keith1 = Keithley2400("GPIB::26")
-    keith2 = Keithley2400("GPIB::24")
+    keith26 = Keithley2400("GPIB::26")
+    keith24 = Keithley2400("GPIB::24")
 
 except:
     print( "sagnac3.0: no keith")

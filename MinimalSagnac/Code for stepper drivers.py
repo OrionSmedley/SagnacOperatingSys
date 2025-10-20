@@ -70,7 +70,7 @@ class MyApp(QtWidgets.QDialog):
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.setFocus()
 
-
+        self.setWindowTitle("Cyprus")
 
 
     def keyPressEvent(self, event):

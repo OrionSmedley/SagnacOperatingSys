@@ -148,6 +148,8 @@ class APS100:
         # field in kG
         if abs(field) > 50:
             field = np.sign(field)*50
+        if field == 0:
+            self.zero_field()
         
         current_field = self.get_field()
         time.sleep(0.1)
