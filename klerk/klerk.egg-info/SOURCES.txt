@@ -1,0 +1,6 @@
+klerk.py
+pyproject.toml
+klerk.egg-info/PKG-INFO
+klerk.egg-info/SOURCES.txt
+klerk.egg-info/dependency_links.txt
+klerk.egg-info/top_level.txt
