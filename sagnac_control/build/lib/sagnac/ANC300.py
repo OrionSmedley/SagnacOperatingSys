@@ -76,8 +76,8 @@ class ANC300:
     #     """
     #     self.session.write("setv " + str(axis)  + " "  +  str(vol))
 
-    # def get_v(self, axis):
-    #     """ Returns the voltage
-    #     """
-    #     self.session.write("getv " + str(axis))
-    #     return self.session.read()  
+    def get_v(self, axis):
+        """ Returns the voltage
+        """
+        self.session.write("getv " + str(axis))
+        return self.session.read()  
