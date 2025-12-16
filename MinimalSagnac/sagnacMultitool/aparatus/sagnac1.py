@@ -61,7 +61,7 @@ try: #imports for Zurich Instruments
     from zhinst.toolkit import Session
     import time
     session = Session("localhost", hf2=True)
-    myHF2LI = session.connect_device("DEV1004")
+    myHF2LI = session.connect_device("DEV18583")
 
     # set timeconstants for all channels
     def setTc(Tc): 
