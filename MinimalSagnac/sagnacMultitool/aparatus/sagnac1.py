@@ -69,6 +69,12 @@ try: #imports for Zurich Instruments
         myHF2LI.Tc = Tc
     myHF2LI.setTc = setTc
 
+    # set filterOrder for all channels
+    def setOrder(order): 
+        [myHF2LI.demods[demod].order(order) for demod in range(6)]
+        myHF2LI.order = order
+    myHF2LI.setOrder = setOrder
+    
     def waitTc(n): 
         """Wait for n time constants"""
         print(f"Waiting for {n}Tc =  ({n*myHF2LI.Tc} s)")
