@@ -1,0 +1,11 @@
+#Procedure: <__main__.daedalusVoltCenterCalibrationProcedure>
+#Parameters:
+#	Calibration Name: test3
+#	Center Calibration File: ./sagnac_center_calib3.csv
+#	Magnet Azimuthal Angle: 90 deg
+#	Queued Time: 2026-05-07 13:24:32
+#	Start magnet voltage: -10 V
+#	Magnet voltage step: 0.1 V
+#	Stop magnet voltage: 10 V
+#Data:
+V,Xfield,Yfield,Zfield,elapsed_time
