@@ -5,17 +5,17 @@ pd.Timestamp.now #now, repeat, randomDict # dic, randomlist #lis
 ;    return {
 ;        "timestamp": pd.Timestamp.now(),
 ;        "x": random.random(),
-;        "y": random.random(),
+;#        "y": random.random(),
 ;        "label": "one dict in one csv cell",
 ;    }
 ;
 
-;def randomlist():
-;    return [pd.Timestamp.now(),
-;        random.random(),
-;        random.random()
-;    ]
-
+;#def randomlist():
+;#    return [pd.Timestamp.now(),
+;#        random.random(),
+;#        random.random()
+;#    ]
+;randomlist = None
 
 ;repeat = None
 ;parameters = {
@@ -41,3 +41,16 @@ pd.Timestamp.now #now, repeat, randomDict # dic, randomlist #lis
 2026-05-12 16:45:56.460633,8,"{'timestamp': Timestamp('2026-05-12 16:45:56.460633'), 'x': 0.49286227518611025, 'y': 0.01942101772344318, 'label': 'one dict in one csv cell'}","[Timestamp('2026-05-12 16:45:56.461630'), 0.09264446023252171, 0.37403778447222447]"
 2026-05-12 16:45:59.471848,9,"{'timestamp': Timestamp('2026-05-12 16:45:59.471848'), 'x': 0.5094283051833032, 'y': 0.798961524644036, 'label': 'one dict in one csv cell'}","[Timestamp('2026-05-12 16:45:59.471848'), 0.6678434752239322, 0.7339022794587876]"
 ;#Scan finished at 2026-05-12T16:45:59.474845
+
+;parameters.update({
+;    "repeat": np.arange(7),
+;    "time.sleep": [1],
+;})
+2026-05-12 19:25:24.453057,0,"{'timestamp': Timestamp('2026-05-12 19:25:24.453057'), 'x': 0.19615802968828933, 'label': 'one dict in one csv cell'}",
+2026-05-12 19:25:25.472022,1,"{'timestamp': Timestamp('2026-05-12 19:25:25.472022'), 'x': 0.40128903593695775, 'label': 'one dict in one csv cell'}",
+2026-05-12 19:25:26.480201,2,"{'timestamp': Timestamp('2026-05-12 19:25:26.480201'), 'x': 0.3986512048378872, 'label': 'one dict in one csv cell'}",
+2026-05-12 19:25:27.487226,3,"{'timestamp': Timestamp('2026-05-12 19:25:27.487226'), 'x': 0.5174647059359567, 'label': 'one dict in one csv cell'}",
+2026-05-12 19:25:28.493204,4,"{'timestamp': Timestamp('2026-05-12 19:25:28.493204'), 'x': 0.9019142972458575, 'label': 'one dict in one csv cell'}",
+2026-05-12 19:25:29.501207,5,"{'timestamp': Timestamp('2026-05-12 19:25:29.502208'), 'x': 0.24340187726946605, 'label': 'one dict in one csv cell'}",
+2026-05-12 19:25:30.509414,6,"{'timestamp': Timestamp('2026-05-12 19:25:30.509414'), 'x': 0.1781811632830197, 'label': 'one dict in one csv cell'}",
+;#Scan finished at 2026-05-12T19:25:30.512415
