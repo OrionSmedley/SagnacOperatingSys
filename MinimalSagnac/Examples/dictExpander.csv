@@ -2,12 +2,12 @@ pd.Timestamp.now #now, repeat, randomDict # dic, randomlist #lis
 ;import time, numpy as np, random, pandas as pd
 ;
 ;def randomDict():
-;    return str({
+;    return {
 ;        "timestamp": pd.Timestamp.now(),
 ;        "x": random.random(),
 ;        "y": random.random(),
 ;        "label": "one dict in one csv cell",
-;    })
+;    }
 ;
 
 ;def randomlist():
