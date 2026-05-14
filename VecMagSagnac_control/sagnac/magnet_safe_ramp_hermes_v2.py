@@ -32,11 +32,31 @@ class MagPowSup:
 
     def write(self, command):
         self.instrument.write(command)
-
+        
     def set_channel(self, channel):
+        # print("changing channel")
         self.write(f'CHAN {int(channel)}')
-        res = self.query('CHAN?')
-        return res
+        res = np.nan
+        while np.isnan(res):
+            try:
+                res = self.query('CHAN?')
+                # print("checked channel")
+                return res
+            except:
+                res =  np.nan
+                print("trying again")
+                sleep(0.5)
+
+    # def set_channel(self, channel):
+    #     print("I AM IN THE SET CHANNEL")
+    #     self.write(f'CHAN {int(channel)}')
+    #     print("I AM WRITTEN INTO CHANNEL")
+    #     res = self.query('CHAN?')
+    #     sleep(0.2)
+    #     print("HIT THE QUERY CHAN PART")
+    #     # print("NANI GA SUKI")
+    #     return res
+    #     print(" IF THIS ACTIVATES SOMETHING HORRIBLE HAS HAPPENED")
 
     def get_field(self):
         # print("checking field")
@@ -58,7 +78,7 @@ class MagPowSup:
                 self.write('SWEEP PAUSE')
                 sleep(0.05)
                 response = self.query('SWEEP?')
-                print(f"Mag ramp now set to {response}")    
+                # print(f"Mag ramp now set to {response}")    
         
     def temp_check(self, Tthresh):
         Tmag = TM620.Tmag
@@ -364,8 +384,7 @@ class Magnet:
     ATOL = 1e-3
 
     def __init__(self, x_axis_tilt=90, y_axis_tilt=90, phi_offset=0.0):
-        # --- hardware (leave as-is if you have these drivers) ---
-        self.device_2 = MagPowSup('169.254.62.188')  # ch1=X, ch2=Y (your mapping)
+        self.device_2 = MagPowSup('169.254.62.188')  # ch1=X, ch2=Y 
         self.device_z = MagPowSup('169.254.62.187')
 
         # --- geometry / offsets ---
@@ -385,12 +404,11 @@ class Magnet:
         self._phi_lab = 0.0
         self._theta_lab = 0.0
 
-        # misc from your original
         self._field_difference_cutoff = 0
         self._field_mag_lim = 9.5
         self._B_sign = 1
-        self._Toverheat = 4.55
-        self._Tcooling = (self._Toverheat - 0.40)
+        self._Toverheat = 4.5
+        self._Tcooling = (self._Toverheat - 0.35)
         self._Tflag = (self._Toverheat - 0.2)
         self._flag = 1
 
@@ -665,38 +683,48 @@ class Magnet:
         
         
     def setSafe_wait(self, junk = 0):
-        # print("1")
-        tic = time()
-        # print("2")
-        Bx_init, By_init, Bz_init = self.get_field_cartesian()
-        # print("3")
-        # print(f"Bz initial: {Bx_init, By_init, Bz_init}")
-        mag_safe = self.check_temps()
-        # print("4")
-        # print(f"Mag safe is: {mag_safe}")
-        if mag_safe != None:
-            if not np.abs(self.Bz_lab) > np.abs(Bz_init): 
-                # print("entering if")
-                while not self.check_field_cartesian(Bx_init, By_init, self.Bz_lab, 10*self.ATOL):
-                    print("waiting for z to ramp down")
-                    mag_safe = self.check_temps()
-                    # print(f"Mag safe 3 is {mag_safe}")
-                    sleep(0.1)
-                    if mag_safe == True:
-                        self.set_field_cartesian(Bx_init,By_init,self.Bz_lab)
+        while not self.check_field_cartesian(self.Bx_lab, self.By_lab, self.Bz_lab, self.ATOL):
+            # print("1")
+            tic = time()
+            # print("2")
+            Bx_init, By_init, Bz_init = self.get_field_cartesian()
+            # print("3")
+            # print(f"Bz initial: {Bx_init, By_init, Bz_init}")
+            mag_safe = self.check_temps()
+            # print("4")
+            # print(f"Mag safe is: {mag_safe}")
+            print(f"Setting field to {self.Bx_lab}, {self.By_lab}, {self.Bz_lab}")
+            if mag_safe != None:
+                if not np.abs(self.Bz_lab) > np.abs(Bz_init): 
+                    # print("entering if")
+                    while not self.check_field_cartesian(Bx_init, By_init, self.Bz_lab, 10*self.ATOL):
+                        # print("waiting for z to ramp down")
+                        mag_safe = self.check_temps()
+                        # print(f"Mag safe 3 is {mag_safe}")
                         sleep(0.1)
-                        print(f"waiting for z to ramp down {time()-tic}")
-            while not self.check_field_cartesian(self.Bx_lab, self.By_lab, self.Bz_lab, self.ATOL):
-                mag_safe = self.check_temps()
-                # print(f"Mag safe 4 is {mag_safe}")
-                sleep(0.1)
-                if mag_safe == True:
-                    self.set_field_cartesian(self.Bx_lab, self.By_lab, self.Bz_lab)
+                        if mag_safe == True:
+                            self.set_field_cartesian(Bx_init,By_init,self.Bz_lab)
+                            sleep(0.1)
+                            print(f"waiting for z to ramp down {time()-tic}")
+                # elif np.abs(self.Bz_lab) > np.abs(Bz_init):
+                    # print("omg this condition works")
+                while not self.check_field_cartesian(self.Bx_lab, self.By_lab, self.Bz_lab, self.ATOL):
+                    mag_safe = self.check_temps()
+                    # if self.check_field_cartesian(self.Bx_lab, self.By_lab, self.Bz_lab, self.ATOL):
+                    #     print("oh god it changed while IN THE WHILE LOOP")
+                    # print(f"Mag safe 4 is {mag_safe}")
                     sleep(0.1)
-                    print(f"waiting for mag for {time()-tic}")
-                    
+                    # if self.check_field_cartesian(self.Bx_lab, self.By_lab, self.Bz_lab, self.ATOL):
+                    #     print("oh god it changed while IN THE WHILE LOOP AND AFTER SLEEPING A BIT")
+                    if mag_safe == True:
+                        self.set_field_cartesian(self.Bx_lab, self.By_lab, self.Bz_lab)
+                        sleep(0.1)
+                        print(f"waiting for mag for {time()-tic}")
+                if self.check_field_cartesian(self.Bx_lab, self.By_lab, self.Bz_lab, self.ATOL):
+                    print("Field is close to the setpoint (I owe my existence to Ethan Berg, all hail o7)")
+
     def test_ramp(self, junk = 0):
-        print(f"Setting field to (Bx, By, Bz) =<{self.Bx_lab},{self.By_lab},{self.Bz_lab}>")
+        print(f"Setting field to (Bx, By, Bz) = <{self.Bx_lab},{self.By_lab},{self.Bz_lab}>")
         print(f"Setting field to (B, φ, θ) = <{self.B_lab},{self.phi_lab},{self.theta_lab}>")
         sleep(5)
 
@@ -721,36 +749,41 @@ class Magnet:
         Returns the cartesian parameterization of the field in the order X, Y, Z.
         """
         # Bz, By, Bx = self.device.magnet.getH(0), self.device.magnet.getH(1), self.device.magnet.getH(2)
+        # print("I EXIST I AM HERE")
         self.device_2.set_channel(1) # x
+        # print(" I HAVE CHANGED CHANNEL FOR X")
         Bx = self.device_2.get_field()
-        # print(Bx)
+        # print(f"{Bx} I HAVE DONE X")
         self.device_2.set_channel(2) # y
+        # print(" I HAVE CHANGED CHANNEL FOR Y")
         By = self.device_2.get_field()
-        # print(By)
+        # print(f"{By} I HAVE DONE Y")
         Bz = self.device_z.get_field()
-        # print(Bz)
+        # print(f"{Bz} I HAVE DONE Z")
         return Bx, By, Bz
 
     def check_field_cartesian(self, Bx_set, By_set, Bz_set, ATOL):
         """Checks the current field value to make sure it is within absolute tolerance of setpoint """
+        print("Checking field")
         # Bx_current = self.device.magnet.getH(2)
         # By_current = self.device.magnet.getH(1)
         # Bz_current = self.device.magnet.getH(0)
-        self.device_2.set_channel(1) # x
-        Bx_current = self.device_2.get_field()
-        self.device_2.set_channel(2) # y
-        By_current = self.device_2.get_field()
-        Bz_current = self.device_z.get_field()
+        # self.device_2.set_channel(1) # x
+        # Bx_current = self.device_2.get_field()
+        # self.device_2.set_channel(2) # y
+        # By_current = self.device_2.get_field()
+        # Bz_current = self.device_z.get_field()
+        
+        Bx_current, By_current, Bz_current = self.get_field_cartesian()
         
         print(f"Bx, By, Bz is currently {Bx_current},{By_current},{Bz_current}")
 
         if np.isclose(Bx_set, Bx_current,atol=ATOL) and np.isclose(By_set, By_current,atol=ATOL) and np.isclose(Bz_set, Bz_current,atol=ATOL):
             # log.info("Field is not close to the setpoint")
-            print("Field is close to the setpoint (I owe my existence to Ethan Berg, all hail o7)")
             return True
         else:
             # print(f"{Bx_current}, {By_current}, {Bz_current}")
-            # print("I don't think the field is close enough")
+            print("I don't think the field is close enough")
             return False
 
     def pause_all(self):
@@ -769,7 +802,7 @@ class Magnet:
         self.device_2.set_channel(1) # x check
         check2 = self.device_2.is_ramping()
         # print(f"Check2 is {check2}")
-        if check2 == "Pause" or check2 != "Standby":
+        if check2 != "Pause" or check2 != "Standby":
             self.device_2.pause_field()
             
         self.device_2.set_channel(2) # y check
@@ -784,19 +817,21 @@ class Magnet:
         shield = TM620.Tshield
         
         if bigcheck == True and shield <= 55:
-            bigcheck == True
+            bigcheck = True
         else: 
-            bigcheck == False
+            bigcheck = False
         
         # print(f"bigcheck 1 is {bigcheck}")
             
-        if bigcheck != False:
-            secondcheck = self.device_z.temp_check((self._Tflag))
+        if bigcheck == True:
+            # print("sanity check #1 for temp")
+            secondcheck = self.device_z.temp_check(self._Tflag)
+            # print("sanity check #2 for temp")
             cooldowncountdown = time()        
             if secondcheck == False or self._flag == 2: 
                 self._flag = 2
                 print(f"Overheat flag is up")
-                while self._flag != 1:
+                while self._flag == 2:
                     if (time() - cooldowncountdown) < 1800:
                         # print(f"Threshold is {self._Tcooling}")
                         # print(f"Flag is up")
@@ -810,7 +845,9 @@ class Magnet:
                             return True
                         
                         else:
+                            self._flag = 2
                             self.pause_all()
+                            # print("sanity check #3 for temp")
                             # check1 = self.device_z.is_ramping()
                             # print(f"Check1 is {check1}")
                             # if check1 != "Pause" or check1 != "Standby":
@@ -828,16 +865,14 @@ class Magnet:
                             # if check3 != "Pause" or check3 != "Standby":
                             #     self.device_2.pause_field()
 
-                            zcheck = self.device_z.temp_check(self._Tcooling)
-
                     else:
                         timeout = pd.Timestamp.now()
                         print(f"Magnet unable to cool down. Ramping down all magnets and ending the scan. {timeout}")
                         self.shutdown()
+                        break
                     
-            elif secondcheck == True:
-                if self._flag == 1:
-                    return True 
+            elif secondcheck == True and self._flag == 1:
+                return True
                 
         else:
             timeout = pd.Timestamp.now() 
@@ -884,7 +919,7 @@ class Magnet_highZ:
 
         self._B_sign = 1 
         
-        self._Toverheat = 4.55
+        self._Toverheat = 4.50
         self._Tcooling = (self._Toverheat - 0.35)
         self._Tflag = (self._Toverheat - 0.2)
         self._flag = 1

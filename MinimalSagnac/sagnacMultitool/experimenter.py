@@ -3,6 +3,33 @@ import sys
 import pandas as pd
 from itertools import product
 
+import os, datetime, time
+# log_dir = os.path.join(os.getcwd(), "logs")
+# os.makedirs(log_dir, exist_ok=True)
+# ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+# log_name = os.path.join(log_dir, f"experiment_log_{ts}.txt")
+# class Tee:
+#     def __init__(self, *files):
+#         self.files = files
+#     def write(self, data):
+#         for f in self.files:
+#             f.write(data)
+#             f.flush()
+#     def flush(self):
+#         for f in self.files:
+#             f.flush()
+# log_file = open(log_name, "w", buffering=1)
+# sys.stdout = Tee(sys.__stdout__, log_file)
+# sys.stderr = Tee(sys.__stderr__, log_file)
+# import builtins
+# _old_print = builtins.print
+# def print(*args, **kwargs):
+#     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#     epoch = time.time()
+#     _old_print(f"[{now} | {epoch:.3f}] ", *args, **kwargs)
+# builtins.print = print
+# print(f"Logging started {log_name}")
+
 def print_nicely(obj, n=3):
     """Prints a nested object nicely. Written By GPT"""
     import pprint, builtins
