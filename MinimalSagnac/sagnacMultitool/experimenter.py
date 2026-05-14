@@ -80,7 +80,7 @@ def perform_measurement(csv_file, namespace, commentChar = ';'):
         data[header] = obj() if callable(obj) else obj
 
     # Append the data to the CSV file
-    df = pd.DataFrame(data,index=[0])
+    df = pd.DataFrame([data])
     df.to_csv(csv_file, mode='a', header=False, index=False)
     return data
 

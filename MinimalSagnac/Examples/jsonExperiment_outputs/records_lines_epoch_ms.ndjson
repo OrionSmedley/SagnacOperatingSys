@@ -1,0 +1,2 @@
+{"number":3.14,"numpy_array_1":[1.23],"numpy_float":4.56,"timestamp":1778675696789,"string":"hello","list_1":[7.89],"dict":{"number":1,"numpy_array_1":[2.0],"numpy_float":3.0,"timestamp":1778634123000,"string":"inside dict","list_1":[4.0]},"list":[1,[2.0],3.0,1778645106000,"inside list",[4.0],{"nested":[5.0]}]}
+{"number":2.72,"numpy_array_1":[9.87],"numpy_float":6.54,"timestamp":1778679296789,"string":"world","list_1":[1.11],"dict":{"number":2,"numpy_array_1":[8.0],"timestamp":1778637784000},"list":[2,[8.0],9.0,1778648767000]}

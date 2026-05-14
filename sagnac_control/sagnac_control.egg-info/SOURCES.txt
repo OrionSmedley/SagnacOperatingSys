@@ -1,7 +1,9 @@
 README.rst
 setup.py
 sagnac/ANC300.py
+sagnac/HF2LI.py
 sagnac/__init__.py
+sagnac/aps100.py
 sagnac/custom_instruments.py
 sagnac/useful_functions.py
 sagnac/procedures/AMRKeithleyProcedure.py
@@ -14,6 +16,8 @@ sagnac/procedures/PHE2PtProcedure.py
 sagnac/procedures/PHEProcedure.py
 sagnac/procedures/TempTrackingProcedure.py
 sagnac/procedures/__init__.py
+sagnac/procedures/junkMag.py
+sagnac/procedures/testJunkMag.py
 sagnac_control.egg-info/PKG-INFO
 sagnac_control.egg-info/SOURCES.txt
 sagnac_control.egg-info/dependency_links.txt
