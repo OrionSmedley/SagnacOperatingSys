@@ -8,15 +8,19 @@ from pymeasure.instruments.validators import truncated_range
 from pymeasure.instruments import Instrument
 import pyvisa
 from .instruments.AMI420 import AMI420
-from sagnac.instruments import APS100
+# from sagnac.instruments import APS100 # Uses USB virtual com ports, slower and less accurate
+from sagnac.instruments.aps100GPIB import APS100 # Uses GPIB ports
 import atto_device.CRYO2100 as cr
 
 class Magnet:
     ATOL = 1e-3
     Tthresh = 4.4
     def __init__(self, x_axis_tilt=91.4, y_axis_tilt=89.3, phi_offset=0.0):
-        self.device_x = APS100("COM4")
-        self.device_2 = APS100("COM5")
+        self.device_x = APS100(1) # Uses GPIB ports
+        self.device_2 = APS100(3) # Uses GPIB ports
+
+        # self.device_x = APS100("COM4") # Uses USB virtual com ports, slower and less accurate
+        # self.device_2 = APS100("COM5") # Uses USB virtual com ports, slower and less accurate
         # device 2 channel 1 is Z
         # device 2 channel 2 is Y
 
@@ -55,10 +59,6 @@ class Magnet:
         self._field_difference_cutoff = 0
         self._field_mag_lim = 9.5
         self._B_sign = 1
-        self._Toverheat = 4.55
-        self._Tcooling = (self._Toverheat - 0.40)
-        self._Tflag = (self._Toverheat - 0.2)
-        self._flag = 1
 
         # initialize lab from sample
         self._sync_lab_from_sample()
@@ -273,14 +273,24 @@ class Magnet:
     ############### Old Hardware connections #################
 
     def connect(self):
-        if self.device_x.connection and self.device_x.connection.is_open:
-            self.device_x.disconnect()
-        if self.device_2.connection and self.device_2.connection.is_open:
-            self.device_2.disconnect()
+        # if self.device_x.connection and self.device_x.connection.is_open:
+        #     self.device_x.disconnect()
+        # if self.device_2.connection and self.device_2.connection.is_open:
+        #     self.device_2.disconnect()
+        # self.device_x.connect()
+        # self.device_x.write_command("REMOTE")
+        # self.device_2.connect()
+        # self.device_2.write_command("REMOTE")
+
+        # self.device_x.disconnect()
+        # self.device_2.disconnect()
+
         self.device_x.connect()
-        self.device_x.write_command("REMOTE")
-        self.device_2.connect()
-        self.device_2.write_command("REMOTE")
+        self.device_2.connect()   
+        
+        self.device_x.write("REMOTE")
+        self.device_2.write("REMOTE")
+    
         Bx, By, Bz = self.get_field_cartesian()
         print( "conecting. The field is", np.sqrt(Bx*Bx + By*By + Bz*Bz))
         print(f"The field tilts are X = {self.x_axis_tilt} and Y = {self.y_axis_tilt} deg")

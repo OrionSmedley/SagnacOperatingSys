@@ -2,6 +2,9 @@ import serial
 import time
 import numpy as np
 
+EOL = b'\n'
+ENC = 'utf-8'
+
 class APS100:
     """
     Instrument class for the Attocube APS100 magnet power supply.
@@ -23,6 +26,8 @@ class APS100:
         self.baudrate = baudrate
         self.timeout = timeout
         self.connection = None
+        self._field_cache = 0
+        self._temp_field_cache = 0
 
     def connect(self):
         """
@@ -119,6 +124,44 @@ class APS100:
         time.sleep(0.1)
         return self.read_response(timeout)
 
+    # def read_response(self, timeout=None):
+    #     """Read a single reply line (no echo handling)."""
+    #     if not self.connection or not self.connection.is_open:
+    #         raise ConnectionError("Connection to APS100 is not open.")
+    #     end = time.time() + (timeout or self.timeout)
+    #     self.connection.timeout = max(0.001, end - time.time())
+    #     line = self.connection.read_until(EOL)
+    #     if not line or line == EOL:
+    #         return ""
+    #     return line[:-len(EOL)].decode(ENC, 'replace').rstrip('\r')
+
+    # def query_command(self, command, timeout=None):
+    #     """Echo-aware: write once → drop echo → return payload (or '')."""
+    #     if not self.connection or not self.connection.is_open:
+    #         raise ConnectionError("Connection to APS100 is not open.")
+
+    #     self.connection.reset_input_buffer()
+    #     # print(command)
+    #     self.write_command(command)
+
+    #     end = time.time() + (timeout or self.timeout)
+
+    #     # discard echo (cmd + EOL)
+    #     self.connection.timeout = max(0.001, end - time.time())
+    #     self.connection.read_until(EOL)
+
+    #     # read payload (or blank completion)
+    #     self.connection.timeout = max(0.001, end - time.time())
+    #     line = self.connection.read_until(EOL)
+    #     if not line or line == EOL:
+    #         return ""
+
+    #     # opportunistically consume trailing completion newline if already buffered
+    #     if self.connection.in_waiting:
+    #         self.connection.read_until(EOL)
+
+    #     return line[:-len(EOL)].decode(ENC, 'replace').rstrip('\r')
+
     def query_status(self):
         """
         Query the status of the APS100.
@@ -139,6 +182,21 @@ class APS100:
             try:
                 res = self.query_command('IMAG?')
                 value = float(res.replace('kG', ''))
+                self._field_cache = value
+                res = self.query_command('IMAG?')
+                value = float(res.replace('kG', ''))
+                if abs(value - self._field_cache) > 0.1:
+                    # print("Rechecking field")
+                    time.sleep(0.1) 
+                    self._temp_field_cache = value
+                    res = self.query_command('IMAG?')
+                    value = float(res.replace('kG', ''))            
+                    while abs(value - self._temp_field_cache)/abs(self._temp_field_cache) > 0.5 and abs(value - self._field_cache) > 0.6:
+                        time.sleep(0.1)
+                        self._temp_field_cache = value
+                        res = self.query_command('IMAG?')
+                        value = float(res.replace('kG', ''))    
+                self._field_cache = value
                 return value
             except:
                 value =  np.NaN
@@ -146,23 +204,23 @@ class APS100:
 
     def set_field(self, field):
         # field in kG
-        if abs(field) > 50:
-            field = np.sign(field)*50
+        if abs(field) > 90:
+            field = np.sign(field)*90
         if field == 0:
             self.zero_field()
-        
-        current_field = self.get_field()
-        time.sleep(0.1)
-        if field - current_field > 0.001:
-            self.write_command(f'ULIM {field}')
-            time.sleep(0.1)
-            self.write_command('SWEEP UP')
-        elif field - current_field < -0.001:
-            self.write_command(f'LLIM {field}')
-            time.sleep(0.1)
-            self.write_command('SWEEP DOWN')
         else:
-            pass
+            current_field = self.get_field()
+            time.sleep(0.1)
+            if field - current_field > 0.001:
+                self.write_command(f'ULIM {field}')
+                time.sleep(0.1)
+                self.write_command('SWEEP UP')
+            elif field - current_field < -0.001:
+                self.write_command(f'LLIM {field}')
+                time.sleep(0.1)
+                self.write_command('SWEEP DOWN')
+            else:
+                pass
 
     def check_field(self, set_field, tol = 0.001):
         current_field = self.get_field()

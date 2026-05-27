@@ -48,19 +48,46 @@ try: # Zurich Instruments
     def dem(demod): return myHF2LI.demods[demod].sample()
     myHF2LI.dem = dem
 
-    def dc(v=None):
+    def dc1(v=None):
+        Vrange = myHF2LI.sigouts[0].range()
+        if v is not None:
+            myHF2LI.sigouts[0].offset(v / Vrange)
+        return myHF2LI.sigouts[0].offset() * Vrange
+    def ac1(v=None):
+        Vrange = myHF2LI.sigouts[0].range()
+        if v is not None:
+            myHF2LI.sigouts[0].amplitudes[8-1](v / Vrange)
+        return myHF2LI.sigouts[0].amplitudes[8-1]() * Vrange
+    myHF2LI.dc1 = dc1
+    myHF2LI.ac1 = ac1
+
+    def dc2(v=None):
         Vrange = myHF2LI.sigouts[1].range()
         if v is not None:
             myHF2LI.sigouts[1].offset(v / Vrange)
         return myHF2LI.sigouts[1].offset() * Vrange
 
-    def ac(v=None):
+    def ac2(v=None):
         Vrange = myHF2LI.sigouts[1].range()
         if v is not None:
             myHF2LI.sigouts[1].amplitudes[7-1](v / Vrange)
         return myHF2LI.sigouts[1].amplitudes[7-1]() * Vrange
-    myHF2LI.dc = dc
-    myHF2LI.ac = ac
+    myHF2LI.dc2 = dc2
+    myHF2LI.ac2 = ac2
+
+    # def dc(v=None):
+    #     Vrange = myHF2LI.sigouts[1].range()
+    #     if v is not None:
+    #         myHF2LI.sigouts[1].offset(v / Vrange)
+    #     return myHF2LI.sigouts[1].offset() * Vrange
+
+    # def ac(v=None):
+    #     Vrange = myHF2LI.sigouts[1].range()
+    #     if v is not None:
+    #         myHF2LI.sigouts[1].amplitudes[7-1](v / Vrange)
+    #     return myHF2LI.sigouts[1].amplitudes[7-1]() * Vrange
+    # myHF2LI.dc = dc
+    # myHF2LI.ac = ac
 
 
 
@@ -248,11 +275,6 @@ try: # Magnet
 
 except:
     print("sagnac3.0: no magnet aps100")
-
-
-
-
-
 
 
 

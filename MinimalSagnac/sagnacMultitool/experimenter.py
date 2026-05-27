@@ -29,7 +29,7 @@ def print_nicely(obj, n=3):
 def load_variables_from_csv(csv_file, commentChar = ';'):
     """Loads parameters from the CSV file."""
     # Run CSV code
-    with open(csv_file, 'r') as file: # Extract comment by removing the leading ';' and whitespace
+    with open(csv_file, 'r') as file: # Extract comment by removing the leading ';' and whitespace ## Does this still remove whitespace? (EB and YH 1/13/2026)
         comment_lines = [line.lstrip(commentChar) for line in file if line.startswith(commentChar)]   #removed .strip() from line.lstrip(commentChar).strip() to keep the indentation
     python_code = "\n".join(comment_lines) # Combine comments into a single block of Python code
     namespace = {'np': np,'pd':pd, "hysteresis":hysteresis,"repeat":repeat,"time":time}  # Modules for the `exec` namespace

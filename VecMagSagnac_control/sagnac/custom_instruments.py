@@ -8,7 +8,9 @@ from pymeasure.instruments.validators import truncated_range
 from pymeasure.instruments import Instrument
 import pyvisa
 from .instruments.AMI420 import AMI420
-from sagnac.instruments import APS100
+# from sagnac.instruments import APS100 # Uses USB virtual com ports, slower and less accurate
+from sagnac.instruments.aps100GPIB import APS100 # Uses GPIB ports
+
 import atto_device.CRYO2100 as cr
 
 
@@ -443,8 +445,11 @@ class vectorMagnetFullUSB:
     ATOL = 1e-3
     def __init__(self, limit = 9.9):
         # in this case device = APS100("port")
-        self.device_x = APS100("COM4")
-        self.device_2 = APS100("COM5")
+        self.device_x = APS100(1) # Uses GPIB ports
+        self.device_2 = APS100(3) # Uses GPIB ports
+
+        # self.device_x = APS100("COM4") # Uses USB virtual com ports, slower and less accurate
+        # self.device_2 = APS100("COM5") # Uses USB virtual com ports, slower and less accurate
         # device 2 channel 1 is Z
         # device 2 channel 2 is Y
 
@@ -465,14 +470,12 @@ class vectorMagnetFullUSB:
         # self.B_set, self.phi_set, self.theta_set = self.get_field_polar()
 
     def connect(self):
-        if self.device_x.connection and self.device_x.connection.is_open:
-            self.device_x.disconnect()
-        if self.device_2.connection and self.device_2.connection.is_open:
-            self.device_2.disconnect()
+        self.device_x.disconnect()
+        self.device_2.disconnect()
         self.device_x.connect()
-        self.device_x.write_command("REMOTE")
+        self.device_x.write("REMOTE")
         self.device_2.connect()
-        self.device_2.write_command("REMOTE")
+        self.device_2.write("REMOTE")
         Bx, By, Bz = self.get_field_cartesian()
         print( "conecting. The field is", np.sqrt(Bx*Bx + By*By + Bz*Bz))
         if np.sqrt(Bx*Bx + By*By + Bz*Bz) > self._field_mag_lim:
@@ -733,27 +736,27 @@ class vectorMagnetFullUSB_highZ:
     Uses the usual physics parameterization of the magnetic field.
     """
 
-    def __init__(self, limit = 50):
-        self.device_x = APS100("COM4")
-        self.device_2 = APS100("COM5")
+    def __init__(self, limit = 90):
+        self.device_x = APS100(1) # Uses GPIB ports
+        self.device_2 = APS100(3) # Uses GPIB ports
+
+        # self.device_x = APS100("COM4") # Uses USB virtual com ports, slower and less accurate
+        # self.device_2 = APS100("COM5") # Uses USB virtual com ports, slower and less accurate
+        # device 2 channel 1 is Z
+        # device 2 channel 2 is Y
         self._field_difference_cutoff = 0 #1e-5 # 0.1 G
         self._field_mag_lim = limit # bootleg version is kG, previous auttodry gui was T
         # self._B_sign = 1 #Not sure what this is for. Delete? 2025/01/24 - Orion and Ethan
 
     def connect_highZ(self):
-        if self.device_x.connection and self.device_x.connection.is_open:
-            self.device_x.disconnect()
-        if self.device_2.connection and self.device_2.connection.is_open:
-            self.device_2.disconnect()
+        self.device_x.disconnect()
+        self.device_2.disconnect()
         self.device_x.connect()
         self.device_2.connect()
-        self.device_x.write_command("REMOTE")
-        self.device_2.write_command("REMOTE")
+        self.device_x.write("REMOTE")
+        self.device_2.write("REMOTE")
         
         BxCon,ByCon,BzCon = self.get_field_cartesian()
-        
-        
-        
         
         if np.abs(BzCon) > 9.9:
             if np.abs(BxCon) >0 or np.abs(ByCon) > 0:

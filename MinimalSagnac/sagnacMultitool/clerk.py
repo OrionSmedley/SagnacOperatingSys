@@ -9,6 +9,8 @@ Let the clerk do it for you!
 import numpy as np
 import pandas as pd
 import time
+import requests
+import datetime
 
 # repeat = None  # doesn't do anything, just a convenient dummy variable for use in experimenter.py
 # subSample = None  # doesn't do anything, just a convenient dummy variable for use in experimenter.py
@@ -135,3 +137,16 @@ def waitUntil(condition):
 
 def simplehysteresis(npArray):
     return np.concatenate([npArray, npArray[::-1]])
+
+def notify_slack(message: str, webhook_url: str):
+    """Send a Slack notification with a given message."""
+    payload = {
+        "text": f":microscope: *Cryo Scan Update*\n{message}\n_Time: {datetime.datetime.now():%Y-%m-%d %H:%M:%S}_"
+    }
+    try:
+        r = requests.post(webhook_url, json=payload)
+        r.raise_for_status()
+        print("Slack notification sent successfully.")
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to send Slack message: {e}")
+
