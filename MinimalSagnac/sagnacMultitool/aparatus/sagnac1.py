@@ -85,13 +85,23 @@ try: #imports for Zurich Instruments
     def dem(demod): return myHF2LI.demods[demod].sample()
     myHF2LI.dem = dem
 
-    def get_output_amp(out=0, idx=7):
+    def get_output_amp(out=1-1, idx=8-1):
         return myHF2LI.sigouts[out].amplitudes[idx]() * myHF2LI.sigouts[out].range()
-    def set_output_amp(voltage, out=0, idx=7):
+    def set_output_amp(voltage, out=1-1, idx=8-1):
         rng = myHF2LI.sigouts[out].range()
         myHF2LI.sigouts[out].amplitudes[idx](voltage / rng)
     myHF2LI.get_output_amp = get_output_amp
     myHF2LI.set_output_amp = set_output_amp
+
+    type(myHF2LI).Ve = property(
+        lambda self: self.get_output_amp(out=1, idx=6),
+        lambda self, v: self.set_output_amp(v, out=1, idx=6),
+    )
+
+    type(myHF2LI).Vmod = property(
+        lambda self: self.get_output_amp(),
+        lambda self, v: self.set_output_amp(v),
+    )
 
 except:
     print("Sagnac1.0: Zurich Instruments not found")
