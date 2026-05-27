@@ -61,7 +61,7 @@ try: #imports for Zurich Instruments
     from zhinst.toolkit import Session
     import time
     session = Session("localhost", hf2=True)
-    myHF2LI = session.connect_device("DEV1004")
+    myHF2LI = session.connect_device("DEV18583")
 
     # set timeconstants for all channels
     def setTc(Tc): 
@@ -69,6 +69,12 @@ try: #imports for Zurich Instruments
         myHF2LI.Tc = Tc
     myHF2LI.setTc = setTc
 
+    # set filterOrder for all channels
+    def setOrder(order): 
+        [myHF2LI.demods[demod].order(order) for demod in range(6)]
+        myHF2LI.order = order
+    myHF2LI.setOrder = setOrder
+    
     def waitTc(n): 
         """Wait for n time constants"""
         print(f"Waiting for {n}Tc =  ({n*myHF2LI.Tc} s)")
@@ -78,6 +84,15 @@ try: #imports for Zurich Instruments
     # get value of a demodulator
     def dem(demod): return myHF2LI.demods[demod].sample()
     myHF2LI.dem = dem
+
+    def get_output_amp(out=0, idx=7):
+        return myHF2LI.sigouts[out].amplitudes[idx]() * myHF2LI.sigouts[out].range()
+    def set_output_amp(voltage, out=0, idx=7):
+        rng = myHF2LI.sigouts[out].range()
+        myHF2LI.sigouts[out].amplitudes[idx](voltage / rng)
+    myHF2LI.get_output_amp = get_output_amp
+    myHF2LI.set_output_amp = set_output_amp
+
 except:
     print("Sagnac1.0: Zurich Instruments not found")
 

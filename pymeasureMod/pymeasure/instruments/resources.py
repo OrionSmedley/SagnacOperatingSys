@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 #
 
-import visa
+import pyvisa as visa
 
 
 def list_resources():

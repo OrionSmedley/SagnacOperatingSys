@@ -25,8 +25,7 @@
 import logging
 
 import copy
-import visa
-# import pyvisa as visa
+import pyvisa as visa
 import numpy as np
 from pkg_resources import parse_version
 
