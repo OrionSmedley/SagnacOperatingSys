@@ -128,6 +128,14 @@ def waitUntil(condition):
         time.sleep(0.5)
         # print( "condition is ", condition())
 
+def rename_columns(df):
+    df.columns = [c.split("#")[-1].strip() for c in df.columns]
+    for c in df.columns[df.iloc[0].astype(str).str[0].isin(["[", "{"])]:
+        v = df[c].map(lambda s: eval(s, {"Timestamp": pd.Timestamp, "pd": pd, "np": np}) if isinstance(s, str) and s[:1] in "[{" else None)
+        fill = {} if isinstance(v.dropna().iloc[0], dict) else []
+        df = df.drop(columns=c).join(pd.DataFrame(v.map(lambda x: x if x is not None else fill).tolist(), index=df.index).add_prefix(f"{c}."))
+    return df
+
     
 # ## The following functions have been removed from experimenter.py and placed here for convenience ##
 # ## heleper fuctions usable from csv file ##

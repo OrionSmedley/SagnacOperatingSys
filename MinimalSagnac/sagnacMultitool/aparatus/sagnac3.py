@@ -29,9 +29,6 @@ logging.basicConfig(level=logging.WARNING,  # Log only WARNING or above by defau
 #############################################################################################################################
 
 
-
-
-
 try: # Zurich Instruments
     import os
     import numpy as np
@@ -75,6 +72,13 @@ try: # Zurich Instruments
     myHF2LI.dc2 = dc2
     myHF2LI.ac2 = ac2
 
+    def zurich(mode = "Sagnac"):
+        dem = myHF2LI.dem
+        if mode == "Sagnac":      return {"mode":mode,"ac1":myHF2LI.ac1(),"dc1":myHF2LI.dc1(),"diff1":myHF2LI.sigins[1-1].diff(),"ac2":myHF2LI.ac2(),"dc2":myHF2LI.dc2(),"diff2":myHF2LI.sigins[2-1].diff(),"TX1":dem(1-1)['x'][0],"TY1":dem(1-1)['y'][0],"TX2":dem(2-1)['x'][0],"TY2":dem(2-1)['y'][0],"X2":dem(3-1)['x'][0],"Y2":dem(3-1)['y'][0],"X1":dem(4-1)['x'][0],"Y1":dem(4-1)['y'][0],"XC+M":dem(5-1)['x'][0],"YC+M":dem(5-1)['y'][0],"XC-M":dem(6-1)['x'][0],"YC-M":dem(6-1)['y'][0],"ThetaK":0.543*np.arctan(dem(4-1)['x'][0]/dem(3-1)['y'][0]),"DeltaThetaK":0.543*dem(5-1)['x'][0]/dem(3-1)['y'][0],"DeltaThetaK_DualSideband":0.543*(dem(5-1)['x'][0] + dem(6-1)['x'][0]) / (2 * dem(2)['y'][0]) }
+        elif mode == "Transport": return {"mode":mode,"ac1":myHF2LI.ac1(),"dc1":myHF2LI.dc1(),"diff1":myHF2LI.sigins[1-1].diff(),"ac2":myHF2LI.ac2(),"dc2":myHF2LI.dc2(),"diff2":myHF2LI.sigins[2-1].diff(),"TX1":dem(1-1)['x'][0],"TY1":dem(1-1)['y'][0],"TX2":dem(2-1)['x'][0],"TY2":dem(2-1)['y'][0],"X2":dem(3-1)['x'][0],"Y2":dem(3-1)['y'][0],"X1":dem(4-1)['x'][0],"Y1":dem(4-1)['y'][0],"XC+M":dem(5-1)['x'][0],"YC+M":dem(5-1)['y'][0],"XC-M":dem(6-1)['x'][0],"YC-M":dem(6-1)['y'][0]}
+        else:
+            print("Please select a mode for the zurich: 'Sagnac' or 'Transport'")
+
     # def dc(v=None):
     #     Vrange = myHF2LI.sigouts[1].range()
     #     if v is not None:
@@ -88,9 +92,6 @@ try: # Zurich Instruments
     #     return myHF2LI.sigouts[1].amplitudes[7-1]() * Vrange
     # myHF2LI.dc = dc
     # myHF2LI.ac = ac
-
-
-
 
     # def get_vout(self, out_num, osc_num):
     #     return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num))
@@ -111,11 +112,6 @@ try: # Zurich Instruments
     # # Bind the methods to the instance `myHF2LI`
     # myHF2LI.get_vout = MethodType(get_vout, myHF2LI)
     # myHF2LI.set_vout = MethodType(set_vout, myHF2LI)
-
-
-
-
-
 
     # from pymeasure.instruments.zurich import HF2LI
     # pyHF2LI(8005, 1, 18338)
@@ -238,6 +234,11 @@ try: # Zurich Aux Scanners
         x = property(get_x, set_x)
         y = property(get_y, set_y)
         z = property(get_z, set_z)
+        def get_positions(self):return {"x": self.x,"y": self.y,"z": self.z}
+        positions = property(get_positions)
+
+    scanner = scanners()
+
 except:
     print("sagnac3.0: no scanners")
 
@@ -252,6 +253,12 @@ try: # Magnet
     from sagnac.magnet_usb_safe_ramp_v2 import Magnet
 
     mag = Magnet(x_axis_tilt = 91.4, y_axis_tilt= 89.3, phi_offset=0.0)
+
+    def field():
+        return {"Bx":mag.Bx,"By":mag.By,"Bz":mag.Bz,"B":mag.B,"phi":mag.phi,"theta":mag.theta,"tilt_x":mag.x_axis_tilt,"tilt_y":mag.y_axis_tilt,"phi_offset":mag.phi_offset}
+
+    def field_lab():
+        return {"Bx":mag.Bx_lab,"By":mag.By_lab,"Bz":mag.Bz_lab,"B":mag.B_lab,"phi":mag.phi_lab,"theta":mag.theta_lab}
 # #     x_axis_tilt is defined in the lab frame as the polar angle (in deg) from the z-axis into the positive x direction, defined here with defaults to 91.4 deg
 # #     y_axis_tilt " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " into the positive y direction, defined here with defaults to 89.3 deg
 # #     phi_offset is used to rotate the xy-plane about the new sample frame z-axis, can be set later
@@ -265,9 +272,6 @@ try: # Magnet
 
 #     ## usage: mag.setSafeWaitBx(0.04)
 
-
-
-
 # #+Bx is 0deg azimuthal, +By is 90deg azimuthal (90deg polar), -Bx is 180deg azimuthal, -By is 270deg azimuthal, +Bz is 0deg polar
 #     mag.setSafeWaitB = lambda b: mag.setSafe_wait_polar(b,mag.phi_set,mag.theta_set)
 #     mag.setSafeWaitPhi = lambda phi: mag.setSafe_wait_polar(mag.B_set,phi,mag.theta_set)
@@ -275,8 +279,6 @@ try: # Magnet
 
 except:
     print("sagnac3.0: no magnet aps100")
-
-
 
 try: # Magnet High Z
 
@@ -286,7 +288,6 @@ try: # Magnet High Z
     from sagnac.custom_instruments import vectorMagnetFullUSB_highZ
     mag_highZ = vectorMagnetFullUSB_highZ()
     # mag_highZ.connect_highZ()
-
 
     import atto_device.CRYO2100 as cr
     atto = cr("192.168.1.1")
@@ -319,30 +320,31 @@ except:
     print("sagnac3.0: no magnet aps100")
 
 
-
 try: #stepper
     from .drivers.ANC300 import ANC300
     stepper = ANC300()
     stepper.connect()
 except:
-    print( "sagnac3.0: no stepper")
-
-
-
-
+    print("sagnac3.0: no stepper")
 
 try: # Keithley
     import sys
     module_dir = r"C:\Users\luogroup\AppData\Roaming\Python\Python311\site-packages\pymeasure\instruments"
     sys.path.append(module_dir)
     from keithley.keithley2400 import Keithley2400 
-    keith26 = Keithley2400("GPIB::26")
     keith24 = Keithley2400("GPIB::24")
+    keith25 = Keithley2400("GPIB::25")    
+    keith26 = Keithley2400("GPIB::26")
+    
+    def k24():
+        return {"V24":keith24.current[0],"I24":keith24.current[1]}
+    def k25():
+        return {"V25":keith25.current[0],"I25":keith25.current[1]}
+    def k26():
+        return {"V26":keith26.current[0],"I26":keith26.current[1]}
 
 except:
     print( "sagnac3.0: no keith")
-
-
 
 try: # Owon osciloscope
     import vds1022 as owon
@@ -352,9 +354,34 @@ except:
     print("sagnac3.0: no owon")
 
 
-
 try: # Laser controller LDC3900
     from aparatus.drivers.LDC3900 import LaserDriver
     laser = LaserDriver()
+
+    def sled(mode = "Sagnac", laser_status = []):
+        if mode == "Sagnac": 
+            return {"T":laser.T, "LDI":laser.LDI, "LDV":laser.LDV}
+        elif mode == "Scanning": 
+            if int(len(laser_status)) != 3:
+                raise ValueError("Please include as an argument: laser_status = [laserT, laserLDI, laserLDV]")
+            else:
+                return {"Tsamp": laser_status[0], "Tvti": laser_status[1], "Tres": laser_status[2]}
+        else:
+            raise ValueError("Please select mode: 'Scanning' or 'Sagnac'")
 except:
     print("sagnac3.0: no LASER")
+
+# dictionaries to evaluate for the CSVs
+def logs(queueT = None, repeat = None, sampNumb = None, purpose = None):
+    return {"queueT":queueT, "repeat":repeat, "sampNumb":sampNumb,"purpose":purpose,"now":pd.Timestamp.now(), "time": time.time()}
+
+def temps(mode = "Sagnac", temps = []):
+    if mode == "Sagnac":
+        return {"Tsamp": atto.sample.getTemperature(), "Tvti": atto.vti.getTemperature(), "Tres": atto.condenser.getTemperature()}
+    elif mode == "Scanning":
+        if int(len(temps)) != 3:
+            raise ValueError("Please include as an argument: temps = [Tsamp, Tvti, Tres]")
+        else:
+            return {"Tsamp": temps[0], "Tvti": temps[1], "Tres": temps[2]}
+    else:
+        raise ValueError("Please select mode: 'Scanning' or 'Sagnac'")
