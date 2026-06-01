@@ -86,8 +86,10 @@ try: #imports for Zurich Instruments
     myHF2LI.dem = dem
 
     def get_output_amp(out=1-1, idx=8-1):
+        """Get the output amplitude in Vpk (not pk-pk) into a high impedance load"""
         return myHF2LI.sigouts[out].amplitudes[idx]() * myHF2LI.sigouts[out].range()
     def set_output_amp(voltage, out=1-1, idx=8-1):
+        """Set the output amplitude in Vpk (not pk-pk) into a high impedance load"""
         rng = myHF2LI.sigouts[out].range()
         myHF2LI.sigouts[out].amplitudes[idx](voltage / rng)
     myHF2LI.get_output_amp = get_output_amp
