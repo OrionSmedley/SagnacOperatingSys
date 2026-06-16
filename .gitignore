@@ -2,3 +2,4 @@
 junk*
 *.pyc
 .venv/
+MinimalSagnac/sagnacMultitool/aparatus/drivers/fakemag.py
