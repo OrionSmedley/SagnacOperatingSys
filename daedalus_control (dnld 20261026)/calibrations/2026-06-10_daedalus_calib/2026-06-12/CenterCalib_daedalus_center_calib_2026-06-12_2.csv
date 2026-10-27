@@ -1,0 +1,11 @@
+#Procedure: <__main__.daedalusCenterCalibrationProcedure>
+#Parameters:
+#	stage X guess: 12.3 mm
+#	stage Y guess: 14.5 mm
+#	Calibration Name: CenterCalib
+#	Volts to magnet: 5 V
+#	Queued Time: 2026-06-12 11:00:20
+#	Scaling from Z field difference to mm: 0.2 mm/T
+#	Field Tolerance: 0.005 T
+#Data:
+X,Y,Xfield,Yfield,Zfield,elapsed_time

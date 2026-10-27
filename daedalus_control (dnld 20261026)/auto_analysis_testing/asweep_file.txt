@@ -1,0 +1,20 @@
+# swept procedure column: X
+# swept series parameter: multiplier
+# swept series parameter: multiplier2
+#
+test2018-08-14_1.csv
+test2018-08-14_2.csv
+test2018-08-14_3.csv
+test2018-08-14_4.csv
+test2018-08-14_5.csv
+test2018-08-14_6.csv
+test2018-08-14_7.csv
+test2018-08-14_8.csv
+test2018-08-14_9.csv
+test2018-08-14_10.csv
+test2018-08-14_11.csv
+test2018-08-14_12.csv
+test2018-08-14_13.csv
+test2018-08-14_14.csv
+test2018-08-14_15.csv
+test2018-08-14_16.csv

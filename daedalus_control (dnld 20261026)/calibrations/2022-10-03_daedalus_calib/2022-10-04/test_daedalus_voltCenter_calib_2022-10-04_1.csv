@@ -1,0 +1,11 @@
+#Procedure: <__main__.daedalusVoltCenterCalibrationProcedure>
+#Parameters:
+#	Calibration Name: test
+#	Center Calibration File: ./daedalus_center_calib.csv
+#	Magnet Azimuthal Angle: 0 deg
+#	Queued Time: 2022-10-04 09:48:19
+#	Start magnet voltage: -5 V
+#	Magnet voltage step: 0.5 V
+#	Stop magnet voltage: 5 V
+#Data:
+V,Xfield,Yfield,Zfield,elapsed_time

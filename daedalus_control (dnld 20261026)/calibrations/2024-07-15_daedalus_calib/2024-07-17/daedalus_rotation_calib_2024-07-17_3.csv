@@ -1,0 +1,16 @@
+#Procedure: <__main__.daedalusRotationCalibrationProcedure>
+#Parameters:
+#	Magnet Calibration Filename: C:/Users/RalphGroup/Documents/group_code/daedalus_control/calibrations/daedalus
+#	End Azimuthal Field: 360 deg
+#	Start Azimuthal Field: 0 deg
+#	Azimuthal Field Step: 5 deg
+#	Magnetic Field Polar Angle: 0 deg
+#	Field Strength: 1e-05 T
+#	Number of Averages: 1
+#	Queued Time: 2024-07-17 10:08:57
+#	Sample Name: RotationCenterCheck
+#	Probe Station Name: daedalus
+#Data:
+field_azimuth,Xfield_avg,Yfield_avg,Zfield_avg,Xfield_std,Yfield_std,Zfield_std,elapsed_time
+0.0,-0.0007276864821095272,-0.0020529530407300805,0.0026400850406888767,0.0,0.0,0.0,6.548675298690796
+5.0,-0.0007098418955396795,-0.0019081348782915954,0.002614638788708703,0.0,0.0,0.0,11.268295288085938

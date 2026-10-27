@@ -1,0 +1,45 @@
+﻿Daedalus Magnet Calibration Instructions (June 2025)
+
+
+The magnet needs to be recalibrated every 6-12 months, but is worth checking if your data is looking strange. There is a Magnet Test python notebook in the documents folder that loads in the magnet and the hall sensor. The last cell of that file can be used to check the magnet set values against the hall sensor values. If they are off, the magnet needs to be recalibrated. Give yourself about a day to do a full calibration, some of the scans can take quite a while to run
+
+
+Go to group_code/daedalus_control/calibrations and create a folder with the date of the old calibrations and label it as old calibrations
+
+
+Move the files daedalus_(fieldratio, radial_polar, volt_center, and center)_calib.csv to the folder. Leave the old hallProbeZero.csv, that is the last file that gets calibrated
+
+
+Make a folder to store the new calibration data and copy over the four ipynb files in daedalus_control/calibrations/calibration_analysis_notebooks
+
+
+Open a pymeasure conda powershell (shortcut in the hotbar, the one for running GUIs) and go to daedalus_control/calibrations/calib_procedures,run centerCalibGUI.py
+Save the output to the new calibration folder. The default parameters are pretty good, but it can take a very long time to converge if the initial x and y guess are far away from the field center, starting at 12 mm in x and 14.5 in y are a pretty good initial guess.
+Go to the last line of the output csv and copy the x and y values to a new daedalus_center_calib.csv. Use these center values for the rest of the calibration steps.
+
+
+Run voltCenterCalibGUI.py. Save the data to your new calibration folder, and make sure that the GUI is reading the values from the new version of daedalus_center_calib.csv. Run one scan with phi=0 and one with phi=90, -10 V to 10 V is good if you are calibrating for the Kepco
+
+
+Run radialPolarCalibGUI.py. Save the data to your new calibration folder, and make sure that the GUI is reading the values from the new version of daedalus_center_calib.csv. 5 V works fine, run one scan with phi=0 and one with phi=90. For the radius -15mm to 15 mm or -16 mm to 16 mm should work. (The positive and negative values or radius both need to be calibrated, don’t try to save time by starting at 0 radius)
+
+
+Open MagnetVoltageToField.ipynb, change the filepaths to point to the old volt_center calibration file and the data that you took from the phi=0 scan from voltCenterCalibGUI. Check the old calibration fit against the new data. Fit the new calibration and copy the printed parameters (there should be 10) to a new volt_center csv. Load in the phi=90 scan and make sure that the phi=0 and phi=90 scans aren’t different.
+
+
+Open MagnetRadialDistancetoField.ipynb, import the old fieldratio calibration csv and the phi=0 data from radialPolarCalibGUI. Check the old fit, fit a new one, and copy the printed parameters (there are 13) to a new copy of the fieldratio csv. Check the phi=90 scan as well to make sure it is pretty close.
+
+
+Open MagnetRadialDistanceToTheta.ipynb, import the old calibration parameters and the phi=0 data from radialPolarCalibGUI. Check the old fit, fit a new one, and copy the printed parameters  (there are 6) to a new copy of  the radial_polar csv. Check the phi=90 scan to make sure it is close. Note that the fit is actually done on -theta vs R. This is on purpose, for some reason this needs to be flipped to make sure that theta=-90 corresponds to negative Bz. I do not know why this is, but it works.
+
+
+Go back to your powershell and run rotationCalibGUI.py. Go to the setup info tab and make sure the calibration directory is pointing to where your new calibration csv files are saved. Save the data to your calibration data folder. (Ignore the lockin params tab, this is a GUI remnant that does nothing). Sweep phi from 0 to 360 at 0 T and 0.1 T.
+
+
+Move the old hallProbeZero.csv to the folder of old calibrations. Open HallSensorOffset.ipynb, and load in the data you just took. Run through the fits, and copy the second printed output of the 0 T x, y, and z fits to a new version of hallProbeZero.csv. Check that the offsets for the 0.1 T data match pretty well with the zero field data.
+
+
+Make sure that the new versions of all 5 calibration csv files are moved to daedalus_control/calibrations. 
+
+
+In theory you are now done, but it is a good idea to check theta=-90 and 90 in Magnet Test.ipynb from the documents folder. The notebook will plot the radius and field correction factor as a function of theta. Make sure that the radius and correction factor aren’t starting to diverge until after theta=+-90. If either of the parameters are diverging, rerun radialPolarCalibGUI.py with higher radius sweep values, then refit the values for the fieldratio and radial_polar csv files. Double check the radius and correction parameters again with Magnet Test (remember to restart the kernel after you’ve modified the csv files). If the parameters are still diverging, repeat the process with even higher radius sweep values.

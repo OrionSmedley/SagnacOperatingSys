@@ -1,0 +1,14 @@
+#Procedure: <__main__.daedalusRadialPoloarCalibrationProcedure>
+#Parameters:
+#	Magnet Calibration Filename: C:/Users/RalphGroup/Documents/group_code/daedalus_control/calibrations/
+#	Calibration Name: RadialPositionVersusField
+#	Center Calibration File: ../daedalus_center_calib.csv
+#	Azimuthal Angle: 0 deg
+#	Magnet Voltage: 5 V
+#	Queued Time: 2024-07-17 11:13:56
+#	Start Y position: -12.2 mm
+#	Y position step: 0.01 mm
+#	Stop Y position: 12.2 mm
+#Data:
+R,Xfield,Yfield,Zfield,theta,phi,B,elapsed_time
+-12.2,0.021798750798532277,-0.006576845756903338,0.13746304833213888,80.58631816195481,106.74574793113489,0.13933396460729525,8.563342809677124
