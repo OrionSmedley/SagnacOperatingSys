@@ -5,7 +5,7 @@
 import pyvisa
 
 # Simulate the `visa` module as an alias for `pyvisa`
-import sys
+import sys, time
 
 # Create a fake 'visa' module, which is essentially an alias for pyvisa
 sys.modules['visa'] = pyvisa
@@ -52,12 +52,12 @@ try: # Zurich Instruments
         Vrange = myHF2LI.sigouts[0].range()
         if v is not None:
             myHF2LI.sigouts[0].offset(v / Vrange)
-        return myHF2LI.sigouts[1].offset() * Vrange
+        return myHF2LI.sigouts[0].offset() * Vrange
     def ac1(v=None):
         Vrange = myHF2LI.sigouts[0].range()
         if v is not None:
-            myHF2LI.sigouts[0].amplitudes[8-1](v / Vrange)
-        return myHF2LI.sigouts[0].amplitudes[8-1]() * Vrange
+            myHF2LI.sigouts[0].amplitudes[7-1](v / Vrange)
+        return myHF2LI.sigouts[0].amplitudes[7-1]() * Vrange
     myHF2LI.dc1 = dc1
     myHF2LI.ac1 = ac1
 
@@ -75,7 +75,12 @@ try: # Zurich Instruments
     myHF2LI.dc2 = dc2
     myHF2LI.ac2 = ac2
     
-
+    def zurich(mode = "Sagnac"):
+        dem = myHF2LI.dem
+        if mode == "Sagnac":      return {"mode":mode,"ac1":myHF2LI.ac1(),"dc1":myHF2LI.dc1(),"diff1":myHF2LI.sigins[1-1].diff(),"ac2":myHF2LI.ac2(),"dc2":myHF2LI.dc2(),"diff2":myHF2LI.sigins[2-1].diff(),"TX1":dem(1-1)['x'][0],"TY1":dem(1-1)['y'][0],"TX2":dem(2-1)['x'][0],"TY2":dem(2-1)['y'][0],"X2":dem(3-1)['x'][0],"Y2":dem(3-1)['y'][0],"X1":dem(4-1)['x'][0],"Y1":dem(4-1)['y'][0],"XC+M":dem(5-1)['x'][0],"YC+M":dem(5-1)['y'][0],"XC-M":dem(6-1)['x'][0],"YC-M":dem(6-1)['y'][0],"ThetaK":0.543*np.arctan(dem(4-1)['x'][0]/dem(3-1)['y'][0]),"DeltaThetaK":0.543*dem(5-1)['x'][0]/dem(3-1)['y'][0],"DeltaThetaK_DualSideband":0.543*(dem(5-1)['x'][0] + dem(6-1)['x'][0]) / (2 * dem(2)['y'][0]) }
+        elif mode == "Transport": return {"mode":mode,"ac1":myHF2LI.ac1(),"dc1":myHF2LI.dc1(),"diff1":myHF2LI.sigins[1-1].diff(),"ac2":myHF2LI.ac2(),"dc2":myHF2LI.dc2(),"diff2":myHF2LI.sigins[2-1].diff(),"TX1":dem(1-1)['x'][0],"TY1":dem(1-1)['y'][0],"TX2":dem(2-1)['x'][0],"TY2":dem(2-1)['y'][0],"X2":dem(3-1)['x'][0],"Y2":dem(3-1)['y'][0],"X1":dem(4-1)['x'][0],"Y1":dem(4-1)['y'][0],"XC+M":dem(5-1)['x'][0],"YC+M":dem(5-1)['y'][0],"XC-M":dem(6-1)['x'][0],"YC-M":dem(6-1)['y'][0]}
+        else:
+            print("Please select a mode for the zurich: 'Sagnac' or 'Transport'")
 
     # def get_vout(self, out_num, osc_num):
     #     return self.getDouble(self.dev + 'sigouts/' + str(out_num) + '/amplitudes/' + str(osc_num))
@@ -114,7 +119,7 @@ try: # Zurich Aux Scanners
         def __init__(self):
             for i in range(4):
                 myHF2LI.auxouts[i].outputselect(-1)
-            self.x, self.y, self.z = 0, 0, 0
+            self._x, self._y, self._z = 0, 0, 0
             
         ### Sets and stores value for the x, y, z positions for the scans ###
         # aux[1-1] is the output for x
@@ -169,10 +174,23 @@ try: # Zurich Aux Scanners
         x = property(get_x, set_x)
         y = property(get_y, set_y)
         z = property(get_z, set_z)
+        def get_positions(self):return {"x": self.x,"y": self.y,"z": self.z}
+        positions = property(get_positions)
 
     scanner = scanners()
+    
 except:
     print("sagnac4.0: no scanners")
+    
+try: #RenSciSteppers
+    import os
+    import numpy as np
+    import pandas as pd
+    from aparatus.drivers import RenSciStack
+    stepper = RenSciStack.RenSciStepper(host="169.254.62.189", port= 6002)
+    
+except:
+    print("sagnac4.0: no steppers")
 
 try: #TM-620
     
@@ -196,6 +214,7 @@ try: #LK336
     import pandas as pd
     from aparatus.drivers import Lakeshore336
     LK336 = Lakeshore336.Lakeshore336()
+
     
 except:
     print("sagnac4.0: no LK336")
@@ -208,6 +227,13 @@ try: # Magnet
     from sagnac.magnet_safe_ramp_hermes_v2 import Magnet
 
     mag = Magnet(x_axis_tilt = 90, y_axis_tilt= 90, phi_offset=0.0)
+    
+    def field():
+        return {"Bx":mag.Bx,"By":mag.By,"Bz":mag.Bz,"B":mag.B,"phi":mag.phi,"theta":mag.theta,"tilt_x":mag.x_axis_tilt,"tilt_y":mag.y_axis_tilt,"phi_offset":mag.phi_offset}
+
+    def field_lab():
+        return {"Bx":mag.Bx_lab,"By":mag.By_lab,"Bz":mag.Bz_lab,"B":mag.B_lab,"phi":mag.phi_lab,"theta":mag.theta_lab}
+    
 # #     x_axis_tilt is defined in the lab frame as the polar angle (in deg) from the z-axis into the positive x direction, defined here with defaults to __ deg
 # #     y_axis_tilt " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " into the positive y direction, defined here with defaults to __ deg
 # #     phi_offset is used to rotate the xy-plane about the new sample frame z-axis, can be set later
@@ -235,6 +261,8 @@ try: # Magnet High Z
     from sagnac.magnet_safe_ramp_hermes_v2 import Magnet_highZ
 
     maghighZ = Magnet_highZ()
+    def high_field():
+        return {"Bz":maghighZ.get_field_highZ()}
 
 except:
     print("sagnac4.0: no magnet highZ")
@@ -249,9 +277,6 @@ except:
 #     print( "sagnac3.0: no stepper")
 
 
-
-
-
 try: # Keithley
     import sys
     module_dir = r"C:\Users\luogroup\AppData\Roaming\Python\Python311\site-packages\pymeasure\instruments"
@@ -260,6 +285,13 @@ try: # Keithley
     keith24 = Keithley2400("GPIB::24")
     keith25 = Keithley2400("GPIB::25")    
     keith26 = Keithley2400("GPIB::26")
+    
+    def k24():
+        return {"V24":keith24.current[0],"I24":keith24.current[1]}
+    def k25():
+        return {"V25":keith25.current[0],"I25":keith25.current[1]}
+    def k26():
+        return {"V26":keith26.current[0],"I26":keith26.current[1]}
 
 except:
     print("sagnac4.0: no keith")
@@ -280,3 +312,11 @@ except:
 #     laser = LaserDriver()
 # except:
 #     print("sagnac3.0: no LASER")
+
+# dictionaries to evaluate for the CSVs
+
+def logs(queueT = None, repeat = None, sampNumb = None, purpose = None):
+    return {"queueT":queueT, "repeat":repeat, "sampNumb":sampNumb,"purpose":purpose,"now":pd.Timestamp.now(), "time": time.time()}
+
+# def temps():
+    # return {"Tmag":TM620.Tmag,"Tshield": TM620.Tshield,"Tsamp": LK336.get_sample_temp(),"Tvti": LK336.get_vti_temp()}

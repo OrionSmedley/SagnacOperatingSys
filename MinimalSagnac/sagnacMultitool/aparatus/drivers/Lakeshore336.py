@@ -6,7 +6,7 @@ class Lakeshore336:
     
     def __init__(self):
         self.rm = pyvisa.ResourceManager()
-        self.instrument = self.rm.open_resource("TCPIP0::169.254.62.185::7777::SOCKET")
+        self.instrument = self.rm.open_resource("TCPIP0::10.44.0.22::7777::SOCKET")
         self.instrument.read_termination = '\r\n'
         self.instrument.write_termination = '\r\n'
         self.PID_table = {0: "PID 1, 300, 60, 0.1", 1: "PID 1, 300, 60, 0.1", 2: "PID 1, 300, 30, 0", 3: "PID 1, 50, 3, 5"}

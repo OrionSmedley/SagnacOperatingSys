@@ -384,8 +384,8 @@ class Magnet:
     ATOL = 1e-3
 
     def __init__(self, x_axis_tilt=90, y_axis_tilt=90, phi_offset=0.0):
-        self.device_2 = MagPowSup('169.254.62.188')  # ch1=X, ch2=Y 
-        self.device_z = MagPowSup('169.254.62.187')
+        # self.device_2 = MagPowSup('169.254.62.188')  # ch1=X, ch2=Y 
+        # self.device_z = MagPowSup('169.254.62.187')
 
         # --- geometry / offsets ---
         self.x_axis_tilt = float(x_axis_tilt)

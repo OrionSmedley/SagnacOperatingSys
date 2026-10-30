@@ -6,7 +6,8 @@ import re
 class TM620:
     def __init__(self):
         self.rm = pyvisa.ResourceManager()
-        self.instrument = self.rm.open_resource("TCPIP0::169.254.62.184::4266::SOCKET")
+        self.instrument = self.rm.open_resource("TCPIP0::10.44.0.23::4266::SOCKET")
+        # self.instrument = self.rm.open_resource("TCPIP0::169.254.62.184::4266::SOCKET")
         self.instrument.timeout = 2000
         self.instrument.read_termination = '\r\n'
         self.instrument.write_termination = '\r\n'
